@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+.next/
+out/
+
+# ML
+*.pt
+*.onnx
+packages/ml-cv/models/
+packages/ml-prediction/models/
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
+
+# Superpowers
+.superpowers/

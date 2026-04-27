@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  backend-lint:
+    name: Backend lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install ruff mypy
+      - run: ruff check apps/api/src
+      - run: mypy apps/api/src --ignore-missing-imports
+
+  backend-test:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:15-3.3-alpine
+        env:
+          POSTGRES_DB: drishti_test
+          POSTGRES_USER: drishti
+          POSTGRES_PASSWORD: drishti
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -e "apps/api[dev]"
+      - run: pytest apps/api/tests -v
+        env:
+          DATABASE_URL: postgresql+psycopg2://drishti:drishti@localhost:5432/drishti_test
+          REDIS_URL: redis://localhost:6379/0
+          MINIO_ENDPOINT: localhost:9000
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
+          MINIO_BUCKET: drishti-test
+          SEED_TENANT_ID: "00000000-0000-0000-0000-000000000001"
+
+  frontend-lint:
+    name: Frontend lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: cd apps/web && npm ci && npm run lint
+        continue-on-error: true  # web not scaffolded yet — remove once web exists
+      - run: cd apps/landing && npm ci && npm run lint
+        continue-on-error: true  # landing not scaffolded yet — remove once landing exists

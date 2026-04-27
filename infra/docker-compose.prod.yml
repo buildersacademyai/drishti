@@ -13,6 +13,7 @@ services:
       MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY}"
       MINIO_SECRET_KEY: "${MINIO_SECRET_KEY}"
       MINIO_BUCKET: "${MINIO_BUCKET}"
+      SEED_TENANT_ID: "${SEED_TENANT_ID}"
 
   worker:
     restart: always

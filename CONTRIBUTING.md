@@ -11,6 +11,8 @@ Thank you for your interest in contributing!
 
 ## Development Setup
 
+> **Note:** `apps/api/.env.example` is created as part of the Docker Compose setup (P0 Task 2). Ensure the full P0 setup is complete before running these commands.
+
 ```bash
 cp apps/api/.env.example apps/api/.env
 docker compose -f infra/docker-compose.yml up -d

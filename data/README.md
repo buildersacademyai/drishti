@@ -13,4 +13,4 @@ This directory contains raw and processed data for the Drishti platform.
 ## Note
 
 Large binary files (imagery, trained models) are NOT committed to git.
-Upload to MinIO: `docker compose exec minio mc cp <file> local/drishti-imagery/`
+Upload to MinIO: Use the MinIO console at http://localhost:9001 (login: minioadmin/minioadmin) or install the `mc` CLI separately.

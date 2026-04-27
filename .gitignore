@@ -6,6 +6,13 @@ __pycache__/
 dist/
 .mypy_cache/
 .ruff_cache/
+build/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.egg
+*.log
 
 # Node
 node_modules/
@@ -15,15 +22,21 @@ out/
 # ML
 *.pt
 *.onnx
+*.pkl
+*.joblib
+*.h5
+*.keras
+*.safetensors
 packages/ml-cv/models/
 packages/ml-prediction/models/
 
 # Env
-.env
-.env.local
+.env*
+!.env.example
 
 # OS
 .DS_Store
+Thumbs.db
 
 # Superpowers
 .superpowers/

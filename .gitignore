@@ -27,6 +27,8 @@ out/
 *.h5
 *.keras
 *.safetensors
+*.pth
+*.ubj
 packages/ml-cv/models/
 packages/ml-prediction/models/
 

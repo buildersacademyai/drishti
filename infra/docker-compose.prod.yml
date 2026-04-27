@@ -1,0 +1,18 @@
+# Production overrides — stub for MVP
+# Extend with: docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+version: '3.9'
+
+services:
+  api:
+    restart: always
+    environment:
+      # Override with production values via environment or secrets manager
+      DATABASE_URL: "${DATABASE_URL}"
+      REDIS_URL: "${REDIS_URL}"
+      MINIO_ENDPOINT: "${MINIO_ENDPOINT}"
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY}"
+      MINIO_BUCKET: "${MINIO_BUCKET}"
+
+  worker:
+    restart: always

@@ -1,0 +1,22 @@
+{
+  "nav": {
+    "title": "दृष्टि",
+    "alerts": "सूचना",
+    "alerts_plural": "सूचनाहरू",
+    "back": "← मुख्य पृष्ठ"
+  },
+  "map": {
+    "loading": "नक्सा लोड हुँदैछ…",
+    "satellite_patches": "उपग्रह जल क्षेत्र",
+    "detections": "पहिचान",
+    "interventions": "हस्तक्षेप"
+  },
+  "legend": {
+    "title": "तहरू",
+    "satellite": "उपग्रह जल क्षेत्र (NDWI)",
+    "larvae": "लार्भा पुष्टि",
+    "water_body": "जलाशय पहिचान",
+    "intervention_planned": "हस्तक्षेप योजनाबद्ध",
+    "intervention_completed": "हस्तक्षेप सम्पन्न"
+  }
+}

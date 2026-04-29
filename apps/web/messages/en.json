@@ -1,0 +1,22 @@
+{
+  "nav": {
+    "title": "Drishti",
+    "alerts": "alert",
+    "alerts_plural": "alerts",
+    "back": "← Landing"
+  },
+  "map": {
+    "loading": "Loading map…",
+    "satellite_patches": "Satellite patches",
+    "detections": "Detections",
+    "interventions": "Interventions"
+  },
+  "legend": {
+    "title": "Layers",
+    "satellite": "Satellite water patch (NDWI)",
+    "larvae": "Larvae confirmed",
+    "water_body": "Water body detected",
+    "intervention_planned": "Intervention planned",
+    "intervention_completed": "Intervention completed"
+  }
+}

@@ -60,6 +60,6 @@ jobs:
         with:
           node-version: '20'
       - run: cd apps/web && npm ci && npm run lint
-        continue-on-error: true  # web not scaffolded yet — remove once web exists
+        
       - run: cd apps/landing && npm ci && npm run lint
-        continue-on-error: true  # landing not scaffolded yet — remove once landing exists
+        

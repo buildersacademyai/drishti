@@ -32,11 +32,13 @@ class Alert(Base, TenantMixin):
 class User(Base, TenantMixin):
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    role = Column(String(50), nullable=False)
+    email = Column(String(255), unique=True, nullable=False)
+    password_hash = Column(String(255), nullable=False, default="")
+    name = Column(String(255), nullable=True)
+    role = Column(String(50), nullable=False, default="fchv")
     admin_unit_id = Column(UUID(as_uuid=True), ForeignKey("admin_units.id"), nullable=True)
-    locale = Column(String(10), default="ne")
+    locale = Column(String(10), default="en")
     phone = Column(String(30), nullable=True)
-    email = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

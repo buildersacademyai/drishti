@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import (
-    alerts, detections, flights, health,
+    alerts, auth, detections, flights, health,
     interventions, missions, predictions, satellite, sensors,
 )
 
@@ -12,15 +12,20 @@ app = FastAPI(
     description="Climate-Health Vector Surveillance Platform",
 )
 
+import os
+
+_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 app.include_router(health.router)
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(satellite.router, prefix="/api/v1/satellite", tags=["satellite"])
 app.include_router(missions.router, prefix="/api/v1/missions", tags=["missions"])
 app.include_router(flights.router, prefix="/api/v1/flights", tags=["flights"])

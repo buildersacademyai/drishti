@@ -3,61 +3,117 @@ import { motion } from "framer-motion";
 
 const members = [
   {
-    name: "Dipak Dhakal",
-    role: "Lead Engineer",
-    focus: "Backend · ML · Infrastructure",
-    note: "Building the satellite-to-drone data pipeline and prediction models.",
+    name: "Dipak Sharma",
+    role: "Lead Engineer & Founder",
+    org: "BuildersAcademy.ai",
+    focus: "Backend · ML · Infrastructure · Drone Systems",
+    bio: "Building the full satellite-to-drone-to-prediction pipeline. Leads technical architecture, model development, and platform infrastructure at BuildersAcademy.ai.",
+    accent: true,
   },
   {
     name: "Field Partner",
     role: "Public Health Advisor",
-    focus: "Epidemiology · Nepal MoHP",
-    note: "Domain expertise on dengue surveillance protocols in Bagmati Province.",
+    org: "Nepal MoHP",
+    focus: "Epidemiology · VBD Surveillance · Bagmati Province",
+    bio: "Domain expertise on dengue surveillance protocols, EDCD reporting systems, and community health worker networks across Nepal's mid-hill districts.",
+    accent: false,
   },
   {
     name: "Drone Partner",
-    role: "Agricultural Drone Operator",
-    focus: "UAV · Precision Spray",
-    note: "Existing spray-drone fleet in Chitwan — airframe reuse, no new hardware.",
+    role: "UAV Operations Lead",
+    org: "Agricultural Drone Operator",
+    focus: "UAV · Precision Spray · Chitwan Operations",
+    bio: "Existing spray-drone fleet operating in Chitwan. Dual-use hardware reuse for both verification and intervention — no new airframe required.",
+    accent: false,
   },
 ];
 
 export function Team() {
   return (
-    <section id="team" className="py-24 bg-white">
-      <div className="max-w-6xl mx-auto px-6">
+    <section id="team" className="py-28 bg-[#f8f7f4]">
+      <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          className="mb-16"
         >
-          <h2 className="text-4xl font-bold text-[#1a1a2e] mb-4">Who is building this.</h2>
-          <p className="text-lg text-[#6b7280] mb-12 max-w-2xl">
-            A lean cross-disciplinary team combining software engineering, public health, and
-            operational drone expertise in Nepal.
+          <div className="text-xs font-bold text-[#1e3a5f] uppercase tracking-[0.2em] mb-4">
+            The Team
+          </div>
+          <h2 className="text-4xl lg:text-5xl font-black text-[#1a1a2e] mb-6 max-w-3xl leading-tight">
+            Built by drone engineers and{" "}
+            <span style={{ color: "#f59e0b" }}>public health experts.</span>
+          </h2>
+          <p className="text-lg text-[#6b7280] max-w-2xl leading-relaxed">
+            A cross-disciplinary team combining deep software engineering, epidemiology
+            expertise, and operational drone experience in Nepal.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {members.map((m, i) => (
             <motion.div
               key={m.name}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 32 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="p-6 rounded-2xl bg-[#f8f7f4] border border-[#e5e7eb]"
+              className={`p-8 rounded-2xl border ${
+                m.accent
+                  ? "bg-[#1e3a5f] border-[#1e3a5f]"
+                  : "bg-white border-[#e5e7eb]"
+              }`}
             >
-              <div className="w-12 h-12 rounded-full bg-[#1e3a5f]/10 flex items-center justify-center text-[#1e3a5f] font-bold text-lg mb-4">
+              <div
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black mb-6 ${
+                  m.accent
+                    ? "bg-[#f59e0b] text-[#050d1a]"
+                    : "bg-[#1e3a5f]/10 text-[#1e3a5f]"
+                }`}
+              >
                 {m.name.charAt(0)}
               </div>
-              <div className="font-bold text-[#1a1a2e] mb-1">{m.name}</div>
-              <div className="text-sm font-medium text-[#1e3a5f] mb-1">{m.role}</div>
-              <div className="text-xs text-[#9ca3af] mb-3">{m.focus}</div>
-              <div className="text-sm text-[#6b7280] leading-relaxed">{m.note}</div>
+
+              <div className={`text-xs font-bold uppercase tracking-wider mb-1 ${m.accent ? "text-[#f59e0b]" : "text-[#1e3a5f]"}`}>
+                {m.org}
+              </div>
+              <div className={`font-black text-lg mb-1 ${m.accent ? "text-white" : "text-[#1a1a2e]"}`}>
+                {m.name}
+              </div>
+              <div className={`text-sm font-medium mb-1 ${m.accent ? "text-white/70" : "text-[#1e3a5f]"}`}>
+                {m.role}
+              </div>
+              <div className={`text-xs mb-4 ${m.accent ? "text-white/40" : "text-[#9ca3af]"}`}>
+                {m.focus}
+              </div>
+              <div className={`text-sm leading-relaxed ${m.accent ? "text-white/70" : "text-[#6b7280]"}`}>
+                {m.bio}
+              </div>
             </motion.div>
           ))}
         </div>
+
+        {/* Org credit */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="mt-8 p-6 rounded-2xl bg-[#1e3a5f]/5 border border-[#1e3a5f]/15 flex flex-col md:flex-row items-center justify-between gap-4"
+        >
+          <div>
+            <div className="font-black text-[#1a1a2e] text-lg">BuildersAcademy.ai</div>
+            <div className="text-sm text-[#6b7280]">Platform engineering and AI research lead behind Drishti</div>
+          </div>
+          <a
+            href="https://buildersacademy.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-5 py-2.5 rounded-xl bg-[#1e3a5f] text-white text-sm font-semibold hover:bg-[#2d5a8e] transition-colors flex-shrink-0"
+          >
+            buildersacademy.ai →
+          </a>
+        </motion.div>
       </div>
     </section>
   );

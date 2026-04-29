@@ -1,0 +1,10 @@
+models/
+data/drone_survey/
+data/tiles/
+data/nanoshot_dataset/
+data/yolo_dataset/
+runs/
+notebooks/*_executed.ipynb
+__pycache__/
+*.pyc
+.venv/

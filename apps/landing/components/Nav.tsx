@@ -1,24 +1,47 @@
 "use client";
-import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#f8f7f4]/90 backdrop-blur border-b border-[#e5e7eb]">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <span className="font-bold text-lg text-[#1e3a5f]">Drishti</span>
-        <div className="flex items-center gap-6 text-sm text-[#6b7280]">
-          <a href="#solution" className="hover:text-[#1e3a5f] transition-colors">Solution</a>
-          <a href="#technology" className="hover:text-[#1e3a5f] transition-colors">Technology</a>
-          <a href="#team" className="hover:text-[#1e3a5f] transition-colors">Team</a>
-          <a
-            href="https://github.com/drishti-platform"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-1.5 rounded-full border border-[#1e3a5f] text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white transition-colors"
-          >
-            GitHub
-          </a>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-[#050d1a]/95 backdrop-blur-md border-b border-white/10 shadow-xl"
+          : "bg-transparent"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f59e0b] to-[#fb923c] flex items-center justify-center">
+            <span className="text-[#050d1a] font-black text-sm">D</span>
+          </div>
+          <span className="font-bold text-lg text-white tracking-tight">Drishti</span>
         </div>
+
+        <div className="hidden md:flex items-center gap-8 text-sm text-white/70">
+          <a href="#problem" className="hover:text-white transition-colors">Problem</a>
+          <a href="#solution" className="hover:text-white transition-colors">Solution</a>
+          <a href="#process" className="hover:text-white transition-colors">Process</a>
+          <a href="#technology" className="hover:text-white transition-colors">Technology</a>
+          <a href="#team" className="hover:text-white transition-colors">Team</a>
+        </div>
+
+        <a
+          href="https://github.com/drishti-platform"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-4 py-2 rounded-lg bg-[#f59e0b] text-[#050d1a] text-sm font-bold hover:bg-[#fbbf24] transition-colors"
+        >
+          GitHub →
+        </a>
       </div>
     </nav>
   );

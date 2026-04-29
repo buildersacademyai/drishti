@@ -11,15 +11,18 @@ interface Props {
   satelliteGeoJSON: GeoJSON.FeatureCollection | null;
   detections: Detection[];
   interventions: Intervention[];
+  onDetectionClick?: (detection: Detection) => void;
 }
 
 // Chitwan district, Nepal
 const INITIAL_CENTER: [number, number] = [84.354, 27.529];
 const INITIAL_ZOOM = 10;
 
-export function MapView({ satelliteGeoJSON, detections, interventions }: Props) {
+export function MapView({ satelliteGeoJSON, detections, interventions, onDetectionClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const detectionsRef = useRef(detections);
+  detectionsRef.current = detections;
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -36,8 +39,20 @@ export function MapView({ satelliteGeoJSON, detections, interventions }: Props) 
 
     map.on("load", () => {
       if (satelliteGeoJSON) addSatelliteLayer(map, satelliteGeoJSON);
-      addDroneLayer(map, detections);
+      addDroneLayer(map, detectionsRef.current);
       addInterventionLayer(map, interventions);
+    });
+
+    // Detection click → open detail panel
+    map.on("click", "drone-points", (e) => {
+      if (!e.features?.length || !onDetectionClick) return;
+      const props = e.features[0].properties as { detection_type: string; confidence: number };
+      // Find full Detection object by matching coordinates
+      const coords = (e.features[0].geometry as GeoJSON.Point).coordinates;
+      const det = detectionsRef.current.find(
+        (d) => Math.abs(d.lng - coords[0]) < 0.0001 && Math.abs(d.lat - coords[1]) < 0.0001
+      );
+      if (det) onDetectionClick(det);
     });
 
     mapRef.current = map;
@@ -47,7 +62,6 @@ export function MapView({ satelliteGeoJSON, detections, interventions }: Props) 
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update data layers when props change without re-mounting
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;

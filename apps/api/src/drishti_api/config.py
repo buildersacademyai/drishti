@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     minio_secret_key: str = "minioadmin"
     minio_bucket: str = "drishti-imagery"
     seed_tenant_id: uuid.UUID = uuid.UUID("00000000-0000-0000-0000-000000000001")
+    secret_key: str = "change-me-in-production-use-secrets-token-hex-32"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60 * 24  # 24 hours
 
     model_config = {"env_file": ".env"}
 

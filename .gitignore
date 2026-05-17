@@ -42,3 +42,10 @@ Thumbs.db
 
 # Superpowers
 .superpowers/
+docs/superpowers/
+
+# Project docs (not for repo)
+project.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+SECURITY.md

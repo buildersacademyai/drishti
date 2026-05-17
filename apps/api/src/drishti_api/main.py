@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import (
-    alerts, auth, detections, flights, health,
-    interventions, missions, predictions, satellite, sensors,
+    alerts, auth, detections, drones, flights, health,
+    interventions, missions, predictions, satellite, sensors, users,
 )
 
 app = FastAPI(
@@ -34,3 +34,5 @@ app.include_router(predictions.router, prefix="/api/v1/predictions", tags=["pred
 app.include_router(sensors.router, prefix="/api/v1/sensors", tags=["sensors"])
 app.include_router(interventions.router, prefix="/api/v1/interventions", tags=["interventions"])
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["alerts"])
+app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
+app.include_router(drones.router, prefix="/api/v1/drones", tags=["drones"])

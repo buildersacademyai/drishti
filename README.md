@@ -1,187 +1,189 @@
-# Drishti — Climate-Health Vector Surveillance Platform
+# Drishti — AI-Powered Climate-Health Surveillance Platform
 
-[![CI](https://github.com/drishti-platform/drishti/actions/workflows/ci.yml/badge.svg)](https://github.com/drishti-platform/drishti/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![UNICEF Venture Fund](https://img.shields.io/badge/UNICEF%20Venture%20Fund-Applicant%202026-009edb)](https://unicefinnovationfund.org)
 
-**See it from space. Confirm it from the sky. Stop it before it spreads.**
+> **See the threat. Before it sees you.**
 
-An open-source, AI-driven platform that combines satellite screening and drone verification to predict and prevent vector-borne disease outbreaks — starting with dengue in Nepal's climate-vulnerable mid-hill districts.
+Drishti (दृष्टि — "vision" in Nepali/Sanskrit) is an open-source AI platform that combines satellite imagery, autonomous drones, and machine learning to detect climate-health threats — starting with malaria and dengue vector surveillance in Nepal's Terai lowlands.
 
 ---
 
 ## The Problem
 
-Climate change is pushing dengue into Nepal's mid-hill districts — communities that were mosquito-free a decade ago. Dengue cases have grown **10× since 2010**. Children under 15 account for 40% of severe cases. Current surveillance is paper-based, reactive, and operates with a **2–4 week lag**.
-
-## The Solution: Verify → Validate → Execute
-
-```
-SATELLITE (weekly, free, 100% coverage)
-    → flags candidate water bodies at 10m resolution
-    → 70–80% fewer drone flights vs. blanket coverage
-
-DRONE (autonomous, targets flagged zones only)
-    → survey pass (30m): YOLOv8 detects standing water
-    → nano-shot descent (2–5m): EfficientNet confirms larvae
-    → 48-hour verification cycle
-
-INTERVENTION (same drone, payload swap)
-    → precision larvicide at confirmed coordinates
-    → 60–80% less chemical use vs. blanket spraying
-    → 72-hour flag-to-treatment vs. 2–4 weeks manually
-```
+Nepal's Terai districts carry the highest malaria and dengue burden in the country. Surveillance is manual, reactive, and slow. By the time a case is reported, mosquito breeding has been underway for weeks. Dense forest, flooded plains, and dispersed villages make comprehensive ground surveillance impossible. Climate change is accelerating the problem — erratic monsoons create new stagnant water bodies faster than any field team can map.
 
 ---
 
-## Repository Structure
+## How Drishti Works
 
 ```
-drishti/
-├── apps/
-│   ├── api/            # FastAPI backend — REST + Celery workers
-│   ├── web/            # Next.js 14 dashboard — MapLibre map, PWA, en/ne i18n
-│   └── landing/        # Marketing landing page (static export → Vercel)
-├── packages/
-│   ├── ml-cv/          # CV pipeline — satellite NDWI, YOLOv8 survey, EfficientNet nano-shot
-│   └── ml-prediction/  # XGBoost outbreak risk prediction
-├── iot/                # ESP32 firmware for temperature/humidity/rainfall sensors
-├── infra/              # Docker Compose (dev + prod), deployment scripts
-├── docs/               # Architecture, data model, deployment, ethics
-└── scripts/            # Dev setup, seed data
+Satellite Scan → Drone Verification → AI Detection → Risk Score → Intervention Dispatch
 ```
+
+1. **Satellite NDWI Analysis** — Multispectral imagery scans Terai terrain after rainfall, flagging stagnant water bodies as candidate breeding zones across entire districts
+2. **Autonomous Drone Dispatch** — Flagged sites trigger drone deployment for low-altitude ground verification
+3. **Computer Vision (YOLOv8)** — Onboard AI classifies larval presence with GPS-precise coordinates and confidence scores
+4. **Risk Prediction** — Detections feed a district-level ML risk model scoring all 75 Nepal districts in real time
+5. **Intervention Dashboard** — District health officers see live risk maps, create larvicide missions, and track outcomes — all from one platform
+
+**Future scope:** Forest fire detection, wildlife corridor monitoring, flood damage assessment — same hardware stack, modular AI models.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   Next.js Dashboard                  │
+│         MapLibre · Real-time risk map · PWA          │
+└──────────────────────┬──────────────────────────────┘
+                       │ REST
+┌──────────────────────▼──────────────────────────────┐
+│                   FastAPI Backend                    │
+│     PostGIS · SQLAlchemy · JWT Auth · Alembic        │
+└────────┬─────────────┬──────────────┬───────────────┘
+         │             │              │
+    PostgreSQL       Redis          MinIO
+    (PostGIS)      (Celery)      (Imagery)
+         │
+┌────────▼────────────────────────────────────────────┐
+│              IoT + Drone Layer                       │
+│         ESP32 Firmware · GPS Telemetry · OTA         │
+└─────────────────────────────────────────────────────┘
+```
+
+---
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Backend API | FastAPI + SQLAlchemy 2 + GeoAlchemy2 |
-| Task queue | Celery 5 + Redis 7 |
-| Database | PostgreSQL 15 + PostGIS 3.3 |
-| Blob storage | MinIO (self-hosted) / AWS S3 |
-| CV — survey | YOLOv8 (Ultralytics) |
-| CV — nano-shot | EfficientNet-B0 (PyTorch) |
-| Prediction | XGBoost + scikit-learn |
-| Satellite | Sentinel-2 via Google Earth Engine |
-| Frontend | Next.js 14, MapLibre GL, TailwindCSS, Framer Motion |
-| i18n | next-intl (English + Nepali) |
-| IoT | ESP32 + DHT22 + LoRaWAN |
-| License | Apache 2.0 |
+| Frontend | Next.js 14 (App Router), MapLibre GL JS, Tailwind CSS, PWA |
+| Backend | FastAPI, SQLAlchemy 2, Alembic, PostGIS, Pydantic |
+| Database | PostgreSQL 16 + PostGIS |
+| Queue | Celery + Redis |
+| Storage | MinIO (S3-compatible) |
+| AI/CV | YOLOv8, NDWI satellite analysis |
+| IoT | ESP32, GPS module, telemetry over WiFi/4G |
+| Infrastructure | Docker Compose, designed for Kubernetes |
 
 ---
 
-## Quick Start (local dev)
+## Project Structure
 
-**Requirements:** Docker Desktop, Python 3.11+, Node 20+
-
-```bash
-# 1. Clone and configure
-git clone https://github.com/drishti-platform/drishti.git
-cd drishti
-cp apps/api/.env.example apps/api/.env
-
-# 2. Start infrastructure (PostGIS, Redis, MinIO)
-docker compose up -d postgres redis minio
-
-# 3. Backend API
-cd apps/api
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
-alembic upgrade head
-python scripts/seed-demo-data.py   # creates demo tenant + ward data
-uvicorn drishti_api.main:app --reload
-# → http://localhost:8000/docs
-
-# 4. Celery workers (new terminal)
-celery -A drishti_api.workers.celery_app worker --loglevel=info
-
-# 5. Dashboard (new terminal)
-cd apps/web && npm install && npm run dev
-# → http://localhost:3001/map
-
-# 6. Landing page (optional)
-cd apps/landing && npm install && npm run dev
-# → http://localhost:3000
 ```
-
-Full infrastructure stack (all services):
-```bash
-docker compose up -d   # postgres, redis, minio, api, worker
+drishti/
+├── apps/
+│   ├── api/          # FastAPI backend
+│   │   ├── src/drishti_api/
+│   │   │   ├── routers/      # alerts, auth, detections, drones, flights,
+│   │   │   │                   interventions, missions, predictions, users
+│   │   │   ├── models/       # SQLAlchemy models
+│   │   │   └── main.py
+│   │   └── alembic/          # DB migrations
+│   ├── web/          # Next.js admin dashboard
+│   │   ├── app/(admin)/      # Dashboard, map, drones, missions, alerts...
+│   │   ├── components/       # MapView, DroneLoader, LogoIcon, Sidebar
+│   │   └── lib/              # API client, auth
+│   └── landing/      # Public landing page
+├── iot/              # ESP32 drone firmware
+├── infra/            # Docker Compose
+└── packages/         # Shared ML packages
 ```
 
 ---
 
-## Running the ML Pipeline
+## Getting Started
 
-**Satellite NDWI pipeline** (requires Google Earth Engine auth):
+### Prerequisites
+- Docker Desktop
+- Node.js 18+
+- Python 3.11+
+
+### 1. Start infrastructure
+
 ```bash
-cd packages/ml-cv
-pip install -e "."
-python -c "
-from drishti_cv.satellite.ndwi import compute_ndwi
-from drishti_cv.satellite.export import water_mask_to_geojson
-# see notebooks/01_sentinel2_ndwi_cells.py
-"
+cd infra
+docker compose up postgres redis minio -d
 ```
 
-**Outbreak prediction model** (runs without external data — synthetic training):
-```bash
-cd packages/ml-prediction
-pip install -e "."
-python -c "
-from drishti_predict.train import train_and_save
-train_and_save()   # → models/xgb_baseline.ubj
-"
-```
-
-**Demo notebook chain** (satellite → drone → predict):
-```bash
-cd packages/ml-cv
-pip install jupytext jupyter
-jupytext --to ipynb notebooks/04_demo_chain_cells.py
-jupyter notebook notebooks/04_demo_chain_cells.ipynb
-```
-
----
-
-## Tests
+### 2. Run database migrations
 
 ```bash
 cd apps/api
-pytest tests/ -v
+pip install -e .
+PYTHONPATH=src alembic upgrade head
 ```
 
-CI runs on every push and PR — see [.github/workflows/ci.yml](.github/workflows/ci.yml).
+### 3. Create admin user
+
+```bash
+# Generate password hash
+python3 -c "import bcrypt; print(bcrypt.hashpw(b'yourpassword', bcrypt.gensalt()).decode())"
+
+# Insert via psql
+docker exec drishti-postgres psql -U drishti -d drishti -c "
+INSERT INTO users (id, tenant_id, email, name, role, password_hash, created_at)
+VALUES (gen_random_uuid(), '00000000-0000-0000-0000-000000000001',
+'admin@drishti.io', 'Admin', 'admin', '<hash>', NOW());"
+```
+
+### 4. Start API
+
+```bash
+cd apps/api
+PYTHONPATH=src uvicorn drishti_api.main:app --reload --port 8000
+```
+
+### 5. Start dashboard
+
+```bash
+cd apps/web
+cp .env.example .env.local   # set NEXT_PUBLIC_API_URL=http://localhost:8000
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## Documentation
+## API Endpoints
 
-| Document | Description |
-|---|---|
-| [docs/architecture.md](docs/architecture.md) | Three-tier system design, tech stack, key decisions |
-| [docs/data-model.md](docs/data-model.md) | Database schema, entity relationships, multi-tenancy |
-| [docs/deployment.md](docs/deployment.md) | Self-hosted deployment guide (Docker, VPS) |
-| [docs/ethics-and-data-governance.md](docs/ethics-and-data-governance.md) | Privacy, consent, data sovereignty principles |
-| [project.md](project.md) | Full development specification (internal) |
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/v1/auth/login` | Admin login → JWT token |
+| GET | `/api/v1/drones` | List drone fleet |
+| POST | `/api/v1/drones` | Register drone |
+| PATCH | `/api/v1/drones/:id` | Update status/battery/coords |
+| GET | `/api/v1/missions` | List missions |
+| GET | `/api/v1/detections` | List detections |
+| GET | `/api/v1/predictions` | District risk scores |
+| GET | `/api/v1/alerts` | Active alerts |
+| GET | `/api/v1/interventions` | Intervention log |
+| GET | `/api/v1/users` | User management |
+
+Full API docs at `http://localhost:8000/docs` (Swagger UI)
 
 ---
 
-## Contributing
+## Pilot Plan
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). All contributions must:
-- Follow the [Code of Conduct](CODE_OF_CONDUCT.md)
-- Pass CI (lint + tests)
-- Be Apache 2.0 compatible
+**Phase 1 (Months 1–2):** Drone flights over Chitwan and Bardiya districts — capture and annotate larval site imagery for YOLOv8 training
+
+**Phase 2 (Months 3–4):** Train CV model, target >85% detection accuracy, validate with district health officers
+
+**Phase 3 (Months 5–6):** Live pilot across 3 high-burden Terai districts
+
+**Phase 4 (Months 7–12):** Measure intervention response time (<48hrs target), scale to 8 districts, begin dengue-specific model training
 
 ---
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE).
-
-Data collected during pilot deployments is subject to Nepal's Privacy Act 2018. See [ethics-and-data-governance.md](docs/ethics-and-data-governance.md).
+Apache 2.0 — see [LICENSE](LICENSE)
 
 ---
 
-*Built in Kathmandu. Designed to run anywhere. No cloud vendor required.*
+*Built for Nepal. Designed to scale.*

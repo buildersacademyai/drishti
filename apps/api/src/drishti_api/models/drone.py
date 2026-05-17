@@ -1,9 +1,30 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, ForeignKey, DateTime, JSON
+from sqlalchemy import Column, String, ForeignKey, DateTime, JSON, Float, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from geoalchemy2 import Geometry
 from .base import Base, TenantMixin
+
+
+class Drone(Base, TenantMixin):
+    """Physical drone hardware asset."""
+    __tablename__ = "drones"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(100), nullable=False)           # "Eagle-1"
+    model = Column(String(100), nullable=True)           # "DJI Matrice 300 RTK"
+    serial_number = Column(String(100), nullable=True)
+    status = Column(String(30), nullable=False, default="at_station")
+    # at_station | in_field | charging | maintenance | offline
+    battery_pct = Column(Integer, nullable=True)         # 0-100
+    total_flight_hours = Column(Float, default=0.0)
+    last_seen = Column(DateTime, nullable=True)
+    current_mission_id = Column(UUID(as_uuid=True), ForeignKey("missions.id"), nullable=True)
+    home_lat = Column(Float, nullable=True)              # station coords
+    home_lng = Column(Float, nullable=True)
+    current_lat = Column(Float, nullable=True)
+    current_lng = Column(Float, nullable=True)
+    notes = Column(String(500), nullable=True)
+    registered_at = Column(DateTime, default=datetime.utcnow)
 
 
 class Mission(Base, TenantMixin):

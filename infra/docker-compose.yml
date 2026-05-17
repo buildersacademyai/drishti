@@ -1,6 +1,10 @@
+name: drishti
+
 services:
   postgres:
-    image: postgis/postgis:15-3.3-alpine
+    container_name: drishti-postgres
+    image: postgis/postgis:16-3.4
+
     environment:
       POSTGRES_DB: drishti
       POSTGRES_USER: drishti
@@ -9,6 +13,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U drishti -d drishti"]
       interval: 10s
@@ -16,11 +21,14 @@ services:
       retries: 5
 
   redis:
+    container_name: drishti-redis
     image: redis:7-alpine
+
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -28,7 +36,9 @@ services:
       retries: 5
 
   minio:
-    image: minio/minio:RELEASE.2024-11-07T00-52-20Z
+    container_name: drishti-minio
+    image: minio/minio:latest
+
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -38,6 +48,7 @@ services:
       - "9001:9001"
     volumes:
       - minio_data:/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
@@ -45,14 +56,16 @@ services:
       retries: 5
 
   api:
+    container_name: drishti-api
     build:
       context: ../apps/api
       dockerfile: Dockerfile
+
     command: uvicorn drishti_api.main:app --host 0.0.0.0 --port 8000 --reload
     environment:
-      DATABASE_URL: postgresql+psycopg2://drishti:drishti@postgres:5432/drishti
-      REDIS_URL: redis://redis:6379/0
-      MINIO_ENDPOINT: minio:9000
+      DATABASE_URL: postgresql+psycopg2://drishti:drishti@drishti-postgres:5432/drishti
+      REDIS_URL: redis://drishti-redis:6379/0
+      MINIO_ENDPOINT: drishti-minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET: drishti-imagery
@@ -67,18 +80,22 @@ services:
       minio:
         condition: service_healthy
     volumes:
-      - ../apps/api:/app
-    working_dir: /app
+      - ../apps/api/src:/app/src
+      - ../apps/api/alembic:/app/alembic
+      - ../apps/api/alembic.ini:/app/alembic.ini
+    restart: unless-stopped
 
   worker:
+    container_name: drishti-worker
     build:
       context: ../apps/api
       dockerfile: Dockerfile
+
     command: celery -A drishti_api.workers.celery_app worker --loglevel=info
     environment:
-      DATABASE_URL: postgresql+psycopg2://drishti:drishti@postgres:5432/drishti
-      REDIS_URL: redis://redis:6379/0
-      MINIO_ENDPOINT: minio:9000
+      DATABASE_URL: postgresql+psycopg2://drishti:drishti@drishti-postgres:5432/drishti
+      REDIS_URL: redis://drishti-redis:6379/0
+      MINIO_ENDPOINT: drishti-minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET: drishti-imagery
@@ -88,8 +105,8 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ../apps/api:/app
-    working_dir: /app
+      - ../apps/api/src:/app/src
+    restart: unless-stopped
 
 volumes:
   pgdata:

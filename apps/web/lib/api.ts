@@ -1,7 +1,12 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, { next: { revalidate: 60 } });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, { next: { revalidate: 60 } });
+  } catch {
+    throw new Error(`API unreachable: ${path}`);
+  }
   if (!res.ok) throw new Error(`API ${path}: ${res.status}`);
   return res.json() as Promise<T>;
 }
@@ -79,3 +84,40 @@ export const fetchPredictions = (adminUnitId?: string) => {
 };
 
 export const fetchAlerts = () => get<Alert[]>("/api/v1/alerts/active");
+
+// ── Server-side dashboard fetchers ────────────────────────────────────────
+
+export interface MissionServer {
+  id: string;
+  mission_type: string;
+  status: string;
+  planned_at?: string;
+  admin_unit_id?: string;
+}
+
+export interface AlertServer {
+  id: string;
+  severity: string;
+  channel: string;
+  recipient_role: string | null;
+  acknowledged_at: string | null;
+  created_at: string | null;
+}
+
+export interface DroneServer {
+  id: string;
+  name: string;
+  model: string;
+  serial_number: string;
+  status: string;
+  battery_pct: number | null;
+  total_flight_hours: number;
+  last_seen: string | null;
+  current_mission_id: string | null;
+}
+
+export const getMissionsServer = () => get<MissionServer[]>("/api/v1/missions");
+export const getDetectionsServer = () => get<Detection[]>("/api/v1/detections");
+export const getInterventionsServer = () => get<Intervention[]>("/api/v1/interventions");
+export const getAlertsServer = () => get<AlertServer[]>("/api/v1/alerts");
+export const getDronesServer = () => get<DroneServer[]>("/api/v1/drones");

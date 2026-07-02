@@ -1,6 +1,7 @@
 from drishti_api.models.satellite import SatelliteAcquisition
 from drishti_api.models.drone import Mission
 from drishti_api.models.geo import Tenant, AdminUnit
+from drishti_api.models.detection import Detection
 
 
 def test_satellite_acquisition(db):
@@ -35,3 +36,29 @@ def test_mission_created(db):
     db.flush()
     assert mission.id is not None
     assert mission.status == "planned"
+
+
+def test_detection_status_defaults_to_pending_review(db):
+    from drishti_api.models.geo import Tenant, AdminUnit
+    from drishti_api.models.drone import Mission
+
+    tenant = Tenant(name="T-verify", settings_jsonb={})
+    db.add(tenant)
+    db.flush()
+    unit = AdminUnit(tenant_id=tenant.id, level=2, code="NP-V",
+                     name="V", population=0, child_pop_under_15=0)
+    db.add(unit)
+    db.flush()
+    mission = Mission(tenant_id=tenant.id, mission_type="verification",
+                      status="completed", admin_unit_id=unit.id)
+    db.add(mission)
+    db.flush()
+
+    det = Detection(tenant_id=tenant.id, mission_id=mission.id,
+                    detection_type="larvae_confirmed", confidence=0.9)
+    db.add(det)
+    db.flush()
+
+    assert det.status == "pending_review"
+    assert det.verified_by is None
+    assert det.verified_at is None

@@ -17,3 +17,6 @@ class Detection(Base, TenantMixin):
     model_id = Column(UUID(as_uuid=True), ForeignKey("models.id"), nullable=True)
     detected_at = Column(DateTime, default=datetime.utcnow)
     mission_id = Column(UUID(as_uuid=True), ForeignKey("missions.id"), nullable=True)
+    status = Column(String(20), nullable=False, default="pending_review")
+    verified_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    verified_at = Column(DateTime, nullable=True)

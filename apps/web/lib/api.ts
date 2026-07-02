@@ -29,6 +29,7 @@ export interface Detection {
   lat: number;
   lng: number;
   detected_at: string;
+  status: string;
 }
 
 export interface Intervention {

@@ -182,7 +182,7 @@ export default function DetectionsPage() {
                         Verify
                       </button>
                       <button
-                        onClick={() => setRejectingId(d.id)}
+                        onClick={() => { setRejectingId(d.id); setRejectReason(""); }}
                         className="text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors"
                       >
                         Reject

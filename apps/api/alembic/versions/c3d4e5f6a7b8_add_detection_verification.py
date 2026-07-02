@@ -19,9 +19,17 @@ def upgrade() -> None:
     op.add_column("detections", sa.Column("status", sa.String(20), nullable=False, server_default="pending_review"))
     op.add_column("detections", sa.Column("verified_by", postgresql.UUID(as_uuid=True), nullable=True))
     op.add_column("detections", sa.Column("verified_at", sa.DateTime(), nullable=True))
+    op.create_foreign_key(
+        "fk_detections_verified_by_users",
+        "detections",
+        "users",
+        ["verified_by"],
+        ["id"]
+    )
 
 
 def downgrade() -> None:
+    op.drop_constraint("fk_detections_verified_by_users", "detections", type_="foreignkey")
     op.drop_column("detections", "verified_at")
     op.drop_column("detections", "verified_by")
     op.drop_column("detections", "status")

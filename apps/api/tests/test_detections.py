@@ -36,6 +36,13 @@ def test_trigger_intervention_requires_larvae_confirmed(client, db):
                      detection_type="larvae_confirmed", confidence=0.92)
     db.add(det2)
     db.flush()
+
+    # not yet verified -> still rejected
+    resp_unverified = client.post(f"/api/v1/detections/{det2.id}/trigger-intervention")
+    assert resp_unverified.status_code == 422
+
+    # verify, then trigger succeeds
+    client.post(f"/api/v1/detections/{det2.id}/verify", headers=_auth_header(db, tenant))
     resp2 = client.post(f"/api/v1/detections/{det2.id}/trigger-intervention")
     assert resp2.status_code == 200
     assert "intervention_mission_id" in resp2.json()

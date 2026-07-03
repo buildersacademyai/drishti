@@ -82,11 +82,10 @@ drishti/
 │   │   │   ├── models/       # SQLAlchemy models
 │   │   │   └── main.py
 │   │   └── alembic/          # DB migrations
-│   ├── web/          # Next.js admin dashboard
-│   │   ├── app/(admin)/      # Dashboard, map, drones, missions, alerts...
+│   ├── web/          # Next.js app: public landing page (/) + admin dashboard (/dashboard)
+│   │   ├── app/dashboard/    # Dashboard, map, drones, missions, alerts...
 │   │   ├── components/       # MapView, DroneLoader, LogoIcon, Sidebar
 │   │   └── lib/              # API client, auth
-│   └── landing/      # Public landing page
 ├── iot/              # ESP32 drone firmware
 ├── infra/            # Docker Compose
 └── packages/         # Shared ML packages
@@ -145,7 +144,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3001](http://localhost:3001)
 
 ---
 

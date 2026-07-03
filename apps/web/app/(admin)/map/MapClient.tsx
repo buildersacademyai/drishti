@@ -12,6 +12,7 @@ interface Props {
 }
 
 export function MapClient({ satelliteGeoJSON, detections, interventions }: Props) {
+  const [localDetections, setLocalDetections] = useState(detections);
   const [selectedDetection, setSelectedDetection] = useState<Detection | null>(null);
   const [selectedDistrict, setSelectedDistrict] = useState<SelectedDistrict | null>(null);
 
@@ -25,11 +26,16 @@ export function MapClient({ satelliteGeoJSON, detections, interventions }: Props
     setSelectedDetection(d);
   }
 
+  function handleStatusChange(id: string, status: string) {
+    setLocalDetections((prev) => prev.map((d) => (d.id === id ? { ...d, status } : d)));
+    setSelectedDetection((prev) => (prev && prev.id === id ? { ...prev, status } : prev));
+  }
+
   return (
     <div className="absolute inset-0">
       <MapView
         satelliteGeoJSON={satelliteGeoJSON}
-        detections={detections}
+        detections={localDetections}
         interventions={interventions}
         onDetectionClick={handleDetectionClick}
         onDistrictClick={handleDistrictClick}
@@ -37,7 +43,7 @@ export function MapClient({ satelliteGeoJSON, detections, interventions }: Props
       {selectedDistrict && (
         <DistrictPanel
           district={selectedDistrict}
-          detections={detections}
+          detections={localDetections}
           interventions={interventions}
           onClose={() => setSelectedDistrict(null)}
         />
@@ -47,6 +53,7 @@ export function MapClient({ satelliteGeoJSON, detections, interventions }: Props
           detection={selectedDetection}
           interventions={interventions}
           onClose={() => setSelectedDetection(null)}
+          onStatusChange={handleStatusChange}
         />
       )}
     </div>

@@ -47,8 +47,8 @@ export function Hero() {
               Confirm it from{" "}
               <span className="gradient-text">the sky.</span>
               <br />
-              Stop it before{" "}
-              <span className="text-white">it spreads.</span>
+              Respond before{" "}
+              <span className="text-white">it's too late.</span>
             </motion.h1>
 
             <motion.p
@@ -58,8 +58,8 @@ export function Hero() {
               className="text-lg text-white/60 leading-relaxed mb-10 max-w-xl"
             >
               An AI-driven platform combining satellite screening, autonomous drone
-              verification, and precision intervention to prevent vector-borne disease
-              outbreaks in climate-vulnerable communities.
+              verification, and precision response — for disease control, fire control,
+              animal surveillance, flood monitoring, and emergency delivery.
             </motion.p>
 
             <motion.div
@@ -92,9 +92,9 @@ export function Hero() {
               className="mt-14 grid grid-cols-3 gap-6 pt-10 border-t border-white/10"
             >
               {[
-                { value: "72h", label: "Flag to treatment" },
-                { value: "10×", label: "Dengue growth in Nepal" },
-                { value: "80%", label: "Less chemical use" },
+                { value: "5", label: "Response domains" },
+                { value: "72h", label: "Flag to response" },
+                { value: "80%", label: "Less resource waste" },
               ].map((s) => (
                 <div key={s.label}>
                   <div className="text-2xl font-black gradient-text mb-1">{s.value}</div>
@@ -143,7 +143,7 @@ export function Hero() {
                     <div className="text-center">
                       <div className="text-xs font-bold text-[#22c55e] uppercase tracking-wider mb-1">Tier 3</div>
                       <div className="text-white font-semibold text-sm">Intervention</div>
-                      <div className="text-white/40 text-xs mt-1">Precision spray</div>
+                      <div className="text-white/40 text-xs mt-1">Precision response</div>
                     </div>
                   </div>
                 </div>

@@ -31,11 +31,8 @@ uvicorn drishti_api.main:app --reload --port 8000
 # Celery worker (new terminal, same .venv)
 celery -A drishti_api.workers.celery_app worker --loglevel=info
 
-# Dashboard
-cd apps/web && npm install && npm run dev   # → :3001/map
-
-# Landing page
-cd apps/landing && npm install && npm run dev  # → :3000
+# Dashboard (now includes the public landing page at /)
+cd apps/web && npm install && npm run dev   # → :3001
 ```
 
 ---
@@ -153,22 +150,6 @@ cd apps/web
 npm ci
 NEXT_PUBLIC_API_URL=https://api.yourdomain.org npm run build
 # Deploy .next/ to Vercel, or serve with `npm start` behind nginx
-```
-
-**Landing page (apps/landing) — static export:**
-```bash
-cd apps/landing
-npm ci && npm run build
-# out/ directory → deploy to Vercel, Netlify, or nginx static serve
-```
-
-For Vercel deployment (recommended for landing page):
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-cd apps/landing
-vercel --prod   # one-time setup + deploy
 ```
 
 ---

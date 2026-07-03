@@ -31,7 +31,6 @@ export function Nav() {
           <a href="#problem" className="hover:text-white transition-colors">Problem</a>
           <a href="#solution" className="hover:text-white transition-colors">Solution</a>
           <a href="#process" className="hover:text-white transition-colors">Process</a>
-          <a href="#technology" className="hover:text-white transition-colors">Technology</a>
           <a href="#team" className="hover:text-white transition-colors">Team</a>
         </div>
 

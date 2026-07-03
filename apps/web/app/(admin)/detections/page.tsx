@@ -20,6 +20,7 @@ export default function DetectionsPage() {
   const [typeFilter, setTypeFilter] = useState("");
   const [confMin, setConfMin] = useState("");
   const [actionMsg, setActionMsg] = useState("");
+  const [actionIsError, setActionIsError] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
 
@@ -44,9 +45,11 @@ export default function DetectionsPage() {
     try {
       const res = await triggerIntervention(id);
       setActionMsg(`Intervention mission created: ${res.intervention_mission_id.slice(0, 8)}…`);
+      setActionIsError(false);
       load();
     } catch (err) {
       setActionMsg(err instanceof Error ? err.message : "Failed");
+      setActionIsError(true);
     }
   }
 
@@ -54,9 +57,11 @@ export default function DetectionsPage() {
     try {
       await verifyDetection(id);
       setActionMsg("Detection verified.");
+      setActionIsError(false);
       load();
     } catch (err) {
       setActionMsg(err instanceof Error ? err.message : "Failed");
+      setActionIsError(true);
     }
   }
 
@@ -64,11 +69,13 @@ export default function DetectionsPage() {
     try {
       await rejectDetection(id, rejectReason || undefined);
       setActionMsg("Detection rejected.");
+      setActionIsError(false);
       setRejectingId(null);
       setRejectReason("");
       load();
     } catch (err) {
       setActionMsg(err instanceof Error ? err.message : "Failed");
+      setActionIsError(true);
     }
   }
 
@@ -117,7 +124,11 @@ export default function DetectionsPage() {
       </div>
 
       {actionMsg && (
-        <p className="mb-4 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-2">
+        <p className={`mb-4 text-sm rounded-lg px-4 py-2 border ${
+          actionIsError
+            ? "text-red-700 bg-red-50 border-red-200"
+            : "text-green-700 bg-green-50 border-green-200"
+        }`}>
           {actionMsg}
         </p>
       )}

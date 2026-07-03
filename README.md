@@ -82,10 +82,10 @@ drishti/
 │   │   │   ├── models/       # SQLAlchemy models
 │   │   │   └── main.py
 │   │   └── alembic/          # DB migrations
-│   ├── web/          # Next.js app: public landing page (/) + admin dashboard (/dashboard)
-│   │   ├── app/dashboard/    # Dashboard, map, drones, missions, alerts...
-│   │   ├── components/       # MapView, DroneLoader, LogoIcon, Sidebar
-│   │   └── lib/              # API client, auth
+│   └── web/          # Next.js app: public landing page (/) + admin dashboard (/dashboard)
+│       ├── app/dashboard/    # Dashboard, map, drones, missions, alerts...
+│       ├── components/       # MapView, DroneLoader, LogoIcon, Sidebar
+│       └── lib/              # API client, auth
 ├── iot/              # ESP32 drone firmware
 ├── infra/            # Docker Compose
 └── packages/         # Shared ML packages

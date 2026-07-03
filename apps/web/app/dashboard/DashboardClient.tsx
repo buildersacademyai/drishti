@@ -75,7 +75,7 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
       {/* Critical alert banner */}
       {criticalAlerts > 0 && (
         <Link
-          href="/alerts"
+          href="/dashboard/alerts"
           className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-3 hover:bg-red-100 transition-colors"
         >
           <span className="text-lg">🚨</span>
@@ -91,28 +91,28 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
           label="Missions"
           value={missions.length}
           sub={`${activeMissions} active`}
-          href="/missions"
+          href="/dashboard/missions"
           accent="text-[#1e3a5f]"
         />
         <StatCard
           label="Detections"
           value={detections.length}
           sub={`${highConf} high confidence`}
-          href="/detections"
+          href="/dashboard/detections"
           accent="text-[#f59e0b]"
         />
         <StatCard
           label="Interventions"
           value={interventions.length}
           sub="total logged"
-          href="/interventions"
+          href="/dashboard/interventions"
           accent="text-blue-600"
         />
         <StatCard
           label="Alerts"
           value={activeAlerts}
           sub={activeAlerts === 0 ? "all clear" : "need action"}
-          href="/alerts"
+          href="/dashboard/alerts"
           accent={activeAlerts > 0 ? "text-red-600" : "text-green-600"}
         />
       </div>
@@ -125,10 +125,10 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
             <h2 className="font-semibold text-[#1e3a5f] text-sm">Drone Fleet</h2>
             <span className="text-xs bg-[#1e3a5f]/8 text-[#1e3a5f] font-semibold px-2 py-0.5 rounded-full">{drones.length} total</span>
           </div>
-          <Link href="/drones" className="text-xs text-[#f59e0b] hover:underline font-medium">Manage fleet →</Link>
+          <Link href="/dashboard/drones" className="text-xs text-[#f59e0b] hover:underline font-medium">Manage fleet →</Link>
         </div>
         {drones.length === 0 ? (
-          <p className="px-5 py-6 text-center text-[#6b7280] text-sm">No drones registered. <Link href="/drones" className="text-[#f59e0b] hover:underline">Register one →</Link></p>
+          <p className="px-5 py-6 text-center text-[#6b7280] text-sm">No drones registered. <Link href="/dashboard/drones" className="text-[#f59e0b] hover:underline">Register one →</Link></p>
         ) : (
           <div className="p-4">
             {/* Status breakdown */}
@@ -183,7 +183,7 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
               })}
             </div>
             {drones.length > 4 && (
-              <Link href="/drones" className="block text-center text-xs text-[#f59e0b] hover:underline mt-3 font-medium">
+              <Link href="/dashboard/drones" className="block text-center text-xs text-[#f59e0b] hover:underline mt-3 font-medium">
                 +{drones.length - 4} more drones →
               </Link>
             )}
@@ -197,7 +197,7 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
         <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-[#e5e7eb] flex items-center justify-between">
             <h2 className="font-semibold text-[#1e3a5f] text-sm">Recent Missions</h2>
-            <Link href="/missions" className="text-xs text-[#f59e0b] hover:underline font-medium">View all →</Link>
+            <Link href="/dashboard/missions" className="text-xs text-[#f59e0b] hover:underline font-medium">View all →</Link>
           </div>
           <div className="divide-y divide-[#f3f4f6]">
             {recentMissions.length === 0 ? (
@@ -220,7 +220,7 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
         <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-[#e5e7eb] flex items-center justify-between">
             <h2 className="font-semibold text-[#1e3a5f] text-sm">Recent Detections</h2>
-            <Link href="/detections" className="text-xs text-[#f59e0b] hover:underline font-medium">View all →</Link>
+            <Link href="/dashboard/detections" className="text-xs text-[#f59e0b] hover:underline font-medium">View all →</Link>
           </div>
           <div className="divide-y divide-[#f3f4f6]">
             {recentDetections.length === 0 ? (
@@ -246,7 +246,7 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
       {/* Quick links */}
       <div className="grid grid-cols-3 gap-4">
         <Link
-          href="/map"
+          href="/dashboard/map"
           className="bg-[#1e3a5f] text-white rounded-xl p-5 hover:bg-[#152d4d] transition-colors"
         >
           <div className="text-2xl mb-2">🗺</div>
@@ -254,7 +254,7 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
           <p className="text-white/50 text-xs mt-0.5">Real-time detection view</p>
         </Link>
         <Link
-          href="/predictions"
+          href="/dashboard/predictions"
           className="bg-white border border-[#e5e7eb] rounded-xl p-5 hover:shadow-md transition-shadow"
         >
           <div className="text-2xl mb-2">📊</div>
@@ -262,7 +262,7 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
           <p className="text-[#6b7280] text-xs mt-0.5">ML-based zone risk scores</p>
         </Link>
         <Link
-          href="/interventions"
+          href="/dashboard/interventions"
           className="bg-white border border-[#e5e7eb] rounded-xl p-5 hover:shadow-md transition-shadow"
         >
           <div className="text-2xl mb-2">💧</div>

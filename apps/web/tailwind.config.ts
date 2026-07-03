@@ -7,7 +7,6 @@ const config: Config = {
     // fast-glob misinterprets () in route group dir names; use character classes
     "./app/*.{js,ts,jsx,tsx,mdx}",
     "./app/[a-z]*/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/[(]admin[)]/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {

@@ -5,15 +5,15 @@ import { clearToken } from "@/lib/auth-client";
 import { LogoIcon } from "@/components/LogoIcon";
 
 const NAV = [
-  { href: "/",             icon: "⬡", label: "Dashboard" },
-  { href: "/map",          icon: "🗺", label: "Map" },
-  { href: "/missions",     icon: "🎯", label: "Missions" },
-  { href: "/detections",   icon: "🔬", label: "Detections" },
-  { href: "/interventions",icon: "💧", label: "Interventions" },
-  { href: "/alerts",       icon: "🔔", label: "Alerts" },
-  { href: "/predictions",  icon: "📊", label: "Predictions" },
-  { href: "/drones",       icon: "🚁", label: "Drones" },
-  { href: "/users",        icon: "👥", label: "Users" },
+  { href: "/dashboard",              icon: "⬡", label: "Dashboard" },
+  { href: "/dashboard/map",          icon: "🗺", label: "Map" },
+  { href: "/dashboard/missions",     icon: "🎯", label: "Missions" },
+  { href: "/dashboard/detections",   icon: "🔬", label: "Detections" },
+  { href: "/dashboard/interventions",icon: "💧", label: "Interventions" },
+  { href: "/dashboard/alerts",       icon: "🔔", label: "Alerts" },
+  { href: "/dashboard/predictions",  icon: "📊", label: "Predictions" },
+  { href: "/dashboard/drones",       icon: "🚁", label: "Drones" },
+  { href: "/dashboard/users",        icon: "👥", label: "Users" },
 ];
 
 export function Sidebar() {
@@ -39,7 +39,7 @@ export function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {NAV.map((item) => {
-          const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+          const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}

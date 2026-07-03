@@ -28,6 +28,7 @@ export function Nav() {
         </div>
 
         <div className="hidden md:flex items-center gap-8 text-sm text-white/70">
+          <a href="#scopes" className="hover:text-white transition-colors">Scopes</a>
           <a href="#problem" className="hover:text-white transition-colors">Problem</a>
           <a href="#solution" className="hover:text-white transition-colors">Solution</a>
           <a href="#process" className="hover:text-white transition-colors">Process</a>

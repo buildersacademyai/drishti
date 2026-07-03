@@ -28,28 +28,35 @@ export function DetectionPanel({ detection, interventions, onClose, onStatusChan
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!detection) return null;
 
   const linked = interventions.filter((i) => i.mission_id === detection.mission_id);
 
   async function handleVerify() {
+    setError(null);
     setBusy(true);
     try {
       await verifyDetection(detection!.id);
       onStatusChange?.(detection!.id, "verified");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to verify detection");
     } finally {
       setBusy(false);
     }
   }
 
   async function handleReject() {
+    setError(null);
     setBusy(true);
     try {
       await rejectDetection(detection!.id, reason || undefined);
       onStatusChange?.(detection!.id, "rejected");
       setRejecting(false);
       setReason("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to reject detection");
     } finally {
       setBusy(false);
     }
@@ -118,6 +125,11 @@ export function DetectionPanel({ detection, interventions, onClose, onStatusChan
 
         {detection.status === "pending_review" && (
           <div className="pt-3 border-t border-[#f3f4f6]">
+            {error && (
+              <div className="text-xs text-red-600 mb-3 px-2.5 py-2 bg-red-50 rounded-lg border border-red-100">
+                {error}
+              </div>
+            )}
             {!rejecting ? (
               <div className="flex gap-3">
                 <button

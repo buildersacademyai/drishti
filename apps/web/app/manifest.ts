@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Drishti — Vector Surveillance",
     short_name: "Drishti",
     description: "Satellite-to-drone dengue prevention for climate-vulnerable communities.",
-    start_url: "/map",
+    start_url: "/dashboard/map",
     display: "standalone",
     background_color: "#f8f7f4",
     theme_color: "#1e3a5f",

@@ -8,7 +8,7 @@ const tiers = [
     label: "Satellite",
     title: "Wide-area screening",
     description:
-      "Sentinel-2 imagery scans entire districts weekly at 10m resolution. NDWI water index + change detection flags new standing water automatically. Zero marginal cost. 100% district coverage.",
+      "Sentinel-2 imagery scans entire districts weekly at 10m resolution. NDWI water index + change detection flags target signatures automatically. Zero marginal cost. 100% district coverage.",
     metric: "70–80% fewer drone flights vs. blanket survey",
     color: "from-blue-600 to-indigo-600",
     bg: "bg-blue-500/10",
@@ -21,7 +21,7 @@ const tiers = [
     title: "Drone verification",
     label: "Autonomous UAV",
     description:
-      "Autonomous drones target only satellite-flagged zones, capturing sub-10cm imagery. YOLOv8 AI detects standing water and containers from survey altitude. Nano-shot descent confirms larvae.",
+      "Autonomous drones target only satellite-flagged zones, capturing sub-10cm imagery. AI detects the target signature for the active mission — standing water, thermal anomaly, wildlife presence, flood extent, or drop zone. Close-range descent confirms when needed.",
     metric: "48-hour verification · survey + nano-shot confirmation",
     color: "from-amber-500 to-orange-500",
     bg: "bg-amber-500/10",
@@ -34,7 +34,7 @@ const tiers = [
     label: "Payload swap",
     title: "Precision intervention",
     description:
-      "Confirmed habitats trigger a larvicide mission. Same drone airframe — camera swapped for spray tank in under 5 minutes. Precision application at exact confirmed coordinates only.",
+      "Confirmed targets trigger a response mission. Same drone airframe — payload swapped for the mission (larvicide tank, retardant canister, tracking tag, supply pod) in under 5 minutes. Precision delivery at exact confirmed coordinates only.",
     metric: "60–80% less chemical use vs. blanket spraying",
     color: "from-green-500 to-emerald-600",
     bg: "bg-green-500/10",
@@ -109,7 +109,7 @@ export function Solution() {
             {" "}vs.{" "}
             <span className="text-white/50">2–4 weeks manually</span>
             <span className="mx-4 text-white/20">·</span>
-            Same drone, two payloads, three stages.
+            Same drone, swappable payload, three stages — across five missions.
           </p>
         </motion.div>
       </div>

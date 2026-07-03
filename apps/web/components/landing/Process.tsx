@@ -66,14 +66,18 @@ export function Process() {
             How It Works
           </div>
           <h2 className="text-4xl lg:text-5xl font-black text-white mb-6 max-w-3xl leading-tight">
-            Verify → Validate → Execute.{" "}
-            <span className="gradient-text">Every step automated.</span>
+            Detect → Verify → Respond → Predict.{" "}
+            <span className="gradient-text">One shared pipeline, five missions.</span>
           </h2>
           <p className="text-lg text-white/50 max-w-2xl leading-relaxed">
-            From satellite pixel to spray event — a fully traceable, semi-automated
-            pipeline designed for public health decision makers, not just engineers.
+            The same satellite-to-drone architecture powers every scope. Here&apos;s the
+            pipeline in action for Disease Control — our most mature, field-tested implementation.
           </p>
         </motion.div>
+
+        <div className="text-xs font-bold text-[#f59e0b] uppercase tracking-[0.2em] mb-6">
+          Worked example: Disease Control
+        </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {steps.map((s, i) => (

@@ -51,6 +51,10 @@ export const getDetections = (params?: { detection_type?: string; confidence_min
 };
 export const triggerIntervention = (id: string) =>
   apiPost<{ intervention_mission_id: string }>(`/api/v1/detections/${id}/trigger-intervention`);
+export const verifyDetection = (id: string) =>
+  apiPost<Detection>(`/api/v1/detections/${id}/verify`);
+export const rejectDetection = (id: string, reason?: string) =>
+  apiPost<Detection>(`/api/v1/detections/${id}/reject`, { reason });
 
 // Interventions
 export const getInterventions = () => apiGet<Intervention[]>("/api/v1/interventions");
@@ -88,6 +92,7 @@ export interface Detection {
   detected_at: string | null;
   lat?: number;
   lng?: number;
+  status: string;
 }
 
 export interface Intervention {

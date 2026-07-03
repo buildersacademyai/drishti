@@ -1,10 +1,13 @@
 "use client";
+import { useState } from "react";
 import type { Detection, Intervention } from "@/lib/api";
+import { verifyDetection, rejectDetection } from "@/lib/client-api";
 
 interface Props {
   detection: Detection | null;
   interventions: Intervention[];
   onClose: () => void;
+  onStatusChange?: (id: string, status: string) => void;
 }
 
 const TYPE_COLOR: Record<string, string> = {
@@ -21,10 +24,36 @@ const STATUS_COLOR: Record<string, string> = {
   cancelled: "text-gray-400",
 };
 
-export function DetectionPanel({ detection, interventions, onClose }: Props) {
+export function DetectionPanel({ detection, interventions, onClose, onStatusChange }: Props) {
+  const [rejecting, setRejecting] = useState(false);
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+
   if (!detection) return null;
 
   const linked = interventions.filter((i) => i.mission_id === detection.mission_id);
+
+  async function handleVerify() {
+    setBusy(true);
+    try {
+      await verifyDetection(detection!.id);
+      onStatusChange?.(detection!.id, "verified");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleReject() {
+    setBusy(true);
+    try {
+      await rejectDetection(detection!.id, reason || undefined);
+      onStatusChange?.(detection!.id, "rejected");
+      setRejecting(false);
+      setReason("");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="absolute top-4 left-4 z-20 w-80 bg-white rounded-2xl border border-[#e5e7eb] shadow-xl overflow-hidden">
@@ -86,6 +115,43 @@ export function DetectionPanel({ detection, interventions, onClose }: Props) {
             />
           </div>
         </div>
+
+        {detection.status === "pending_review" && (
+          <div className="pt-3 border-t border-[#f3f4f6]">
+            {!rejecting ? (
+              <div className="flex gap-3">
+                <button
+                  disabled={busy}
+                  onClick={handleVerify}
+                  className="flex-1 text-xs font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg py-2 transition-colors disabled:opacity-50"
+                >
+                  Verify
+                </button>
+                <button
+                  disabled={busy}
+                  onClick={() => setRejecting(true)}
+                  className="flex-1 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg py-2 transition-colors disabled:opacity-50"
+                >
+                  Reject
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Reason (optional)"
+                  className="w-full border border-[#e5e7eb] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1e3a5f]/30"
+                />
+                <div className="flex gap-2">
+                  <button disabled={busy} onClick={handleReject} className="flex-1 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg py-1.5">Confirm reject</button>
+                  <button disabled={busy} onClick={() => { setRejecting(false); setReason(""); }} className="text-xs text-gray-400 px-2">Cancel</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Linked interventions */}
         {linked.length > 0 && (

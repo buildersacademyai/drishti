@@ -1,6 +1,57 @@
 "use client";
 import { motion } from "framer-motion";
 
+const tierCells = [
+  {
+    tier: "Tier 1",
+    icon: "🛰️",
+    title: "Satellite",
+    sub: "Sentinel-2 NDWI",
+    bg: "bg-gradient-to-br from-[#0d2137] to-[#1e3a5f]",
+    divider: "border-r border-white/10",
+    labelColor: "text-[#f59e0b]",
+    accentBorder: "border-blue-500",
+    hoverBorder: "group-hover:border-blue-500/60",
+    hoverShadow: "group-hover:shadow-lg group-hover:shadow-blue-500/20",
+  },
+  {
+    tier: "Tier 2",
+    icon: "🚁",
+    title: "Drone Survey",
+    sub: "YOLOv8 detection",
+    bg: "bg-gradient-to-br from-[#0d2137] to-[#0f3050]",
+    divider: "",
+    labelColor: "text-[#f59e0b]",
+    accentBorder: "border-amber-500",
+    hoverBorder: "group-hover:border-amber-500/60",
+    hoverShadow: "group-hover:shadow-lg group-hover:shadow-amber-500/20",
+  },
+  {
+    tier: "Tier 2b",
+    icon: "🔬",
+    title: "Nano-Shot",
+    sub: "EfficientNet confirm",
+    bg: "bg-gradient-to-br from-[#0f3050] to-[#0d2137]",
+    divider: "border-t border-r border-white/10",
+    labelColor: "text-[#f59e0b]",
+    accentBorder: "border-amber-500",
+    hoverBorder: "group-hover:border-amber-500/60",
+    hoverShadow: "group-hover:shadow-lg group-hover:shadow-amber-500/20",
+  },
+  {
+    tier: "Tier 3",
+    icon: "💧",
+    title: "Intervention",
+    sub: "Precision response",
+    bg: "bg-gradient-to-br from-[#0f3050] to-[#1a3a1a]",
+    divider: "border-t border-white/10",
+    labelColor: "text-[#22c55e]",
+    accentBorder: "border-green-500",
+    hoverBorder: "group-hover:border-green-500/60",
+    hoverShadow: "group-hover:shadow-lg group-hover:shadow-green-500/20",
+  },
+];
+
 export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-[#050d1a]">
@@ -75,7 +126,7 @@ export function Hero() {
                 See how it works
               </a>
               <a
-                href="https://github.com/drishti-platform"
+                href="https://github.com/buildersacademyai/drishti"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 py-3 rounded-xl border border-white/20 text-white font-semibold hover:bg-white/10 transition-colors text-sm"
@@ -114,38 +165,44 @@ export function Hero() {
             <div className="relative">
               <div className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
                 <div className="grid grid-cols-2">
-                  <div className="aspect-square bg-gradient-to-br from-[#0d2137] to-[#1e3a5f] flex flex-col items-center justify-center gap-3 p-6 border-r border-white/10">
-                    <div className="text-4xl">🛰️</div>
-                    <div className="text-center">
-                      <div className="text-xs font-bold text-[#f59e0b] uppercase tracking-wider mb-1">Tier 1</div>
-                      <div className="text-white font-semibold text-sm">Satellite</div>
-                      <div className="text-white/40 text-xs mt-1">Sentinel-2 NDWI</div>
-                    </div>
-                  </div>
-                  <div className="aspect-square bg-gradient-to-br from-[#0d2137] to-[#0f3050] flex flex-col items-center justify-center gap-3 p-6">
-                    <div className="text-4xl">🚁</div>
-                    <div className="text-center">
-                      <div className="text-xs font-bold text-[#f59e0b] uppercase tracking-wider mb-1">Tier 2</div>
-                      <div className="text-white font-semibold text-sm">Drone Survey</div>
-                      <div className="text-white/40 text-xs mt-1">YOLOv8 detection</div>
-                    </div>
-                  </div>
-                  <div className="aspect-square bg-gradient-to-br from-[#0f3050] to-[#0d2137] flex flex-col items-center justify-center gap-3 p-6 border-t border-r border-white/10">
-                    <div className="text-4xl">🔬</div>
-                    <div className="text-center">
-                      <div className="text-xs font-bold text-[#f59e0b] uppercase tracking-wider mb-1">Tier 2b</div>
-                      <div className="text-white font-semibold text-sm">Nano-Shot</div>
-                      <div className="text-white/40 text-xs mt-1">EfficientNet confirm</div>
-                    </div>
-                  </div>
-                  <div className="aspect-square bg-gradient-to-br from-[#0f3050] to-[#1a3a1a] flex flex-col items-center justify-center gap-3 p-6 border-t border-white/10">
-                    <div className="text-4xl">💧</div>
-                    <div className="text-center">
-                      <div className="text-xs font-bold text-[#22c55e] uppercase tracking-wider mb-1">Tier 3</div>
-                      <div className="text-white font-semibold text-sm">Intervention</div>
-                      <div className="text-white/40 text-xs mt-1">Precision response</div>
-                    </div>
-                  </div>
+                  {tierCells.map((t, i) => (
+                    <motion.div
+                      key={t.tier}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
+                      className={`relative group aspect-square ${t.bg} flex flex-col items-center justify-center gap-3 p-6 ${t.divider} overflow-hidden`}
+                    >
+                      {/* Ambient pulse overlay */}
+                      <motion.div
+                        className={`absolute -inset-px rounded-none border-2 ${t.accentBorder} pointer-events-none`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0, 1, 0] }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          repeatDelay: 1.8,
+                          delay: 1.1 + i * 0.6,
+                          ease: "easeInOut",
+                        }}
+                      />
+                      {/* Hover glow */}
+                      <div
+                        className={`absolute -inset-px rounded-none border-2 border-transparent ${t.hoverBorder} ${t.hoverShadow} transition-all duration-300 pointer-events-none`}
+                      />
+
+                      <div className="text-4xl transition-transform duration-300 group-hover:scale-110">
+                        {t.icon}
+                      </div>
+                      <div className="text-center">
+                        <div className={`text-xs font-bold ${t.labelColor} uppercase tracking-wider mb-1`}>
+                          {t.tier}
+                        </div>
+                        <div className="text-white font-semibold text-sm">{t.title}</div>
+                        <div className="text-white/40 text-xs mt-1">{t.sub}</div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
               {/* Floating badge */}

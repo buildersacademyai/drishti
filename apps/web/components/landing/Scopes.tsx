@@ -6,7 +6,7 @@ const scopes = [
     icon: "🔬",
     title: "Disease Control",
     description:
-      "Satellite screens for standing water, drones confirm larvae, precision larvicide response.",
+      "Satellite screens for standing water, drones confirm breeding sites, precision spray response.",
     status: "active",
   },
   {

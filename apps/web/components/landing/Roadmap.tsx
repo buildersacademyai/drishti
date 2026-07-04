@@ -46,6 +46,7 @@ const milestones = [
       "Multi-country adaptation guide",
       "Aquaculture monitoring vertical",
       "Open-source community in 5+ countries",
+      "Fire Control and Flood Monitoring pilot programs",
     ],
   },
 ];
@@ -74,8 +75,9 @@ export function Roadmap() {
             <span className="gradient-text">Scale.</span>
           </h2>
           <p className="text-lg text-white/50 max-w-2xl leading-relaxed">
-            A disciplined 12-month path to measurable impact in Nepal, designed to
-            expand to any country with vector-borne disease burden.
+            A disciplined 12-month path to measurable impact, starting with Disease Control
+            in Nepal — designed to expand across five response domains and to any country
+            facing these hazards.
           </p>
         </motion.div>
 

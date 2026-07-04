@@ -11,8 +11,9 @@ export function Footer() {
               <span className="font-bold text-lg text-white">Drishti</span>
             </div>
             <p className="text-white/40 text-sm leading-relaxed max-w-xs">
-              Open-source AI platform for satellite-to-drone vector-borne disease
-              surveillance. Built in Kathmandu. Runs anywhere.
+              Open-source AI platform for satellite-to-drone disease control, fire
+              response, wildlife protection, flood monitoring, and emergency delivery.
+              Built in Kathmandu. Runs anywhere.
             </p>
             <div className="mt-4 text-xs text-white/30">
               A product of{" "}
@@ -30,9 +31,9 @@ export function Footer() {
           <div>
             <div className="text-xs font-bold text-white/40 uppercase tracking-wider mb-4">Platform</div>
             <div className="space-y-2 text-sm text-white/50">
+              <a href="#scopes" className="block hover:text-white transition-colors">Scopes</a>
               <a href="#solution" className="block hover:text-white transition-colors">Solution</a>
               <a href="#process" className="block hover:text-white transition-colors">Process</a>
-              <a href="#technology" className="block hover:text-white transition-colors">Technology</a>
               <a href="#roadmap" className="block hover:text-white transition-colors">Roadmap</a>
             </div>
           </div>

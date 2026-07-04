@@ -28,8 +28,8 @@ export function Impact() {
             <span className="gradient-text">matter.</span>
           </h2>
           <p className="text-lg text-white/50 max-w-2xl leading-relaxed">
-            Drishti is designed for measurable outcomes. Every metric traces to a specific
-            design decision. We measure child protection, not dashboard clicks.
+            Drishti is designed for measurable outcomes across every mission. These figures
+            reflect our Disease Control pilot — the first scope in active deployment.
           </p>
         </motion.div>
 
@@ -68,10 +68,10 @@ export function Impact() {
               "Satellite data (free)",
               "→ Candidate zones ranked",
               "→ Drone validates",
-              "→ Larvae confirmed",
-              "→ Precision spray",
-              "→ Reduced transmission",
-              "→ Fewer infected children",
+              "→ Target confirmed",
+              "→ Precision response",
+              "→ Reduced impact",
+              "→ Lives and resources protected",
             ].map((step, i) => (
               <span
                 key={step}

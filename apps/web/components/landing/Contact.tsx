@@ -40,9 +40,10 @@ export function Contact() {
               <span style={{ color: "#f59e0b" }}>Build with us.</span>
             </h2>
             <p className="text-lg text-[#6b7280] leading-relaxed mb-8">
-              Are you a public health authority, NGO, research institution, or developer
-              working on climate-health challenges? We want to hear from you — especially
-              if you operate in a region where vector-borne disease burden is growing.
+              Are you a public health authority, emergency response agency, NGO, research
+              institution, or developer working on climate-response challenges? We want to
+              hear from you — especially if you operate in a region facing disease,
+              wildfire, flooding, wildlife, or emergency-logistics challenges.
             </p>
 
             <div className="space-y-3">

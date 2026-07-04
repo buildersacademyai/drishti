@@ -71,7 +71,7 @@ export function Process() {
           </h2>
           <p className="text-lg text-white/50 max-w-2xl leading-relaxed">
             The same satellite-to-drone architecture powers every scope. Here&apos;s the
-            pipeline in action for Disease Control — our most mature, field-tested implementation.
+            pipeline in action for Disease Control — our most mature, furthest-along implementation.
           </p>
         </motion.div>
 

@@ -29,7 +29,7 @@ export function Impact() {
           </h2>
           <p className="text-lg text-white/50 max-w-2xl leading-relaxed">
             Drishti is designed for measurable outcomes across every mission. These figures
-            reflect our Disease Control pilot — the first scope in active deployment.
+            reflect our Disease Control pilot — the first scope in active development.
           </p>
         </motion.div>
 

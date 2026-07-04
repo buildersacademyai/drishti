@@ -5,14 +5,14 @@ const channels = [
   {
     icon: "📧",
     title: "Email us",
-    value: "hello@drishti.health",
-    href: "mailto:hello@drishti.health",
+    value: "contact@buildersacademy.ai",
+    href: "mailto:contact@buildersacademy.ai",
   },
   {
     icon: "💻",
     title: "GitHub",
-    value: "github.com/drishti-platform",
-    href: "https://github.com/drishti-platform",
+    value: "github.com/buildersacademyai/drishti",
+    href: "https://github.com/buildersacademyai/drishti",
   },
   {
     icon: "🌐",

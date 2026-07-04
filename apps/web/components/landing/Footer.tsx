@@ -42,18 +42,18 @@ export function Footer() {
             <div className="text-xs font-bold text-white/40 uppercase tracking-wider mb-4">Resources</div>
             <div className="space-y-2 text-sm text-white/50">
               <a
-                href="https://github.com/drishti-platform"
+                href="https://github.com/buildersacademyai/drishti"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block hover:text-white transition-colors"
               >
                 GitHub
               </a>
-              <a href="mailto:hello@drishti.health" className="block hover:text-white transition-colors">
+              <a href="mailto:contact@buildersacademy.ai" className="block hover:text-white transition-colors">
                 Contact
               </a>
               <a
-                href="https://github.com/drishti-platform/drishti/blob/main/LICENSE"
+                href="https://github.com/buildersacademyai/drishti/blob/main/LICENSE"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block hover:text-white transition-colors"

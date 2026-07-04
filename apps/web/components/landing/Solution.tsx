@@ -35,7 +35,7 @@ const tiers = [
     title: "Precision intervention",
     description:
       "Confirmed targets trigger a response mission. Same drone airframe — payload swapped for the mission (larvicide tank, retardant canister, tracking tag, supply pod) in under 5 minutes. Precision delivery at exact confirmed coordinates only.",
-    metric: "60–80% less chemical use vs. blanket spraying",
+    metric: "60–80% less response material vs. blanket application",
     color: "from-green-500 to-emerald-600",
     bg: "bg-green-500/10",
     border: "border-green-500/20",
@@ -64,7 +64,7 @@ export function Solution() {
           <p className="text-lg text-[#6b7280] max-w-2xl leading-relaxed">
             Each stage costs less and moves faster than the one before. Satellite screens
             everything. Drone validates what matters. Intervention targets only what is
-            confirmed — with a full georeferenced audit trail from pixel to spray.
+            confirmed — with a full georeferenced audit trail from pixel to response.
           </p>
         </motion.div>
 

@@ -1,56 +1,62 @@
 "use client";
 import { motion } from "framer-motion";
 
-const tierCells = [
+// Node centers trace a descending path (400x400 viewBox) — satellite highest,
+// intervention lowest, echoing the headline's "space to ground" arc. Straight
+// segments (not a smoothed curve) so the traveling pulse dot's motion matches
+// the drawn line exactly.
+const pipelineNodes = [
   {
     tier: "Tier 1",
     icon: "🛰️",
     title: "Satellite",
-    sub: "Sentinel-2 NDWI",
-    bg: "bg-gradient-to-br from-[#0d2137] to-[#1e3a5f]",
-    divider: "border-r border-white/10",
-    labelColor: "text-[#f59e0b]",
-    accentBorder: "border-blue-500",
-    hoverBorder: "group-hover:border-blue-500/60",
-    hoverShadow: "group-hover:shadow-lg group-hover:shadow-blue-500/20",
+    cx: 90,
+    cy: 80,
+    stroke: "stroke-blue-500",
+    strokeHover: "group-hover:stroke-blue-300",
+    fill: "fill-blue-500/10",
+    glow: "drop-shadow-[0_0_0px_rgba(59,130,246,0)] group-hover:drop-shadow-[0_0_14px_rgba(59,130,246,0.7)]",
+    labelColor: "fill-[#f59e0b]",
   },
   {
     tier: "Tier 2",
     icon: "🚁",
     title: "Drone Survey",
-    sub: "YOLOv8 detection",
-    bg: "bg-gradient-to-br from-[#0d2137] to-[#0f3050]",
-    divider: "",
-    labelColor: "text-[#f59e0b]",
-    accentBorder: "border-amber-500",
-    hoverBorder: "group-hover:border-amber-500/60",
-    hoverShadow: "group-hover:shadow-lg group-hover:shadow-amber-500/20",
+    cx: 280,
+    cy: 140,
+    stroke: "stroke-amber-500",
+    strokeHover: "group-hover:stroke-amber-300",
+    fill: "fill-amber-500/10",
+    glow: "drop-shadow-[0_0_0px_rgba(245,158,11,0)] group-hover:drop-shadow-[0_0_14px_rgba(245,158,11,0.7)]",
+    labelColor: "fill-[#f59e0b]",
   },
   {
     tier: "Tier 2b",
     icon: "🔬",
     title: "Nano-Shot",
-    sub: "EfficientNet confirm",
-    bg: "bg-gradient-to-br from-[#0f3050] to-[#0d2137]",
-    divider: "border-t border-r border-white/10",
-    labelColor: "text-[#f59e0b]",
-    accentBorder: "border-amber-500",
-    hoverBorder: "group-hover:border-amber-500/60",
-    hoverShadow: "group-hover:shadow-lg group-hover:shadow-amber-500/20",
+    cx: 150,
+    cy: 260,
+    stroke: "stroke-amber-500",
+    strokeHover: "group-hover:stroke-amber-300",
+    fill: "fill-amber-500/10",
+    glow: "drop-shadow-[0_0_0px_rgba(245,158,11,0)] group-hover:drop-shadow-[0_0_14px_rgba(245,158,11,0.7)]",
+    labelColor: "fill-[#f59e0b]",
   },
   {
     tier: "Tier 3",
     icon: "💧",
     title: "Intervention",
-    sub: "Precision response",
-    bg: "bg-gradient-to-br from-[#0f3050] to-[#1a3a1a]",
-    divider: "border-t border-white/10",
-    labelColor: "text-[#22c55e]",
-    accentBorder: "border-green-500",
-    hoverBorder: "group-hover:border-green-500/60",
-    hoverShadow: "group-hover:shadow-lg group-hover:shadow-green-500/20",
+    cx: 310,
+    cy: 316,
+    stroke: "stroke-green-500",
+    strokeHover: "group-hover:stroke-green-300",
+    fill: "fill-green-500/10",
+    glow: "drop-shadow-[0_0_0px_rgba(34,197,94,0)] group-hover:drop-shadow-[0_0_14px_rgba(34,197,94,0.7)]",
+    labelColor: "fill-[#22c55e]",
   },
 ];
+
+const pipelinePath = pipelineNodes.map((n) => `${n.cx},${n.cy}`).join(" L ");
 
 export function Hero() {
   return (
@@ -163,47 +169,92 @@ export function Hero() {
             className="hidden lg:block"
           >
             <div className="relative">
-              <div className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-                <div className="grid grid-cols-2">
-                  {tierCells.map((t, i) => (
-                    <motion.div
-                      key={t.tier}
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
-                      className={`relative group aspect-square ${t.bg} flex flex-col items-center justify-center gap-3 p-6 ${t.divider} overflow-hidden`}
-                    >
-                      {/* Ambient pulse overlay */}
-                      <motion.div
-                        className={`absolute -inset-px rounded-none border-2 ${t.accentBorder} pointer-events-none`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: [0, 1, 0] }}
-                        transition={{
-                          duration: 0.6,
-                          repeat: Infinity,
-                          repeatDelay: 1.8,
-                          delay: 1.1 + i * 0.6,
-                          ease: "easeInOut",
-                        }}
-                      />
-                      {/* Hover glow */}
-                      <div
-                        className={`absolute -inset-px rounded-none border-2 border-transparent ${t.hoverBorder} ${t.hoverShadow} transition-all duration-300 pointer-events-none`}
-                      />
+              <div className="relative aspect-square rounded-2xl border border-white/10 shadow-2xl bg-gradient-to-br from-[#0d2137] to-[#050d1a] p-6">
+                <svg viewBox="0 0 400 400" className="w-full h-full overflow-visible">
+                  {/* Connecting path — descends node to node, matches the dot's motion below */}
+                  <motion.path
+                    d={`M ${pipelinePath}`}
+                    fill="none"
+                    stroke="rgba(255,255,255,0.18)"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    transition={{ duration: 1.1, delay: 0.3, ease: "easeInOut" }}
+                  />
 
-                      <div className="text-4xl transition-transform duration-300 group-hover:scale-110">
-                        {t.icon}
-                      </div>
-                      <div className="text-center">
-                        <div className={`text-xs font-bold ${t.labelColor} uppercase tracking-wider mb-1`}>
-                          {t.tier}
-                        </div>
-                        <div className="text-white font-semibold text-sm">{t.title}</div>
-                        <div className="text-white/40 text-xs mt-1">{t.sub}</div>
-                      </div>
-                    </motion.div>
+                  {/* Traveling pulse — visits each node in sequence, on loop */}
+                  <motion.circle
+                    r={5}
+                    className="fill-white"
+                    initial={{ opacity: 0, cx: pipelineNodes[0].cx, cy: pipelineNodes[0].cy }}
+                    animate={{
+                      opacity: [1, 1, 1, 1, 0],
+                      cx: pipelineNodes.map((n) => n.cx).concat(pipelineNodes[0].cx),
+                      cy: pipelineNodes.map((n) => n.cy).concat(pipelineNodes[0].cy),
+                    }}
+                    transition={{
+                      duration: 3.6,
+                      delay: 1.6,
+                      repeat: Infinity,
+                      repeatDelay: 0.6,
+                      ease: "easeInOut",
+                      times: [0, 0.28, 0.56, 0.84, 1],
+                    }}
+                    style={{ filter: "drop-shadow(0 0 6px rgba(255,255,255,0.9))" }}
+                  />
+
+                  {/* Nodes */}
+                  {pipelineNodes.map((n, i) => (
+                    <motion.g
+                      key={n.tier}
+                      className="group cursor-pointer"
+                      initial={{ opacity: 0, scale: 0.6 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.4, delay: 0.5 + i * 0.18 }}
+                      style={{ transformOrigin: `${n.cx}px ${n.cy}px` }}
+                    >
+                      <circle
+                        cx={n.cx}
+                        cy={n.cy}
+                        r={34}
+                        className={`${n.fill} ${n.stroke} ${n.strokeHover} ${n.glow} transition-all duration-300`}
+                        strokeWidth={2}
+                      />
+                      <text
+                        x={n.cx}
+                        y={n.cy + 8}
+                        textAnchor="middle"
+                        fontSize={26}
+                        className="select-none"
+                      >
+                        {n.icon}
+                      </text>
+                      <text
+                        x={n.cx}
+                        y={n.cy + 54}
+                        textAnchor="middle"
+                        fontSize={9}
+                        fontWeight={700}
+                        letterSpacing={1}
+                        className={`${n.labelColor} uppercase select-none`}
+                      >
+                        {n.tier}
+                      </text>
+                      <text
+                        x={n.cx}
+                        y={n.cy + 67}
+                        textAnchor="middle"
+                        fontSize={12}
+                        fontWeight={600}
+                        className="fill-white select-none"
+                      >
+                        {n.title}
+                      </text>
+                    </motion.g>
                   ))}
-                </div>
+                </svg>
               </div>
               {/* Floating badge */}
               <div className="absolute -bottom-4 -right-4 glass rounded-xl px-4 py-3 shadow-xl">

@@ -1,17 +1,19 @@
-# Drishti — AI-Powered Climate-Health Surveillance Platform
+# Drishti — AI-Powered Climate & Emergency Response Platform
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![UNICEF Venture Fund](https://img.shields.io/badge/UNICEF%20Venture%20Fund-Applicant%202026-009edb)](https://unicefinnovationfund.org)
 
 > **See the threat. Before it sees you.**
 
-Drishti (दृष्टि — "vision" in Nepali/Sanskrit) is an open-source AI platform that combines satellite imagery, autonomous drones, and machine learning to detect climate-health threats — starting with malaria and dengue vector surveillance in Nepal's Terai lowlands.
+Drishti (दृष्टि — "vision" in Nepali/Sanskrit) is an open-source AI platform that combines satellite imagery, autonomous drones, and machine learning to detect climate and emergency threats — disease outbreaks, wildfires, floods, wildlife loss — across vulnerable regions. Same hardware stack, modular AI models per domain. First deployment: malaria and dengue vector surveillance in Nepal's Terai lowlands.
 
 ---
 
 ## The Problem
 
-Nepal's Terai districts carry the highest malaria and dengue burden in the country. Surveillance is manual, reactive, and slow. By the time a case is reported, mosquito breeding has been underway for weeks. Dense forest, flooded plains, and dispersed villages make comprehensive ground surveillance impossible. Climate change is accelerating the problem — erratic monsoons create new stagnant water bodies faster than any field team can map.
+Climate change and emergencies are outpacing manual response. Warming temperatures, shifting weather patterns, and growing climate volatility are creating new risks faster than ground-based teams can track them.
+
+Nepal's Terai districts, Drishti's first deployment, carry the highest malaria and dengue burden in the country. Surveillance is manual, reactive, and slow. By the time a case is reported, mosquito breeding has been underway for weeks. Dense forest, flooded plains, and dispersed villages make comprehensive ground surveillance impossible — and erratic monsoons create new stagnant water bodies faster than any field team can map.
 
 ---
 
@@ -176,6 +178,18 @@ Full API docs at `http://localhost:8000/docs` (Swagger UI)
 **Phase 3 (Months 5–6):** Live pilot across 3 high-burden Terai districts
 
 **Phase 4 (Months 7–12):** Measure intervention response time (<48hrs target), scale to 8 districts, begin dengue-specific model training
+
+---
+
+## Team
+
+| Name | Role | Focus |
+|---|---|---|
+| Binaya Tripathi | Founder | Vision · Strategy · Partnerships |
+| Dipak Sharma | Project Lead | Backend · ML · Infrastructure · Drone Systems |
+| Rishav Subedi | Drone Developer | UAV Hardware · Flight Firmware · Autonomous Systems |
+
+Built by [BuildersAcademy.ai](https://buildersacademy.ai), with field partnership from Nepal MoHP (public health/VBD surveillance) and an agricultural drone operator (UAV operations, Chitwan).
 
 ---
 

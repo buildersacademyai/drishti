@@ -1,14 +1,34 @@
 "use client";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 const members = [
   {
+    name: "Binaya Tripathi",
+    role: "Founder",
+    org: "BuildersAcademy.ai",
+    focus: "Vision · Strategy · Partnerships",
+    bio: "Founded BuildersAcademy.ai and set the vision for Drishti — turning satellite and drone data into actionable public health intervention.",
+    accent: true,
+    photo: 0,
+  },
+  {
     name: "Dipak Sharma",
-    role: "Lead Engineer & Founder",
+    role: "Project Lead",
     org: "BuildersAcademy.ai",
     focus: "Backend · ML · Infrastructure · Drone Systems",
     bio: "Building the full satellite-to-drone-to-prediction pipeline. Leads technical architecture, model development, and platform infrastructure at BuildersAcademy.ai.",
-    accent: true,
+    accent: false,
+    photo: 1,
+  },
+  {
+    name: "Rishav Subedi",
+    role: "Drone Developer",
+    org: "BuildersAcademy.ai",
+    focus: "UAV Hardware · Flight Firmware · Autonomous Systems",
+    bio: "Designs and builds the drone hardware and flight firmware powering low-altitude verification and intervention missions at BuildersAcademy.ai.",
+    accent: false,
+    photo: 2,
   },
   {
     name: "Field Partner",
@@ -17,16 +37,37 @@ const members = [
     focus: "Epidemiology · VBD Surveillance · Bagmati Province",
     bio: "Domain expertise on dengue surveillance protocols, EDCD reporting systems, and community health worker networks across Nepal's mid-hill districts.",
     accent: false,
-  },
-  {
-    name: "Drone Partner",
-    role: "UAV Operations Lead",
-    org: "Agricultural Drone Operator",
-    focus: "UAV · Precision Spray · Chitwan Operations",
-    bio: "Existing spray-drone fleet operating in Chitwan. Dual-use hardware reuse for both verification and intervention — no new airframe required.",
-    accent: false,
+    photo: 3,
   },
 ];
+
+const PHOTO_EXTENSIONS = ["jpg", "jpeg", "png"];
+
+function Avatar({ photo, name, accent }: { photo: number; name: string; accent: boolean }) {
+  const [extIdx, setExtIdx] = useState(0);
+  const [failed, setFailed] = useState(false);
+
+  return (
+    <div
+      className={`relative w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center text-xl font-black mb-6 ${
+        accent ? "bg-[#f59e0b] text-[#050d1a]" : "bg-[#1e3a5f]/10 text-[#1e3a5f]"
+      }`}
+    >
+      <span>{name.charAt(0)}</span>
+      {!failed && (
+        <img
+          src={`/${photo}.${PHOTO_EXTENSIONS[extIdx]}`}
+          alt={name}
+          className="absolute inset-0 w-full h-full object-cover"
+          onError={() => {
+            if (extIdx < PHOTO_EXTENSIONS.length - 1) setExtIdx(extIdx + 1);
+            else setFailed(true);
+          }}
+        />
+      )}
+    </div>
+  );
+}
 
 export function Team() {
   return (
@@ -51,7 +92,7 @@ export function Team() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {members.map((m, i) => (
             <motion.div
               key={m.name}
@@ -65,15 +106,7 @@ export function Team() {
                   : "bg-white border-[#e5e7eb]"
               }`}
             >
-              <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black mb-6 ${
-                  m.accent
-                    ? "bg-[#f59e0b] text-[#050d1a]"
-                    : "bg-[#1e3a5f]/10 text-[#1e3a5f]"
-                }`}
-              >
-                {m.name.charAt(0)}
-              </div>
+              <Avatar photo={m.photo} name={m.name} accent={m.accent} />
 
               <div className={`text-xs font-bold uppercase tracking-wider mb-1 ${m.accent ? "text-[#f59e0b]" : "text-[#1e3a5f]"}`}>
                 {m.org}

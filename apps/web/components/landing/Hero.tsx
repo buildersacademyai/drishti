@@ -1,63 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
 
-// Node centers trace a descending path (400x400 viewBox) — satellite highest,
-// intervention lowest, echoing the headline's "space to ground" arc. Straight
-// segments (not a smoothed curve) so the traveling pulse dot's motion matches
-// the drawn line exactly.
-const pipelineNodes = [
-  {
-    tier: "Tier 1",
-    icon: "🛰️",
-    title: "Satellite",
-    cx: 90,
-    cy: 80,
-    stroke: "stroke-blue-500",
-    strokeHover: "group-hover:stroke-blue-300",
-    fill: "fill-blue-500/10",
-    glow: "drop-shadow-[0_0_0px_rgba(59,130,246,0)] group-hover:drop-shadow-[0_0_14px_rgba(59,130,246,0.7)]",
-    labelColor: "fill-[#f59e0b]",
-  },
-  {
-    tier: "Tier 2",
-    icon: "🚁",
-    title: "Drone Survey",
-    cx: 280,
-    cy: 140,
-    stroke: "stroke-amber-500",
-    strokeHover: "group-hover:stroke-amber-300",
-    fill: "fill-amber-500/10",
-    glow: "drop-shadow-[0_0_0px_rgba(245,158,11,0)] group-hover:drop-shadow-[0_0_14px_rgba(245,158,11,0.7)]",
-    labelColor: "fill-[#f59e0b]",
-  },
-  {
-    tier: "Tier 2b",
-    icon: "🔬",
-    title: "Nano-Shot",
-    cx: 150,
-    cy: 260,
-    stroke: "stroke-amber-500",
-    strokeHover: "group-hover:stroke-amber-300",
-    fill: "fill-amber-500/10",
-    glow: "drop-shadow-[0_0_0px_rgba(245,158,11,0)] group-hover:drop-shadow-[0_0_14px_rgba(245,158,11,0.7)]",
-    labelColor: "fill-[#f59e0b]",
-  },
-  {
-    tier: "Tier 3",
-    icon: "💧",
-    title: "Intervention",
-    cx: 310,
-    cy: 316,
-    stroke: "stroke-green-500",
-    strokeHover: "group-hover:stroke-green-300",
-    fill: "fill-green-500/10",
-    glow: "drop-shadow-[0_0_0px_rgba(34,197,94,0)] group-hover:drop-shadow-[0_0_14px_rgba(34,197,94,0.7)]",
-    labelColor: "fill-[#22c55e]",
-  },
-];
-
-const pipelinePath = pipelineNodes.map((n) => `${n.cx},${n.cy}`).join(" L ");
-
 export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-[#050d1a]">
@@ -79,7 +22,7 @@ export function Hero() {
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-32">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-28 items-center">
           {/* Left — copy */}
           <div>
             <motion.div
@@ -161,106 +104,36 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* Right — visual placeholder */}
+          {/* Right — drone visual */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
             className="hidden lg:block"
           >
-            <div className="relative">
-              <div className="relative aspect-square rounded-2xl border border-white/10 shadow-2xl bg-gradient-to-br from-[#0d2137] to-[#050d1a] p-6">
-                <svg viewBox="0 0 400 400" className="w-full h-full overflow-visible">
-                  {/* Connecting path — descends node to node, matches the dot's motion below */}
-                  <motion.path
-                    d={`M ${pipelinePath}`}
-                    fill="none"
-                    stroke="rgba(255,255,255,0.18)"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 1 }}
-                    transition={{ duration: 1.1, delay: 0.3, ease: "easeInOut" }}
-                  />
+            <div className="relative aspect-square scale-[1.75]">
+              {/* Trailing pair — small, faded, blurred, behind the lead; animate in from further/smaller to simulate approach */}
+              <motion.img
+                src="/drone.svg"
+                alt=""
+                aria-hidden="true"
+                className="absolute z-0 w-[18%] h-[18%] object-contain top-4 left-8 rotate-[-8deg]"
+                initial={{ opacity: 0, scale: 0.5, x: -30, y: -20, filter: "blur(3px)" }}
+                animate={{ opacity: 0.4, scale: 1, x: 0, y: 0, filter: "blur(1px)" }}
+                transition={{ duration: 0.9, delay: 0.4, ease: "easeOut" }}
+              />
+              <motion.img
+                src="/drone.svg"
+                alt=""
+                aria-hidden="true"
+                className="absolute z-0 w-[18%] h-[18%] object-contain top-4 right-8 rotate-[8deg]"
+                initial={{ opacity: 0, scale: 0.5, x: 30, y: -20, filter: "blur(3px)" }}
+                animate={{ opacity: 0.4, scale: 1, x: 0, y: 0, filter: "blur(1px)" }}
+                transition={{ duration: 0.9, delay: 0.55, ease: "easeOut" }}
+              />
 
-                  {/* Traveling pulse — visits each node in sequence, on loop */}
-                  <motion.circle
-                    r={5}
-                    className="fill-white"
-                    initial={{ opacity: 0, cx: pipelineNodes[0].cx, cy: pipelineNodes[0].cy }}
-                    animate={{
-                      opacity: [1, 1, 1, 1, 0],
-                      cx: pipelineNodes.map((n) => n.cx).concat(pipelineNodes[0].cx),
-                      cy: pipelineNodes.map((n) => n.cy).concat(pipelineNodes[0].cy),
-                    }}
-                    transition={{
-                      duration: 3.6,
-                      delay: 1.6,
-                      repeat: Infinity,
-                      repeatDelay: 0.6,
-                      ease: "easeInOut",
-                      times: [0, 0.28, 0.56, 0.84, 1],
-                    }}
-                    style={{ filter: "drop-shadow(0 0 6px rgba(255,255,255,0.9))" }}
-                  />
-
-                  {/* Nodes */}
-                  {pipelineNodes.map((n, i) => (
-                    <motion.g
-                      key={n.tier}
-                      className="group cursor-pointer"
-                      initial={{ opacity: 0, scale: 0.6 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.4, delay: 0.5 + i * 0.18 }}
-                      style={{ transformOrigin: `${n.cx}px ${n.cy}px` }}
-                    >
-                      <circle
-                        cx={n.cx}
-                        cy={n.cy}
-                        r={34}
-                        className={`${n.fill} ${n.stroke} ${n.strokeHover} ${n.glow} transition-all duration-300`}
-                        strokeWidth={2}
-                      />
-                      <text
-                        x={n.cx}
-                        y={n.cy + 8}
-                        textAnchor="middle"
-                        fontSize={26}
-                        className="select-none"
-                      >
-                        {n.icon}
-                      </text>
-                      <text
-                        x={n.cx}
-                        y={n.cy + 54}
-                        textAnchor="middle"
-                        fontSize={9}
-                        fontWeight={700}
-                        letterSpacing={1}
-                        className={`${n.labelColor} uppercase select-none`}
-                      >
-                        {n.tier}
-                      </text>
-                      <text
-                        x={n.cx}
-                        y={n.cy + 67}
-                        textAnchor="middle"
-                        fontSize={12}
-                        fontWeight={600}
-                        className="fill-white select-none"
-                      >
-                        {n.title}
-                      </text>
-                    </motion.g>
-                  ))}
-                </svg>
-              </div>
-              {/* Floating badge */}
-              <div className="absolute -bottom-4 -right-4 glass rounded-xl px-4 py-3 shadow-xl">
-                <div className="text-white/70 text-xs mb-0.5">Cycle time</div>
-                <div className="text-white font-bold text-sm">4–5 days vs. 2–4 <span className="text-white/40">weeks</span></div>
-              </div>
+              {/* Lead drone */}
+              <img src="/drone.svg" alt="Drishti drone" className="relative z-10 w-full h-full object-contain" />
             </div>
           </motion.div>
         </div>

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 const metrics = [
   { value: "~300,000", label: "Children under 15 — Year 1 protection target", accent: true },
   { value: "2 districts", label: "Nepal pilot geography (Chitwan + 1 mid-hill)", accent: false },
-  { value: "4–5 days", label: "End-to-end cycle vs. 2–4 weeks manually", accent: false },
+  { value: "Instant", label: "End-to-end cycle vs. 2–4 weeks manually", accent: false },
   { value: "70–80%", label: "Reduction in drone flight hours vs. blanket survey", accent: false },
   { value: "60–80%", label: "Less larvicide use vs. blanket spraying", accent: false },
   { value: "4–6 weeks", label: "Outbreak prediction horizon", accent: true },

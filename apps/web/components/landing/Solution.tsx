@@ -105,7 +105,7 @@ export function Solution() {
         >
           <p className="text-white font-semibold text-lg">
             End-to-end cycle:{" "}
-            <span className="text-[#f59e0b] font-black">4–5 days</span>
+            <span className="text-[#f59e0b] font-black">Instant</span>
             {" "}vs.{" "}
             <span className="text-white/50">2–4 weeks manually</span>
             <span className="mx-4 text-white/20">·</span>

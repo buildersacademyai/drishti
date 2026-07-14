@@ -160,23 +160,27 @@ export function MapView({
     map.on("load", () => {
       map.addSource("nepal-districts", { type: "geojson", data: "/nepal-districts.geojson" });
 
-      // District risk fill (semi-transparent over satellite)
+      // District risk fill (fades out on zoom-in — border takes over as the indicator)
       map.addLayer({
         id: "district-fill",
         type: "fill",
         source: "nepal-districts",
         paint: {
           "fill-color": districtFillExpression(risk),
-          "fill-opacity": 0.45,
+          "fill-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.45, 9, 0.45, 11, 0],
         },
       });
 
-      // Internal district borders (white)
+      // Internal district borders: white overview, risk-colored + thicker once zoomed in
       map.addLayer({
         id: "district-line",
         type: "line",
         source: "nepal-districts",
-        paint: { "line-color": "#ffffff", "line-width": 0.8, "line-opacity": 0.9 },
+        paint: {
+          "line-color": ["step", ["zoom"], "#ffffff", 9, districtFillExpression(risk)],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.8, 9, 0.8, 11, 3],
+          "line-opacity": 0.9,
+        },
       });
 
       // Outer Nepal border

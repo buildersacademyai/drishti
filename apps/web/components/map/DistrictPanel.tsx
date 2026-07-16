@@ -12,6 +12,10 @@ interface Props {
   detections: Detection[];
   interventions: Intervention[];
   satelliteGeoJSON?: GeoJSON.FeatureCollection | null;
+  adminUnitId?: string | null;
+  pinning?: boolean;
+  savingPin?: boolean;
+  onStartPinning?: () => void;
   onClose: () => void;
 }
 
@@ -39,7 +43,10 @@ function inBounds(
   return lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng;
 }
 
-export function DistrictPanel({ district, detections, interventions, satelliteGeoJSON, onClose }: Props) {
+export function DistrictPanel({
+  district, detections, interventions, satelliteGeoJSON,
+  adminUnitId, pinning, savingPin, onStartPinning, onClose,
+}: Props) {
   const localDetections = detections.filter(
     (d) => d.lat != null && d.lng != null && inBounds(d.lat, d.lng, district.bounds)
   );
@@ -102,6 +109,16 @@ export function DistrictPanel({ district, detections, interventions, satelliteGe
           <Stat value={localInterventions.length} label="Interventions" color="text-blue-500" />
           <Stat value={completedInt} label="Completed" color="text-green-500" />
         </div>
+
+        {adminUnitId && onStartPinning && (
+          <button
+            onClick={onStartPinning}
+            disabled={pinning || savingPin}
+            className="w-full text-xs font-semibold text-white bg-[#0ea5e9] hover:bg-[#0284c7] disabled:opacity-50 rounded-lg py-2 transition-colors"
+          >
+            {savingPin ? "Saving…" : pinning ? "Click the map…" : "+ Add Water Source"}
+          </button>
+        )}
 
         {/* Detection breakdown */}
         {localDetections.length > 0 && (

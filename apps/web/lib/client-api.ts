@@ -78,6 +78,13 @@ export const getPredictions = () => apiGet<Prediction[]>("/api/v1/predictions");
 export const getAcquisitions = () => apiGet<Acquisition[]>("/api/v1/satellite/acquisitions");
 export const getAcquisitionDetail = (id: string) =>
   apiGet<AcquisitionDetail>(`/api/v1/satellite/acquisitions/${id}`);
+export const createManualWaterSource = (body: { admin_unit_id: string; lat: number; lng: number; notes?: string }) =>
+  apiPost<ManualWaterSource>("/api/v1/satellite/detections/manual", body);
+export const getSatelliteDetectionsGeoJSON = () =>
+  apiGet<GeoJSON.FeatureCollection>("/api/v1/satellite/detections");
+
+// Admin units
+export const getAdminUnits = () => apiGet<AdminUnitRef[]>("/api/v1/admin-units");
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -158,4 +165,17 @@ export interface AcquisitionDetail {
   cloud_cover_pct: number;
   acquired_at: string | null;
   detections: AcquisitionDetection[];
+}
+
+export interface ManualWaterSource {
+  id: string;
+  acquisition_id: string;
+  detection_type: string;
+  notes: string | null;
+  created_at: string | null;
+}
+
+export interface AdminUnitRef {
+  id: string;
+  name: string;
 }

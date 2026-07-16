@@ -7,7 +7,8 @@ from ..db import get_db
 from ..models.geo import AdminUnit
 from ..models.intervention import Alert
 from ..models.satellite import SatelliteAcquisition, SatelliteDetection
-from ..schemas.satellite import SatelliteAcquisitionCreate, SatelliteAcquisitionOut
+from ..schemas.satellite import ManualWaterSourceCreate, SatelliteAcquisitionCreate, SatelliteAcquisitionOut
+from ..services.satellite_ingest_service import create_manual_water_source
 from ..config import settings
 
 router = APIRouter()
@@ -139,10 +140,28 @@ def list_detections(admin_unit_id: uuid.UUID | None = None, db: Session = Depend
                 "confidence": d.confidence,
                 "area_sqm": d.area_sqm,
                 "promoted": d.promoted,
+                "notes": d.notes,
                 "created_at": d.created_at.isoformat() if d.created_at else None,
             },
         })
     return {"type": "FeatureCollection", "features": features}
+
+
+@router.post("/detections/manual", status_code=201)
+def create_manual_detection(body: ManualWaterSourceCreate, db: Session = Depends(get_db)):
+    admin_unit = db.get(AdminUnit, body.admin_unit_id)
+    if not admin_unit:
+        raise HTTPException(status_code=404, detail="Admin unit not found")
+
+    detection = create_manual_water_source(db, admin_unit, lat=body.lat, lng=body.lng, notes=body.notes)
+    db.commit()
+    return {
+        "id": str(detection.id),
+        "acquisition_id": str(detection.acquisition_id),
+        "detection_type": detection.detection_type,
+        "notes": detection.notes,
+        "created_at": detection.created_at.isoformat() if detection.created_at else None,
+    }
 
 
 @router.post("/detections/{detection_id}/promote", status_code=200)

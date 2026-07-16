@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Float, ForeignKey, DateTime
+from sqlalchemy import Column, String, Float, ForeignKey, DateTime, Text
 from sqlalchemy.dialects.postgresql import UUID
 from geoalchemy2 import Geometry
 from .base import Base, TenantMixin
@@ -26,3 +26,4 @@ class SatelliteDetection(Base, TenantMixin):
     area_sqm = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
     promoted = Column(String(10), default="pending")
+    notes = Column(Text, nullable=True)

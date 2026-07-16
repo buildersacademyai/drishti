@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import (
-    alerts, auth, detections, drones, flights, health,
+    admin_units, alerts, auth, detections, drones, flights, health,
     interventions, missions, predictions, satellite, sensors, users,
 )
 
@@ -27,6 +27,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(satellite.router, prefix="/api/v1/satellite", tags=["satellite"])
+app.include_router(admin_units.router, prefix="/api/v1/admin-units", tags=["admin-units"])
 app.include_router(missions.router, prefix="/api/v1/missions", tags=["missions"])
 app.include_router(flights.router, prefix="/api/v1/flights", tags=["flights"])
 app.include_router(detections.router, prefix="/api/v1/detections", tags=["detections"])

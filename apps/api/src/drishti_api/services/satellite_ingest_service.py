@@ -9,7 +9,7 @@ from ..models.geo import AdminUnit
 from ..models.intervention import Alert
 from ..models.satellite import SatelliteAcquisition, SatelliteDetection
 
-DEFAULT_MIN_AREA_SQM = 50.0
+DEFAULT_MIN_AREA_SQM = 200.0
 
 FetchFn = Callable[..., list[dict]]
 

@@ -42,6 +42,8 @@ export const createMission = (body: { mission_type: string; admin_unit_id: strin
   apiPost<Mission>("/api/v1/missions", body);
 export const dispatchMission = (id: string) =>
   apiPost<Mission>(`/api/v1/missions/${id}/dispatch`);
+export const updateMissionStatus = (id: string, status: string) =>
+  apiPatch<{ id: string; status: string; executed_at: string | null }>(`/api/v1/missions/${id}`, { status });
 
 // Detections
 export const getDetections = (params?: { detection_type?: string; confidence_min?: number }) => {

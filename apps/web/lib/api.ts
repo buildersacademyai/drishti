@@ -3,7 +3,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 async function get<T>(path: string): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}${path}`, { next: { revalidate: 60 } });
+    res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
   } catch {
     throw new Error(`API unreachable: ${path}`);
   }

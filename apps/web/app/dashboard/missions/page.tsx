@@ -3,16 +3,17 @@ import { useState, useEffect } from "react";
 import {
   getMissions,
   createMission,
-  dispatchMission,
+  updateMissionStatus,
   type Mission,
 } from "@/lib/client-api";
 
+const MISSION_STATUSES = ["planned", "in_progress", "completed", "aborted"];
+
 const STATUS_COLORS: Record<string, string> = {
-  planned:    "bg-blue-100 text-blue-700",
-  dispatched: "bg-amber-100 text-amber-700",
-  in_flight:  "bg-purple-100 text-purple-700",
-  completed:  "bg-green-100 text-green-700",
-  aborted:    "bg-red-100 text-red-700",
+  planned:     "bg-blue-100 text-blue-700",
+  in_progress: "bg-amber-100 text-amber-700",
+  completed:   "bg-green-100 text-green-700",
+  aborted:     "bg-red-100 text-red-700",
 };
 
 export default function MissionsPage() {
@@ -50,10 +51,10 @@ export default function MissionsPage() {
     }
   }
 
-  async function handleDispatch(id: string) {
+  async function handleStatusChange(id: string, status: string) {
     try {
-      await dispatchMission(id);
-      setActionMsg("Mission dispatched.");
+      await updateMissionStatus(id, status);
+      setActionMsg(`Mission status updated to ${status.replace("_", " ")}.`);
       load();
     } catch (err) {
       setActionMsg(err instanceof Error ? err.message : "Failed");
@@ -77,7 +78,7 @@ export default function MissionsPage() {
 
       {/* Filter */}
       <div className="flex gap-2 mb-4">
-        {["", "planned", "dispatched", "in_flight", "completed", "aborted"].map((s) => (
+        {["", ...MISSION_STATUSES].map((s) => (
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
@@ -87,7 +88,7 @@ export default function MissionsPage() {
                 : "bg-white border border-[#e2e8f0] text-[#64748b] hover:text-[#0f172a]"
             }`}
           >
-            {s === "" ? "All" : s}
+            {s === "" ? "All" : s.replace("_", " ")}
           </button>
         ))}
       </div>
@@ -176,14 +177,17 @@ export default function MissionsPage() {
                   {m.planned_at ? new Date(m.planned_at).toLocaleString() : "—"}
                 </td>
                 <td className="px-4 py-3">
-                  {m.status === "planned" && (
-                    <button
-                      onClick={() => handleDispatch(m.id)}
-                      className="text-xs font-semibold text-[#10b981] hover:text-[#059669] transition-colors"
-                    >
-                      Dispatch →
-                    </button>
-                  )}
+                  <select
+                    value={m.status}
+                    onChange={(e) => handleStatusChange(m.id, e.target.value)}
+                    className="text-xs font-medium border border-[#e2e8f0] rounded-lg px-2 py-1 text-[#0f172a] bg-white focus:outline-none focus:ring-1 focus:ring-[#0f172a]/30 capitalize"
+                  >
+                    {MISSION_STATUSES.map((s) => (
+                      <option key={s} value={s} className="capitalize">
+                        {s.replace("_", " ")}
+                      </option>
+                    ))}
+                  </select>
                 </td>
               </tr>
             ))}

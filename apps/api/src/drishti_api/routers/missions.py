@@ -1,9 +1,12 @@
 import uuid
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from ..db import get_db
+from ..dependencies import get_current_user, CurrentUser
 from ..models.drone import Mission
+from ..schemas.missions import MissionStatusUpdate
 from ..config import settings
 
 router = APIRouter()
@@ -54,3 +57,25 @@ def dispatch_mission(mission_id: uuid.UUID, db: Session = Depends(get_db)):
     mission.status = "in_progress"
     db.commit()
     return {"id": str(mission.id), "status": mission.status}
+
+
+@router.patch("/{mission_id}")
+def update_mission_status(
+    mission_id: uuid.UUID,
+    body: MissionStatusUpdate,
+    db: Session = Depends(get_db),
+    user: CurrentUser = Depends(get_current_user),
+):
+    mission = db.get(Mission, mission_id)
+    if not mission or str(mission.tenant_id) != user.tenant_id:
+        raise HTTPException(status_code=404, detail="Mission not found")
+
+    mission.status = body.status
+    if body.status == "completed" and mission.executed_at is None:
+        mission.executed_at = datetime.utcnow()
+    db.commit()
+    return {
+        "id": str(mission.id),
+        "status": mission.status,
+        "executed_at": mission.executed_at.isoformat() if mission.executed_at else None,
+    }

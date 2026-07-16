@@ -1,10 +1,20 @@
+import uuid as uuid_lib
 from datetime import datetime, timedelta
 
+from drishti_api.auth import create_access_token
 from drishti_api.models.geo import Tenant, AdminUnit
-from drishti_api.models.intervention import Alert
+from drishti_api.models.intervention import Alert, User
 from drishti_api.models.satellite import SatelliteAcquisition, SatelliteDetection
 from geoalchemy2.shape import from_shape
 from shapely.geometry import box
+
+
+def _auth_header(db, tenant):
+    user = User(tenant_id=tenant.id, email=f"user-{uuid_lib.uuid4()}@test.com", role="admin")
+    db.add(user)
+    db.flush()
+    token = create_access_token(subject=str(user.id), role="admin", tenant_id=str(tenant.id))
+    return {"Authorization": f"Bearer {token}"}
 
 
 def test_create_satellite_acquisition(client, db):
@@ -92,7 +102,7 @@ def test_create_manual_water_source(client, db):
         "lat": 27.65,
         "lng": 84.35,
         "notes": "near village well",
-    })
+    }, headers=_auth_header(db, tenant))
     assert resp.status_code == 201
     body = resp.json()
     assert body["detection_type"] == "manual_pin"
@@ -106,6 +116,37 @@ def test_create_manual_water_source(client, db):
 
     alerts = db.query(Alert).filter(Alert.satellite_detection_id == body["id"]).count()
     assert alerts == 0
+
+
+def test_create_manual_water_source_requires_auth(client, db):
+    tenant = Tenant(name="T-manual-noauth", settings_jsonb={})
+    db.add(tenant)
+    db.flush()
+    unit = AdminUnit(tenant_id=tenant.id, level=2, code="NP-MN2", name="ManualDistrict2",
+                     population=0, child_pop_under_15=0)
+    db.add(unit)
+    db.flush()
+
+    resp = client.post("/api/v1/satellite/detections/manual", json={
+        "admin_unit_id": str(unit.id), "lat": 27.65, "lng": 84.35,
+    })
+    assert resp.status_code == 401
+
+
+def test_create_manual_water_source_rejects_cross_tenant(client, db):
+    owner_tenant = Tenant(name="T-owner", settings_jsonb={})
+    attacker_tenant = Tenant(name="T-attacker", settings_jsonb={})
+    db.add_all([owner_tenant, attacker_tenant])
+    db.flush()
+    unit = AdminUnit(tenant_id=owner_tenant.id, level=2, code="NP-OWN", name="OwnerDistrict",
+                     population=0, child_pop_under_15=0)
+    db.add(unit)
+    db.flush()
+
+    resp = client.post("/api/v1/satellite/detections/manual", json={
+        "admin_unit_id": str(unit.id), "lat": 27.65, "lng": 84.35,
+    }, headers=_auth_header(db, attacker_tenant))
+    assert resp.status_code == 404
 
 
 def test_list_acquisitions_shows_positive_and_negative_scans(client, db):

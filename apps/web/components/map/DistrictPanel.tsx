@@ -11,7 +11,16 @@ interface Props {
   district: SelectedDistrict;
   detections: Detection[];
   interventions: Intervention[];
+  satelliteGeoJSON?: GeoJSON.FeatureCollection | null;
   onClose: () => void;
+}
+
+// Cheap representative point for a Polygon/MultiPolygon — first vertex of the
+// first ring. Matches the same loose bbox-membership approach used below.
+function representativePoint(geometry: GeoJSON.Geometry): [number, number] | null {
+  if (geometry.type === "Polygon") return geometry.coordinates[0]?.[0] as [number, number];
+  if (geometry.type === "MultiPolygon") return geometry.coordinates[0]?.[0]?.[0] as [number, number];
+  return null;
 }
 
 function riskLabel(r: number) {
@@ -30,13 +39,17 @@ function inBounds(
   return lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng;
 }
 
-export function DistrictPanel({ district, detections, interventions, onClose }: Props) {
+export function DistrictPanel({ district, detections, interventions, satelliteGeoJSON, onClose }: Props) {
   const localDetections = detections.filter(
     (d) => d.lat != null && d.lng != null && inBounds(d.lat, d.lng, district.bounds)
   );
   const localInterventions = interventions.filter(
     (i) => i.lat != null && i.lng != null && inBounds(i.lat, i.lng, district.bounds)
   );
+  const localWaterSources = (satelliteGeoJSON?.features ?? []).filter((f) => {
+    const point = representativePoint(f.geometry);
+    return point ? inBounds(point[1], point[0], district.bounds) : false;
+  });
 
   const highConf = localDetections.filter((d) => d.confidence >= 0.8).length;
   const completedInt = localInterventions.filter((i) => i.status === "completed").length;
@@ -83,6 +96,7 @@ export function DistrictPanel({ district, detections, interventions, onClose }: 
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3">
+          <Stat value={localWaterSources.length} label="Water Sources" color="text-[#0ea5e9]" />
           <Stat value={localDetections.length} label="Detections" color="text-[#38bdf8]" />
           <Stat value={highConf} label="High conf." color="text-red-500" />
           <Stat value={localInterventions.length} label="Interventions" color="text-blue-500" />

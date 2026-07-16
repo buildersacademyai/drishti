@@ -24,5 +24,9 @@ celery_app.conf.update(
             "task": "scan.run_daily_risk_scan",
             "schedule": crontab(hour=2, minute=0),
         },
+        "weekly-satellite-ingest": {
+            "task": "satellite.ingest_district",
+            "schedule": crontab(hour=1, minute=0, day_of_week=1),
+        },
     },
 )

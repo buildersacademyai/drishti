@@ -85,10 +85,15 @@ export default function AlertsPage() {
                 </span>
                 <div>
                   <p className="text-[#0f172a] font-semibold text-sm">
-                    {a.admin_unit_name ? (
+                    {a.admin_unit_name && a.risk_score !== null ? (
                       <>
                         {a.admin_unit_name} —{" "}
-                        <span className="text-[#0284c7]">{((a.risk_score ?? 0) * 100).toFixed(0)}% risk</span>
+                        <span className="text-[#0284c7]">{(a.risk_score * 100).toFixed(0)}% risk</span>
+                      </>
+                    ) : a.admin_unit_name && a.detection_area_sqm !== null ? (
+                      <>
+                        New water body in {a.admin_unit_name} —{" "}
+                        <span className="text-[#0284c7]">{a.detection_area_sqm.toFixed(0)} sqm</span>
                       </>
                     ) : (
                       <span className="capitalize">{a.channel} alert</span>

@@ -22,6 +22,7 @@ class Alert(Base, TenantMixin):
     __tablename__ = "alerts"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     prediction_id = Column(UUID(as_uuid=True), ForeignKey("predictions.id"), nullable=True)
+    satellite_detection_id = Column(UUID(as_uuid=True), ForeignKey("satellite_detections.id"), nullable=True)
     severity = Column(String(20), nullable=False)
     recipient_role = Column(String(50))
     channel = Column(String(20))

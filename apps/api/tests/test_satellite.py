@@ -149,6 +149,22 @@ def test_create_manual_water_source_rejects_cross_tenant(client, db):
     assert resp.status_code == 404
 
 
+def test_create_manual_water_source_rejects_oversized_notes(client, db):
+    tenant = Tenant(name="T-oversized", settings_jsonb={})
+    db.add(tenant)
+    db.flush()
+    unit = AdminUnit(tenant_id=tenant.id, level=2, code="NP-OS", name="OversizedDistrict",
+                     population=0, child_pop_under_15=0)
+    db.add(unit)
+    db.flush()
+
+    resp = client.post("/api/v1/satellite/detections/manual", json={
+        "admin_unit_id": str(unit.id), "lat": 27.65, "lng": 84.35,
+        "notes": "x" * 501,
+    }, headers=_auth_header(db, tenant))
+    assert resp.status_code == 422
+
+
 def test_list_acquisitions_shows_positive_and_negative_scans(client, db):
     tenant = Tenant(name="T-scans", settings_jsonb={})
     db.add(tenant)

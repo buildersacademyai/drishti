@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class SatelliteAcquisitionCreate(BaseModel):
@@ -24,4 +24,4 @@ class ManualWaterSourceCreate(BaseModel):
     admin_unit_id: uuid.UUID
     lat: float
     lng: float
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=500)

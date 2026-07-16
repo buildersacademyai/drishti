@@ -352,22 +352,31 @@ export function MapView({
     });
 
     // Water source pin hover — shows the user's note in full for manual
-    // pins, area for auto-detected ones.
+    // pins, area for auto-detected ones. props.notes is untrusted free
+    // text; built via textContent below, never interpolated into HTML.
     const pinPopup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 14 });
     map.on("mousemove", "district-water-points-circle", (e) => {
       if (!e.features?.length) return;
       map.getCanvas().style.cursor = "pointer";
       const props = e.features[0].properties ?? {};
       const isManual = props.detection_type === "manual_pin";
-      const title = isManual
-        ? `<div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;">Manually pinned</div>`
-        : `<div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;">Site ${props.label ?? ""}</div>`;
-      const bodyText = isManual
+
+      const container = document.createElement("div");
+      container.style.fontFamily = "sans-serif";
+
+      const title = document.createElement("div");
+      title.style.cssText = "font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;";
+      title.textContent = isManual ? "Manually pinned" : `Site ${props.label ?? ""}`;
+
+      const body = document.createElement("div");
+      body.style.cssText = "font-size:12px;font-weight:600;color:#0f172a;max-width:200px;word-break:break-word;";
+      body.textContent = isManual
         ? (props.notes || "No note added")
         : (props.area_sqm != null ? `${Number(props.area_sqm).toFixed(0)} sqm` : "");
-      pinPopup.setLngLat(e.lngLat)
-        .setHTML(`<div style="font-family:sans-serif;">${title}<div style="font-size:12px;font-weight:600;color:#0f172a;max-width:200px;">${bodyText}</div></div>`)
-        .addTo(map);
+
+      container.appendChild(title);
+      container.appendChild(body);
+      pinPopup.setLngLat(e.lngLat).setDOMContent(container).addTo(map);
     });
     map.on("mouseleave", "district-water-points-circle", () => {
       map.getCanvas().style.cursor = "";

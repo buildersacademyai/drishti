@@ -35,6 +35,7 @@ export function inBounds(point: [number, number], bounds: [[number, number], [nu
 const CENTER: [number, number] = [84.124, 28.394];
 const ZOOM = 6.5;
 const NEPAL_BOUNDS: [[number, number], [number, number]] = [[79.8, 26.2], [88.3, 30.5]];
+const EMPTY_FC: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
 
 const DEFAULT_RISK: Record<string, number> = {
   CHITWAN: 0.87, KAILALI: 0.82, KANCHANPUR: 0.79, BARDIYA: 0.76, BANKE: 0.71,
@@ -243,6 +244,34 @@ export function MapView({
         map.addLayer({ id: "satellite-line", type: "line", source: "satellite-patches", paint: { "line-color": "#1d4ed8", "line-width": 1 } });
       }
 
+      // Numbered pins for water sources in the selected district — populated
+      // by the selectedDistrictBounds effect below, empty until a district
+      // is clicked.
+      map.addSource("district-water-points", { type: "geojson", data: EMPTY_FC });
+      map.addLayer({
+        id: "district-water-points-circle",
+        type: "circle",
+        source: "district-water-points",
+        paint: {
+          "circle-radius": 12,
+          "circle-color": "#0ea5e9",
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 2,
+        },
+      });
+      map.addLayer({
+        id: "district-water-points-label",
+        type: "symbol",
+        source: "district-water-points",
+        layout: {
+          "text-field": ["get", "label"],
+          "text-font": ["Open Sans Bold"],
+          "text-size": 11,
+          "text-allow-overlap": true,
+        },
+        paint: { "text-color": "#ffffff" },
+      });
+
       addDroneLayer(map, detectionsRef.current);
       addInterventionLayer(map, interventions);
     });
@@ -325,33 +354,45 @@ export function MapView({
       });
   }, [detections]);
 
-  // Highlight water sources within the selected district, dim the rest.
+  // Numbered pin per water source within the selected district, dim the
+  // underlying polygons everywhere else so the pins read clearly.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
     if (!map.getLayer("satellite-fill") || !map.getLayer("satellite-line")) return;
+    const pointsSrc = map.getSource("district-water-points") as maplibregl.GeoJSONSource | undefined;
+    if (!pointsSrc) return;
 
     if (!selectedDistrictBounds || !satelliteGeoJSON) {
       map.setPaintProperty("satellite-fill", "fill-opacity", 0.4);
       map.setPaintProperty("satellite-fill", "fill-color", "#3b82f6");
       map.setPaintProperty("satellite-line", "line-opacity", 1);
       map.setPaintProperty("satellite-line", "line-width", 1);
+      pointsSrc.setData(EMPTY_FC);
       return;
     }
 
-    const matchingIds = satelliteGeoJSON.features
-      .filter((f) => {
-        const point = representativePoint(f.geometry);
-        return point ? inBounds(point, selectedDistrictBounds) : false;
-      })
-      .map((f) => f.properties?.id)
-      .filter((id): id is string => !!id);
+    const matching = satelliteGeoJSON.features
+      .map((f) => ({ feature: f, point: representativePoint(f.geometry) }))
+      .filter((m): m is { feature: GeoJSON.Feature; point: [number, number] } =>
+        m.point !== null && inBounds(m.point, selectedDistrictBounds)
+      );
+    const matchingIds = matching.map((m) => m.feature.properties?.id).filter((id): id is string => !!id);
 
     const isMatch: maplibregl.ExpressionSpecification = ["in", ["get", "id"], ["literal", matchingIds]];
-    map.setPaintProperty("satellite-fill", "fill-opacity", ["case", isMatch, 0.75, 0.05]);
+    map.setPaintProperty("satellite-fill", "fill-opacity", ["case", isMatch, 0.55, 0.05]);
     map.setPaintProperty("satellite-fill", "fill-color", ["case", isMatch, "#0ea5e9", "#3b82f6"]);
     map.setPaintProperty("satellite-line", "line-opacity", ["case", isMatch, 1, 0.1]);
     map.setPaintProperty("satellite-line", "line-width", ["case", isMatch, 2, 1]);
+
+    pointsSrc.setData({
+      type: "FeatureCollection",
+      features: matching.map((m, i) => ({
+        type: "Feature",
+        geometry: { type: "Point", coordinates: m.point },
+        properties: { ...m.feature.properties, label: String(i + 1) },
+      })),
+    });
   }, [selectedDistrictBounds, satelliteGeoJSON]);
 
   return <div ref={containerRef} className="absolute inset-0" />;

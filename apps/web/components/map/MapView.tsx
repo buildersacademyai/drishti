@@ -12,8 +12,24 @@ interface Props {
   detections: Detection[];
   interventions: Intervention[];
   riskDistricts?: Record<string, number>;
+  selectedDistrictBounds?: [[number, number], [number, number]] | null;
   onDetectionClick?: (detection: Detection) => void;
   onDistrictClick?: (district: SelectedDistrict) => void;
+}
+
+// Cheap representative point for a Polygon/MultiPolygon — first vertex of the
+// first ring. Good enough for the same loose bbox-membership check the rest
+// of this codebase already uses (see DistrictPanel's inBounds).
+export function representativePoint(geometry: GeoJSON.Geometry): [number, number] | null {
+  if (geometry.type === "Polygon") return geometry.coordinates[0]?.[0] as [number, number];
+  if (geometry.type === "MultiPolygon") return geometry.coordinates[0]?.[0]?.[0] as [number, number];
+  return null;
+}
+
+export function inBounds(point: [number, number], bounds: [[number, number], [number, number]]): boolean {
+  const [[minLng, minLat], [maxLng, maxLat]] = bounds;
+  const [lng, lat] = point;
+  return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
 }
 
 const CENTER: [number, number] = [84.124, 28.394];
@@ -109,7 +125,7 @@ class LegendControl implements maplibregl.IControl {
 
 export function MapView({
   satelliteGeoJSON, detections, interventions,
-  riskDistricts, onDetectionClick, onDistrictClick,
+  riskDistricts, selectedDistrictBounds, onDetectionClick, onDistrictClick,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -308,6 +324,35 @@ export function MapView({
         })),
       });
   }, [detections]);
+
+  // Highlight water sources within the selected district, dim the rest.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+    if (!map.getLayer("satellite-fill") || !map.getLayer("satellite-line")) return;
+
+    if (!selectedDistrictBounds || !satelliteGeoJSON) {
+      map.setPaintProperty("satellite-fill", "fill-opacity", 0.4);
+      map.setPaintProperty("satellite-fill", "fill-color", "#3b82f6");
+      map.setPaintProperty("satellite-line", "line-opacity", 1);
+      map.setPaintProperty("satellite-line", "line-width", 1);
+      return;
+    }
+
+    const matchingIds = satelliteGeoJSON.features
+      .filter((f) => {
+        const point = representativePoint(f.geometry);
+        return point ? inBounds(point, selectedDistrictBounds) : false;
+      })
+      .map((f) => f.properties?.id)
+      .filter((id): id is string => !!id);
+
+    const isMatch: maplibregl.ExpressionSpecification = ["in", ["get", "id"], ["literal", matchingIds]];
+    map.setPaintProperty("satellite-fill", "fill-opacity", ["case", isMatch, 0.75, 0.05]);
+    map.setPaintProperty("satellite-fill", "fill-color", ["case", isMatch, "#0ea5e9", "#3b82f6"]);
+    map.setPaintProperty("satellite-line", "line-opacity", ["case", isMatch, 1, 0.1]);
+    map.setPaintProperty("satellite-line", "line-width", ["case", isMatch, 2, 1]);
+  }, [selectedDistrictBounds, satelliteGeoJSON]);
 
   return <div ref={containerRef} className="absolute inset-0" />;
 }

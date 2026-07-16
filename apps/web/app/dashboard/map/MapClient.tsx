@@ -37,6 +37,7 @@ export function MapClient({ satelliteGeoJSON, detections, interventions }: Props
         satelliteGeoJSON={satelliteGeoJSON}
         detections={localDetections}
         interventions={interventions}
+        selectedDistrictBounds={selectedDistrict?.bounds ?? null}
         onDetectionClick={handleDetectionClick}
         onDistrictClick={handleDistrictClick}
       />
@@ -45,6 +46,7 @@ export function MapClient({ satelliteGeoJSON, detections, interventions }: Props
           district={selectedDistrict}
           detections={localDetections}
           interventions={interventions}
+          satelliteGeoJSON={satelliteGeoJSON}
           onClose={() => setSelectedDistrict(null)}
         />
       )}

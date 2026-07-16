@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import planetary_computer
 import pyproj
@@ -18,6 +20,20 @@ NDWI_THRESHOLD = 0.0
 MAX_CLOUD_COVER_PCT = 20
 # 8-connected structuring element for the morphological cleanup below.
 _MORPH_STRUCTURE = np.ones((3, 3), dtype=bool)
+
+# Polsby-Popper compactness (4*pi*area / perimeter^2): 1.0 = perfect circle,
+# -> 0 = thin and elongated. Mosquito breeding sites are stagnant, roughly
+# compact pools; flowing river channels are long and thin. A stagnant pond
+# won't be a perfect circle, but a river segment scores far lower than this
+# — heuristic, not a hydrology model; tune against real false positive/
+# negative rates once field verification data exists.
+MIN_COMPACTNESS = 0.15
+
+
+def polsby_popper_compactness(area_sqm: float, perimeter_m: float) -> float:
+    if perimeter_m <= 0:
+        return 0.0
+    return (4 * math.pi * area_sqm) / (perimeter_m ** 2)
 
 
 def fetch_water_polygons_for_district(admin_unit: AdminUnit, min_area_sqm: float = 200.0) -> list[dict]:
@@ -85,9 +101,13 @@ def fetch_water_polygons_for_district(admin_unit: AdminUnit, min_area_sqm: float
         if value != 1:
             continue
         poly_4326 = shapely_transform(to_4326, shapely_shape(geom_dict))
-        area_sqm, _ = geod.geometry_area_perimeter(poly_4326)
-        area_sqm = abs(area_sqm)
+        area_sqm, perimeter_m = geod.geometry_area_perimeter(poly_4326)
+        area_sqm, perimeter_m = abs(area_sqm), abs(perimeter_m)
         if area_sqm < min_area_sqm:
+            continue
+        # Flowing river channels are long and thin, not stagnant breeding
+        # sites — filter them out by shape rather than by data source.
+        if polsby_popper_compactness(area_sqm, perimeter_m) < MIN_COMPACTNESS:
             continue
         polygons.append({"geometry": poly_4326, "area_sqm": area_sqm})
 

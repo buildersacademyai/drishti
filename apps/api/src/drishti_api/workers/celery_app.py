@@ -24,9 +24,16 @@ celery_app.conf.update(
             "task": "scan.run_daily_risk_scan",
             "schedule": crontab(hour=2, minute=0),
         },
-        "weekly-satellite-ingest": {
-            "task": "satellite.ingest_district",
-            "schedule": crontab(hour=1, minute=0, day_of_week=1),
-        },
+        # Automated NDWI water-body scanning (satellite.ingest_district) is
+        # intentionally NOT scheduled here. Persistent false positives
+        # (river fragments, oxbows, wide slow bends geometrically compact
+        # enough to pass the shape filter but still part of the active
+        # river, not stagnant breeding water) made automated results
+        # unreliable. Manual pinning (POST /satellite/detections/manual)
+        # is the primary path for adding water sources for now. The task
+        # and its NDWI/compactness pipeline are left in place — callable
+        # directly (see workers/satellite_ingest.py) if automated
+        # scanning is revisited later, e.g. after a better filter or a
+        # permanent-water-body mask.
     },
 )

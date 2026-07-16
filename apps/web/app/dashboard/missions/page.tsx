@@ -64,12 +64,12 @@ export default function MissionsPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[#1e3a5f] font-bold text-2xl">Missions</h1>
-          <p className="text-[#6b7280] text-sm mt-0.5">Manage survey and intervention drone missions</p>
+          <h1 className="text-[#0f172a] font-bold text-2xl">Missions</h1>
+          <p className="text-[#64748b] text-sm mt-0.5">Manage survey and intervention drone missions</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="bg-[#1e3a5f] hover:bg-[#152d4d] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          className="bg-[#0f172a] hover:bg-[#1e293b] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
         >
           + New Mission
         </button>
@@ -83,8 +83,8 @@ export default function MissionsPage() {
             onClick={() => setStatusFilter(s)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               statusFilter === s
-                ? "bg-[#1e3a5f] text-white"
-                : "bg-white border border-[#e5e7eb] text-[#6b7280] hover:text-[#1e3a5f]"
+                ? "bg-[#0f172a] text-white"
+                : "bg-white border border-[#e2e8f0] text-[#64748b] hover:text-[#0f172a]"
             }`}
           >
             {s === "" ? "All" : s}
@@ -102,43 +102,43 @@ export default function MissionsPage() {
       {showForm && (
         <form
           onSubmit={handleCreate}
-          className="mb-6 bg-white border border-[#e5e7eb] rounded-xl p-5 space-y-4 shadow-sm"
+          className="mb-6 bg-white border border-[#e2e8f0] rounded-xl p-5 space-y-4 shadow-sm"
         >
-          <h2 className="font-semibold text-[#1e3a5f]">New Mission</h2>
+          <h2 className="font-semibold text-[#0f172a]">New Mission</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[#6b7280]">Type</label>
+              <label className="text-xs font-medium text-[#64748b]">Type</label>
               <select
                 value={form.mission_type}
                 onChange={(e) => setForm({ ...form, mission_type: e.target.value })}
-                className="w-full border border-[#e5e7eb] rounded-lg px-3 py-2 text-sm text-[#1e3a5f] focus:outline-none focus:ring-1 focus:ring-[#1e3a5f]/30"
+                className="w-full border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#0f172a] focus:outline-none focus:ring-1 focus:ring-[#0f172a]/30"
               >
                 <option value="survey">Survey</option>
                 <option value="intervention">Intervention</option>
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[#6b7280]">Admin Unit ID</label>
+              <label className="text-xs font-medium text-[#64748b]">Admin Unit ID</label>
               <input
                 required
                 value={form.admin_unit_id}
                 onChange={(e) => setForm({ ...form, admin_unit_id: e.target.value })}
                 placeholder="uuid"
-                className="w-full border border-[#e5e7eb] rounded-lg px-3 py-2 text-sm text-[#1e3a5f] focus:outline-none focus:ring-1 focus:ring-[#1e3a5f]/30"
+                className="w-full border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#0f172a] focus:outline-none focus:ring-1 focus:ring-[#0f172a]/30"
               />
             </div>
           </div>
           <div className="flex gap-2">
             <button
               type="submit"
-              className="bg-[#1e3a5f] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#152d4d] transition-colors"
+              className="bg-[#0f172a] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#1e293b] transition-colors"
             >
               Create
             </button>
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="border border-[#e5e7eb] text-[#6b7280] text-sm px-4 py-2 rounded-lg hover:bg-[#f8f7f4] transition-colors"
+              className="border border-[#e2e8f0] text-[#64748b] text-sm px-4 py-2 rounded-lg hover:bg-[#f8fafc] transition-colors"
             >
               Cancel
             </button>
@@ -147,39 +147,39 @@ export default function MissionsPage() {
       )}
 
       {/* Table */}
-      <div className="bg-white border border-[#e5e7eb] rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-[#e2e8f0] rounded-xl overflow-hidden shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#e5e7eb] bg-[#f8f7f4]">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-[#6b7280] uppercase tracking-wide">ID</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-[#6b7280] uppercase tracking-wide">Type</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-[#6b7280] uppercase tracking-wide">Status</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-[#6b7280] uppercase tracking-wide">Planned At</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-[#6b7280] uppercase tracking-wide">Actions</th>
+            <tr className="border-b border-[#e2e8f0] bg-[#f8fafc]">
+              <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">ID</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Type</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Status</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Planned At</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-[#6b7280]">Loading…</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-[#64748b]">Loading…</td></tr>
             ) : missions.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-[#6b7280]">No missions found.</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-[#64748b]">No missions found.</td></tr>
             ) : missions.map((m) => (
-              <tr key={m.id} className="border-b border-[#f3f4f6] hover:bg-[#f8f7f4]/50 transition-colors">
-                <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{m.id.slice(0, 8)}…</td>
-                <td className="px-4 py-3 text-[#1e3a5f] font-medium capitalize">{m.mission_type}</td>
+              <tr key={m.id} className="border-b border-[#f3f4f6] hover:bg-[#f8fafc]/50 transition-colors">
+                <td className="px-4 py-3 font-mono text-xs text-[#64748b]">{m.id.slice(0, 8)}…</td>
+                <td className="px-4 py-3 text-[#0f172a] font-medium capitalize">{m.mission_type}</td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[m.status] ?? "bg-gray-100 text-gray-600"}`}>
                     {m.status}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-[#6b7280]">
+                <td className="px-4 py-3 text-[#64748b]">
                   {m.planned_at ? new Date(m.planned_at).toLocaleString() : "—"}
                 </td>
                 <td className="px-4 py-3">
                   {m.status === "planned" && (
                     <button
                       onClick={() => handleDispatch(m.id)}
-                      className="text-xs font-semibold text-[#f59e0b] hover:text-[#d97706] transition-colors"
+                      className="text-xs font-semibold text-[#10b981] hover:text-[#059669] transition-colors"
                     >
                       Dispatch →
                     </button>

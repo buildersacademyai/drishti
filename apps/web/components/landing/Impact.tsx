@@ -12,7 +12,7 @@ const metrics = [
 
 export function Impact() {
   return (
-    <section id="impact" className="py-28 bg-[#050d1a]">
+    <section id="impact" className="py-28 bg-[#f8fafc]">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -20,14 +20,14 @@ export function Impact() {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <div className="text-xs font-bold text-[#f59e0b] uppercase tracking-[0.2em] mb-4">
+          <div className="text-xs font-bold text-[#0284c7] uppercase tracking-[0.2em] mb-4">
             Objectives & Impact
           </div>
-          <h2 className="text-4xl lg:text-5xl font-black text-white mb-6 max-w-3xl leading-tight">
+          <h2 className="text-4xl lg:text-5xl font-black text-[#0f172a] mb-6 max-w-3xl leading-tight">
             Numbers that{" "}
             <span className="gradient-text">matter.</span>
           </h2>
-          <p className="text-lg text-white/50 max-w-2xl leading-relaxed">
+          <p className="text-lg text-[#64748b] max-w-2xl leading-relaxed">
             Drishti is designed for measurable outcomes across every mission. These figures
             reflect our Disease Control pilot — the first scope in active development.
           </p>
@@ -43,14 +43,14 @@ export function Impact() {
               transition={{ delay: i * 0.07 }}
               className={`p-6 rounded-2xl border ${
                 m.accent
-                  ? "bg-[#f59e0b]/10 border-[#f59e0b]/30"
-                  : "bg-white/[0.03] border-white/10"
+                  ? "bg-[#38bdf8]/10 border-[#38bdf8]/30"
+                  : "bg-white border-[#e2e8f0]"
               }`}
             >
-              <div className={`text-3xl font-black mb-2 ${m.accent ? "text-[#f59e0b]" : "text-white"}`}>
+              <div className={`text-3xl font-black mb-2 ${m.accent ? "text-[#0284c7]" : "text-[#0f172a]"}`}>
                 {m.value}
               </div>
-              <div className="text-sm text-white/50 leading-relaxed">{m.label}</div>
+              <div className="text-sm text-[#64748b] leading-relaxed">{m.label}</div>
             </motion.div>
           ))}
         </div>
@@ -60,9 +60,9 @@ export function Impact() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="p-8 rounded-2xl bg-gradient-to-r from-[#1e3a5f]/40 to-[#f59e0b]/10 border border-white/10"
+          className="p-8 rounded-2xl bg-gradient-to-r from-[#0f172a]/5 to-[#38bdf8]/10 border border-[#e2e8f0]"
         >
-          <div className="text-xs font-bold text-white/40 uppercase tracking-wider mb-4">Theory of Change</div>
+          <div className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider mb-4">Theory of Change</div>
           <div className="flex flex-wrap gap-2 items-center text-sm">
             {[
               "Satellite data (free)",
@@ -77,10 +77,10 @@ export function Impact() {
                 key={step}
                 className={`px-3 py-1.5 rounded-lg font-medium ${
                   step.startsWith("→")
-                    ? "text-white/30 text-xs"
+                    ? "text-[#94a3b8] text-xs"
                     : i === 6
-                    ? "bg-[#f59e0b]/20 text-[#f59e0b] border border-[#f59e0b]/30"
-                    : "bg-white/10 text-white/70 border border-white/10"
+                    ? "bg-[#10b981]/15 text-[#059669] border border-[#10b981]/30"
+                    : "bg-white text-[#334155] border border-[#e2e8f0]"
                 }`}
               >
                 {step}

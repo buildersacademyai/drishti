@@ -63,9 +63,9 @@ export function DetectionPanel({ detection, interventions, onClose, onStatusChan
   }
 
   return (
-    <div className="absolute top-4 left-4 z-20 w-80 bg-white rounded-2xl border border-[#e5e7eb] shadow-xl overflow-hidden">
+    <div className="absolute top-4 left-4 z-20 w-80 bg-white rounded-2xl border border-[#e2e8f0] shadow-xl overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 bg-[#1e3a5f] text-white">
+      <div className="flex items-center justify-between px-5 py-4 bg-[#0f172a] text-white">
         <div>
           <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-0.5">
             Detection
@@ -103,7 +103,7 @@ export function DetectionPanel({ detection, interventions, onClose, onStatusChan
 
         {/* Chain: satellite → drone → intervention */}
         <div className="pt-3 border-t border-[#f3f4f6]">
-          <div className="text-xs font-bold text-[#9ca3af] uppercase tracking-wider mb-3">
+          <div className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider mb-3">
             Audit chain
           </div>
           <div className="space-y-2">
@@ -154,7 +154,7 @@ export function DetectionPanel({ detection, interventions, onClose, onStatusChan
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Reason (optional)"
-                  className="w-full border border-[#e5e7eb] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1e3a5f]/30"
+                  className="w-full border border-[#e2e8f0] rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#0f172a]/30"
                 />
                 <div className="flex gap-2">
                   <button disabled={busy} onClick={handleReject} className="flex-1 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg py-1.5">Confirm reject</button>
@@ -168,11 +168,11 @@ export function DetectionPanel({ detection, interventions, onClose, onStatusChan
         {/* Linked interventions */}
         {linked.length > 0 && (
           <div className="pt-3 border-t border-[#f3f4f6]">
-            <div className="text-xs font-bold text-[#9ca3af] uppercase tracking-wider mb-2">
+            <div className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider mb-2">
               Interventions ({linked.length})
             </div>
             {linked.map((i) => (
-              <div key={i.id} className="text-xs text-[#6b7280] flex justify-between">
+              <div key={i.id} className="text-xs text-[#64748b] flex justify-between">
                 <span className={STATUS_COLOR[i.status] ?? ""}>{i.status}</span>
                 {i.larvicide_litres && <span>{i.larvicide_litres}L larvicide</span>}
                 {i.area_sqm && <span>{i.area_sqm} m²</span>}
@@ -196,8 +196,8 @@ function Row({
 }) {
   return (
     <div className="flex justify-between gap-3">
-      <span className="text-[#9ca3af]">{label}</span>
-      <span className={`text-[#1a1a2e] text-right ${mono ? "font-mono text-xs" : ""}`}>
+      <span className="text-[#94a3b8]">{label}</span>
+      <span className={`text-[#0f172a] text-right ${mono ? "font-mono text-xs" : ""}`}>
         {value}
       </span>
     </div>
@@ -221,8 +221,8 @@ function ChainStep({
       <span
         className={`text-xs ${
           done
-            ? statusColor ?? "text-[#1a1a2e]"
-            : "text-[#d1d5db]"
+            ? statusColor ?? "text-[#0f172a]"
+            : "text-[#cbd5e1]"
         }`}
       >
         {label}

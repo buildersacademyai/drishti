@@ -26,11 +26,11 @@ function StatCard({
   return (
     <Link
       href={href}
-      className="bg-white border border-[#e5e7eb] rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow block"
+      className="bg-white border border-[#e2e8f0] rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow block"
     >
-      <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-[#64748b]">{label}</p>
       <p className={`text-4xl font-black mt-2 ${accent}`}>{value}</p>
-      <p className="text-xs text-[#6b7280] mt-1">{sub}</p>
+      <p className="text-xs text-[#64748b] mt-1">{sub}</p>
     </Link>
   );
 }
@@ -68,8 +68,8 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-[#1e3a5f] font-bold text-2xl">Dashboard</h1>
-        <p className="text-[#6b7280] text-sm mt-0.5">Drishti malaria vector surveillance platform overview</p>
+        <h1 className="text-[#0f172a] font-bold text-2xl">Dashboard</h1>
+        <p className="text-[#64748b] text-sm mt-0.5">Drishti malaria vector surveillance platform overview</p>
       </div>
 
       {/* Critical alert banner */}
@@ -92,14 +92,14 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
           value={missions.length}
           sub={`${activeMissions} active`}
           href="/dashboard/missions"
-          accent="text-[#1e3a5f]"
+          accent="text-[#0f172a]"
         />
         <StatCard
           label="Detections"
           value={detections.length}
           sub={`${highConf} high confidence`}
           href="/dashboard/detections"
-          accent="text-[#f59e0b]"
+          accent="text-[#38bdf8]"
         />
         <StatCard
           label="Interventions"
@@ -118,17 +118,17 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
       </div>
 
       {/* Drone Fleet */}
-      <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#e5e7eb] flex items-center justify-between">
+      <div className="bg-white border border-[#e2e8f0] rounded-xl shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#e2e8f0] flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-lg">🚁</span>
-            <h2 className="font-semibold text-[#1e3a5f] text-sm">Drone Fleet</h2>
-            <span className="text-xs bg-[#1e3a5f]/8 text-[#1e3a5f] font-semibold px-2 py-0.5 rounded-full">{drones.length} total</span>
+            <h2 className="font-semibold text-[#0f172a] text-sm">Drone Fleet</h2>
+            <span className="text-xs bg-[#0f172a]/8 text-[#0f172a] font-semibold px-2 py-0.5 rounded-full">{drones.length} total</span>
           </div>
-          <Link href="/dashboard/drones" className="text-xs text-[#f59e0b] hover:underline font-medium">Manage fleet →</Link>
+          <Link href="/dashboard/drones" className="text-xs text-[#10b981] hover:underline font-medium">Manage fleet →</Link>
         </div>
         {drones.length === 0 ? (
-          <p className="px-5 py-6 text-center text-[#6b7280] text-sm">No drones registered. <Link href="/dashboard/drones" className="text-[#f59e0b] hover:underline">Register one →</Link></p>
+          <p className="px-5 py-6 text-center text-[#64748b] text-sm">No drones registered. <Link href="/dashboard/drones" className="text-[#10b981] hover:underline">Register one →</Link></p>
         ) : (
           <div className="p-4">
             {/* Status breakdown */}
@@ -162,10 +162,10 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
                 return (
                   <div key={d.id} className="py-2.5 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-[#1e3a5f]/8 flex items-center justify-center text-sm">🚁</div>
+                      <div className="w-7 h-7 rounded-lg bg-[#0f172a]/8 flex items-center justify-center text-sm">🚁</div>
                       <div>
-                        <p className="text-sm font-semibold text-[#1e3a5f]">{d.name}</p>
-                        <p className="text-xs text-[#9ca3af]">{d.model || "Unknown model"}</p>
+                        <p className="text-sm font-semibold text-[#0f172a]">{d.name}</p>
+                        <p className="text-xs text-[#94a3b8]">{d.model || "Unknown model"}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -183,7 +183,7 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
               })}
             </div>
             {drones.length > 4 && (
-              <Link href="/dashboard/drones" className="block text-center text-xs text-[#f59e0b] hover:underline mt-3 font-medium">
+              <Link href="/dashboard/drones" className="block text-center text-xs text-[#10b981] hover:underline mt-3 font-medium">
                 +{drones.length - 4} more drones →
               </Link>
             )}
@@ -194,19 +194,19 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
       {/* Two-column activity */}
       <div className="grid grid-cols-2 gap-6">
         {/* Recent missions */}
-        <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#e5e7eb] flex items-center justify-between">
-            <h2 className="font-semibold text-[#1e3a5f] text-sm">Recent Missions</h2>
-            <Link href="/dashboard/missions" className="text-xs text-[#f59e0b] hover:underline font-medium">View all →</Link>
+        <div className="bg-white border border-[#e2e8f0] rounded-xl shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-[#e2e8f0] flex items-center justify-between">
+            <h2 className="font-semibold text-[#0f172a] text-sm">Recent Missions</h2>
+            <Link href="/dashboard/missions" className="text-xs text-[#10b981] hover:underline font-medium">View all →</Link>
           </div>
-          <div className="divide-y divide-[#f3f4f6]">
+          <div className="divide-y divide-[#f1f5f9]">
             {recentMissions.length === 0 ? (
-              <p className="px-5 py-6 text-center text-[#6b7280] text-sm">No missions yet.</p>
+              <p className="px-5 py-6 text-center text-[#64748b] text-sm">No missions yet.</p>
             ) : recentMissions.map((m) => (
               <div key={m.id} className="px-5 py-3 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-[#1e3a5f] capitalize">{m.mission_type}</p>
-                  <p className="text-xs text-[#6b7280] font-mono">{m.id.slice(0, 8)}…</p>
+                  <p className="text-sm font-medium text-[#0f172a] capitalize">{m.mission_type}</p>
+                  <p className="text-xs text-[#64748b] font-mono">{m.id.slice(0, 8)}…</p>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[m.status] ?? "bg-gray-100 text-gray-600"}`}>
                   {m.status}
@@ -217,25 +217,25 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
         </div>
 
         {/* Recent detections */}
-        <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#e5e7eb] flex items-center justify-between">
-            <h2 className="font-semibold text-[#1e3a5f] text-sm">Recent Detections</h2>
-            <Link href="/dashboard/detections" className="text-xs text-[#f59e0b] hover:underline font-medium">View all →</Link>
+        <div className="bg-white border border-[#e2e8f0] rounded-xl shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-[#e2e8f0] flex items-center justify-between">
+            <h2 className="font-semibold text-[#0f172a] text-sm">Recent Detections</h2>
+            <Link href="/dashboard/detections" className="text-xs text-[#10b981] hover:underline font-medium">View all →</Link>
           </div>
-          <div className="divide-y divide-[#f3f4f6]">
+          <div className="divide-y divide-[#f1f5f9]">
             {recentDetections.length === 0 ? (
-              <p className="px-5 py-6 text-center text-[#6b7280] text-sm">No detections yet.</p>
+              <p className="px-5 py-6 text-center text-[#64748b] text-sm">No detections yet.</p>
             ) : recentDetections.map((d) => (
               <div key={d.id} className="px-5 py-3 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-[#1e3a5f] capitalize">{d.detection_type.replace("_", " ")}</p>
-                  <p className="text-xs text-[#6b7280]">
+                  <p className="text-sm font-medium text-[#0f172a] capitalize">{d.detection_type.replace("_", " ")}</p>
+                  <p className="text-xs text-[#64748b]">
                     {d.lat != null && d.lng != null ? `${d.lat.toFixed(3)}, ${d.lng.toFixed(3)}` : "no coords"}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-[#f59e0b]">{(d.confidence * 100).toFixed(0)}%</p>
-                  <p className="text-xs text-[#6b7280]">confidence</p>
+                  <p className="text-sm font-bold text-[#38bdf8]">{(d.confidence * 100).toFixed(0)}%</p>
+                  <p className="text-xs text-[#64748b]">confidence</p>
                 </div>
               </div>
             ))}
@@ -247,7 +247,7 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
       <div className="grid grid-cols-3 gap-4">
         <Link
           href="/dashboard/map"
-          className="bg-[#1e3a5f] text-white rounded-xl p-5 hover:bg-[#152d4d] transition-colors"
+          className="bg-[#0f172a] text-white rounded-xl p-5 hover:bg-[#1e293b] transition-colors"
         >
           <div className="text-2xl mb-2">🗺</div>
           <p className="font-semibold text-sm">Live Map</p>
@@ -255,19 +255,19 @@ export function DashboardClient({ missions, detections, interventions, alerts, d
         </Link>
         <Link
           href="/dashboard/predictions"
-          className="bg-white border border-[#e5e7eb] rounded-xl p-5 hover:shadow-md transition-shadow"
+          className="bg-white border border-[#e2e8f0] rounded-xl p-5 hover:shadow-md transition-shadow"
         >
           <div className="text-2xl mb-2">📊</div>
-          <p className="font-semibold text-sm text-[#1e3a5f]">Risk Predictions</p>
-          <p className="text-[#6b7280] text-xs mt-0.5">ML-based zone risk scores</p>
+          <p className="font-semibold text-sm text-[#0f172a]">Risk Predictions</p>
+          <p className="text-[#64748b] text-xs mt-0.5">ML-based zone risk scores</p>
         </Link>
         <Link
           href="/dashboard/interventions"
-          className="bg-white border border-[#e5e7eb] rounded-xl p-5 hover:shadow-md transition-shadow"
+          className="bg-white border border-[#e2e8f0] rounded-xl p-5 hover:shadow-md transition-shadow"
         >
           <div className="text-2xl mb-2">💧</div>
-          <p className="font-semibold text-sm text-[#1e3a5f]">Interventions</p>
-          <p className="text-[#6b7280] text-xs mt-0.5">Larvicide operations log</p>
+          <p className="font-semibold text-sm text-[#0f172a]">Interventions</p>
+          <p className="text-[#64748b] text-xs mt-0.5">Larvicide operations log</p>
         </Link>
       </div>
     </div>

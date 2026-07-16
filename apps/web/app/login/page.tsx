@@ -27,12 +27,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050d1a] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-3 mb-8 justify-center">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#fb923c] flex items-center justify-center">
-            <span className="text-[#050d1a] font-black text-lg">D</span>
-          </div>
+          <img src="/logo.png" alt="Drishti" className="w-10 h-10 rounded-xl object-contain" />
           <div>
             <div className="text-white font-bold text-xl">Drishti</div>
             <div className="text-white/30 text-xs">Admin Portal</div>
@@ -53,7 +51,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@example.com"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm placeholder-white/20 focus:outline-none focus:border-[#f59e0b]/50 focus:ring-1 focus:ring-[#f59e0b]/30"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm placeholder-white/20 focus:outline-none focus:border-[#10b981]/50 focus:ring-1 focus:ring-[#10b981]/30"
             />
           </div>
 
@@ -65,7 +63,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm placeholder-white/20 focus:outline-none focus:border-[#f59e0b]/50 focus:ring-1 focus:ring-[#f59e0b]/30"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm placeholder-white/20 focus:outline-none focus:border-[#10b981]/50 focus:ring-1 focus:ring-[#10b981]/30"
             />
           </div>
 
@@ -78,7 +76,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#f59e0b] hover:bg-[#d97706] disabled:opacity-50 text-[#050d1a] font-semibold py-2.5 rounded-lg text-sm transition-colors"
+            className="w-full bg-[#10b981] hover:bg-[#059669] disabled:opacity-50 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors"
           >
             {loading ? "Signing in…" : "Sign In"}
           </button>

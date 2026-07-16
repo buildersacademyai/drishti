@@ -40,13 +40,13 @@ const scopes = [
 ];
 
 const statusStyle: Record<string, { dot: string; label: string }> = {
-  active: { dot: "bg-[#f59e0b] animate-pulse", label: "Active" },
-  vision: { dot: "bg-[#6b7280]", label: "Vision" },
+  active: { dot: "bg-[#10b981] animate-pulse", label: "Active" },
+  vision: { dot: "bg-[#94a3b8]", label: "Vision" },
 };
 
 export function Scopes() {
   return (
-    <section id="scopes" className="py-28 bg-[#f8f7f4]">
+    <section id="scopes" className="py-28 bg-[#f8fafc]">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -54,14 +54,14 @@ export function Scopes() {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <div className="text-xs font-bold text-[#1e3a5f] uppercase tracking-[0.2em] mb-4">
+          <div className="text-xs font-bold text-[#0f172a] uppercase tracking-[0.2em] mb-4">
             Scopes
           </div>
-          <h2 className="text-4xl lg:text-5xl font-black text-[#1a1a2e] mb-6 max-w-3xl leading-tight">
+          <h2 className="text-4xl lg:text-5xl font-black text-[#0f172a] mb-6 max-w-3xl leading-tight">
             One platform.{" "}
-            <span style={{ color: "#f59e0b" }}>Five missions.</span>
+            <span style={{ color: "#38bdf8" }}>Five missions.</span>
           </h2>
-          <p className="text-lg text-[#6b7280] max-w-2xl leading-relaxed">
+          <p className="text-lg text-[#64748b] max-w-2xl leading-relaxed">
             Same satellite-to-drone architecture — screen, verify, respond —
             applied wherever climate and emergency response need eyes in the sky.
           </p>
@@ -77,17 +77,17 @@ export function Scopes() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08 }}
-                className="p-8 rounded-2xl bg-white border border-[#e5e7eb] hover:shadow-lg transition-shadow"
+                className="p-8 rounded-2xl bg-white border border-[#e2e8f0] hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
                   <span className="text-4xl">{s.icon}</span>
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-[#6b7280]">
+                  <span className="flex items-center gap-1.5 text-xs font-medium text-[#64748b]">
                     <span className={`w-2 h-2 rounded-full ${st.dot}`} />
                     {st.label}
                   </span>
                 </div>
-                <h3 className="text-lg font-black text-[#1a1a2e] mb-2">{s.title}</h3>
-                <p className="text-[#6b7280] text-sm leading-relaxed">{s.description}</p>
+                <h3 className="text-lg font-black text-[#0f172a] mb-2">{s.title}</h3>
+                <p className="text-[#64748b] text-sm leading-relaxed">{s.description}</p>
               </motion.div>
             );
           })}

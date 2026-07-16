@@ -10,10 +10,10 @@ const tiers = [
     description:
       "Sentinel-2 imagery scans entire districts weekly at 10m resolution. NDWI water index + change detection flags target signatures automatically. Zero marginal cost. 100% district coverage.",
     metric: "70–80% fewer drone flights vs. blanket survey",
-    color: "from-blue-600 to-indigo-600",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/20",
-    tag: "text-blue-400",
+    color: "from-[#38bdf8] to-[#0ea5e9]",
+    bg: "bg-[#38bdf8]/10",
+    border: "border-[#38bdf8]/25",
+    tag: "text-[#0284c7]",
   },
   {
     num: "02",
@@ -23,10 +23,10 @@ const tiers = [
     description:
       "Autonomous drones target only satellite-flagged zones, capturing sub-10cm imagery. AI detects the target signature for the active mission — standing water, thermal anomaly, wildlife presence, flood extent, or drop zone. Close-range descent confirms when needed.",
     metric: "48-hour verification · survey + nano-shot confirmation",
-    color: "from-amber-500 to-orange-500",
-    bg: "bg-amber-500/10",
-    border: "border-amber-500/20",
-    tag: "text-amber-400",
+    color: "from-[#64748b] to-[#475569]",
+    bg: "bg-[#64748b]/10",
+    border: "border-[#64748b]/20",
+    tag: "text-[#475569]",
   },
   {
     num: "03",
@@ -36,16 +36,16 @@ const tiers = [
     description:
       "Confirmed targets trigger a response mission. Same drone airframe — payload swapped for the mission (larvicide tank, retardant canister, tracking tag, supply pod) in under 5 minutes. Precision delivery at exact confirmed coordinates only.",
     metric: "60–80% less response material vs. blanket application",
-    color: "from-green-500 to-emerald-600",
-    bg: "bg-green-500/10",
-    border: "border-green-500/20",
-    tag: "text-green-400",
+    color: "from-[#10b981] to-[#059669]",
+    bg: "bg-[#10b981]/10",
+    border: "border-[#10b981]/20",
+    tag: "text-[#059669]",
   },
 ];
 
 export function Solution() {
   return (
-    <section id="solution" className="py-28 bg-[#f8f7f4]">
+    <section id="solution" className="py-28 bg-white">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -53,15 +53,15 @@ export function Solution() {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <div className="text-xs font-bold text-[#1e3a5f] uppercase tracking-[0.2em] mb-4">
+          <div className="text-xs font-bold text-[#0f172a] uppercase tracking-[0.2em] mb-4">
             The Solution
           </div>
-          <h2 className="text-4xl lg:text-5xl font-black text-[#1a1a2e] mb-6 max-w-3xl leading-tight">
+          <h2 className="text-4xl lg:text-5xl font-black text-[#0f172a] mb-6 max-w-3xl leading-tight">
             Three tiers.{" "}
-            <span style={{ color: "#f59e0b" }}>One mission.</span>{" "}
+            <span style={{ color: "#38bdf8" }}>One mission.</span>{" "}
             Faster response.
           </h2>
-          <p className="text-lg text-[#6b7280] max-w-2xl leading-relaxed">
+          <p className="text-lg text-[#64748b] max-w-2xl leading-relaxed">
             Each stage costs less and moves faster than the one before. Satellite screens
             everything. Drone validates what matters. Intervention targets only what is
             confirmed — with a full georeferenced audit trail from pixel to response.
@@ -86,8 +86,8 @@ export function Solution() {
               <div className={`text-xs font-bold ${t.tag} uppercase tracking-wider mb-2`}>
                 {t.label}
               </div>
-              <h3 className="text-xl font-black text-[#1a1a2e] mb-3">{t.title}</h3>
-              <p className="text-[#6b7280] text-sm leading-relaxed mb-6">{t.description}</p>
+              <h3 className="text-xl font-black text-[#0f172a] mb-3">{t.title}</h3>
+              <p className="text-[#64748b] text-sm leading-relaxed mb-6">{t.description}</p>
 
               <div className={`pt-4 border-t ${t.border}`}>
                 <div className={`text-xs font-semibold ${t.tag}`}>{t.metric}</div>
@@ -101,11 +101,11 @@ export function Solution() {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-10 p-6 rounded-2xl bg-[#1e3a5f] text-center"
+          className="mt-10 p-6 rounded-2xl bg-[#0f172a] text-center"
         >
           <p className="text-white font-semibold text-lg">
             End-to-end cycle:{" "}
-            <span className="text-[#f59e0b] font-black">Instant</span>
+            <span className="text-[#38bdf8] font-black">Instant</span>
             {" "}vs.{" "}
             <span className="text-white/50">2–4 weeks manually</span>
             <span className="mx-4 text-white/20">·</span>

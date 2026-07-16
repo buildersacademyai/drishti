@@ -41,14 +41,14 @@ export default function AlertsPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[#1e3a5f] font-bold text-2xl">Alerts</h1>
-          <p className="text-[#6b7280] text-sm mt-0.5">
+          <h1 className="text-[#0f172a] font-bold text-2xl">Alerts</h1>
+          <p className="text-[#64748b] text-sm mt-0.5">
             {activeCount > 0
               ? `${activeCount} active alert${activeCount !== 1 ? "s" : ""} requiring attention`
               : "All alerts acknowledged"}
           </p>
         </div>
-        <label className="flex items-center gap-2 text-sm text-[#6b7280] cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-[#64748b] cursor-pointer">
           <input
             type="checkbox"
             checked={showAcked}
@@ -66,11 +66,11 @@ export default function AlertsPage() {
       )}
 
       {loading ? (
-        <p className="text-center text-[#6b7280] py-12">Loading…</p>
+        <p className="text-center text-[#64748b] py-12">Loading…</p>
       ) : visible.length === 0 ? (
         <div className="text-center py-16">
           <div className="text-4xl mb-3">✅</div>
-          <p className="text-[#6b7280]">No active alerts</p>
+          <p className="text-[#64748b]">No active alerts</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -84,8 +84,8 @@ export default function AlertsPage() {
                   {a.severity}
                 </span>
                 <div>
-                  <p className="text-[#1e3a5f] font-semibold text-sm capitalize">{a.channel} alert</p>
-                  <p className="text-[#6b7280] text-xs mt-0.5">
+                  <p className="text-[#0f172a] font-semibold text-sm capitalize">{a.channel} alert</p>
+                  <p className="text-[#64748b] text-xs mt-0.5">
                     Role: {a.recipient_role ?? "all"} ·
                     {a.created_at ? ` ${new Date(a.created_at).toLocaleString()}` : ""}
                   </p>
@@ -99,7 +99,7 @@ export default function AlertsPage() {
               {!a.acknowledged_at && (
                 <button
                   onClick={() => handleAck(a.id)}
-                  className="flex-shrink-0 text-xs font-semibold bg-[#1e3a5f] text-white px-3 py-1.5 rounded-lg hover:bg-[#152d4d] transition-colors"
+                  className="flex-shrink-0 text-xs font-semibold bg-[#0f172a] text-white px-3 py-1.5 rounded-lg hover:bg-[#1e293b] transition-colors"
                 >
                   Acknowledge
                 </button>

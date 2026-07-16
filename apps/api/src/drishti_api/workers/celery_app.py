@@ -1,4 +1,5 @@
 from celery import Celery
+from celery.schedules import crontab
 from ..config import settings
 
 celery_app = Celery(
@@ -9,6 +10,7 @@ celery_app = Celery(
         "drishti_api.workers.satellite_ingest",
         "drishti_api.workers.imagery_process",
         "drishti_api.workers.prediction_run",
+        "drishti_api.workers.scan_run",
     ],
 )
 celery_app.conf.update(
@@ -17,4 +19,10 @@ celery_app.conf.update(
     result_serializer="json",
     timezone="UTC",
     enable_utc=True,
+    beat_schedule={
+        "daily-risk-scan": {
+            "task": "scan.run_daily_risk_scan",
+            "schedule": crontab(hour=2, minute=0),
+        },
+    },
 )

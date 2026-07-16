@@ -84,7 +84,16 @@ export default function AlertsPage() {
                   {a.severity}
                 </span>
                 <div>
-                  <p className="text-[#0f172a] font-semibold text-sm capitalize">{a.channel} alert</p>
+                  <p className="text-[#0f172a] font-semibold text-sm">
+                    {a.admin_unit_name ? (
+                      <>
+                        {a.admin_unit_name} —{" "}
+                        <span className="text-[#0284c7]">{((a.risk_score ?? 0) * 100).toFixed(0)}% risk</span>
+                      </>
+                    ) : (
+                      <span className="capitalize">{a.channel} alert</span>
+                    )}
+                  </p>
                   <p className="text-[#64748b] text-xs mt-0.5">
                     Role: {a.recipient_role ?? "all"} ·
                     {a.created_at ? ` ${new Date(a.created_at).toLocaleString()}` : ""}

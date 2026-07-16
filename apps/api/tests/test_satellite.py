@@ -165,6 +165,128 @@ def test_create_manual_water_source_rejects_oversized_notes(client, db):
     assert resp.status_code == 422
 
 
+def _make_tenant_unit_and_pin(db, name="CRUD"):
+    tenant = Tenant(name=f"T-{name}", settings_jsonb={})
+    db.add(tenant)
+    db.flush()
+    unit = AdminUnit(tenant_id=tenant.id, level=2, code=f"NP-{name}", name=f"{name}District",
+                     population=0, child_pop_under_15=0)
+    db.add(unit)
+    db.flush()
+    return tenant, unit
+
+
+def test_update_detection_notes(client, db):
+    tenant, unit = _make_tenant_unit_and_pin(db, "UPD")
+    headers = _auth_header(db, tenant)
+    create_resp = client.post("/api/v1/satellite/detections/manual", json={
+        "admin_unit_id": str(unit.id), "lat": 27.65, "lng": 84.35, "notes": "old",
+    }, headers=headers)
+    detection_id = create_resp.json()["id"]
+
+    resp = client.patch(f"/api/v1/satellite/detections/{detection_id}", json={"notes": "new"}, headers=headers)
+    assert resp.status_code == 200
+    assert resp.json()["notes"] == "new"
+
+
+def test_update_detection_notes_requires_auth(client, db):
+    tenant, unit = _make_tenant_unit_and_pin(db, "UPDNO")
+    create_resp = client.post("/api/v1/satellite/detections/manual", json={
+        "admin_unit_id": str(unit.id), "lat": 27.65, "lng": 84.35,
+    }, headers=_auth_header(db, tenant))
+    detection_id = create_resp.json()["id"]
+
+    resp = client.patch(f"/api/v1/satellite/detections/{detection_id}", json={"notes": "hack"})
+    assert resp.status_code == 401
+
+
+def test_update_detection_notes_rejects_cross_tenant(client, db):
+    owner_tenant, owner_unit = _make_tenant_unit_and_pin(db, "UPDOWN")
+    attacker_tenant = Tenant(name="T-UPDATTACK", settings_jsonb={})
+    db.add(attacker_tenant)
+    db.flush()
+    create_resp = client.post("/api/v1/satellite/detections/manual", json={
+        "admin_unit_id": str(owner_unit.id), "lat": 27.65, "lng": 84.35,
+    }, headers=_auth_header(db, owner_tenant))
+    detection_id = create_resp.json()["id"]
+
+    resp = client.patch(f"/api/v1/satellite/detections/{detection_id}", json={"notes": "hack"},
+                        headers=_auth_header(db, attacker_tenant))
+    assert resp.status_code == 404
+
+
+def test_delete_detection(client, db):
+    tenant, unit = _make_tenant_unit_and_pin(db, "DEL")
+    headers = _auth_header(db, tenant)
+    create_resp = client.post("/api/v1/satellite/detections/manual", json={
+        "admin_unit_id": str(unit.id), "lat": 27.65, "lng": 84.35,
+    }, headers=headers)
+    detection_id = create_resp.json()["id"]
+
+    resp = client.delete(f"/api/v1/satellite/detections/{detection_id}", headers=headers)
+    assert resp.status_code == 204
+
+    listed = client.get(f"/api/v1/satellite/detections?admin_unit_id={unit.id}")
+    assert listed.json()["features"] == []
+
+
+def test_delete_detection_requires_auth(client, db):
+    tenant, unit = _make_tenant_unit_and_pin(db, "DELNO")
+    create_resp = client.post("/api/v1/satellite/detections/manual", json={
+        "admin_unit_id": str(unit.id), "lat": 27.65, "lng": 84.35,
+    }, headers=_auth_header(db, tenant))
+    detection_id = create_resp.json()["id"]
+
+    resp = client.delete(f"/api/v1/satellite/detections/{detection_id}")
+    assert resp.status_code == 401
+
+
+def test_delete_detection_blocked_when_mission_attached(client, db):
+    tenant, unit = _make_tenant_unit_and_pin(db, "DELMISSION")
+    headers = _auth_header(db, tenant)
+    create_resp = client.post("/api/v1/satellite/detections/manual", json={
+        "admin_unit_id": str(unit.id), "lat": 27.65, "lng": 84.35,
+    }, headers=headers)
+    detection_id = create_resp.json()["id"]
+    client.post(f"/api/v1/satellite/detections/{detection_id}/send-to-mission", headers=headers)
+
+    resp = client.delete(f"/api/v1/satellite/detections/{detection_id}", headers=headers)
+    assert resp.status_code == 409
+
+
+def test_send_detection_to_mission(client, db):
+    tenant, unit = _make_tenant_unit_and_pin(db, "MISSION")
+    headers = _auth_header(db, tenant)
+    create_resp = client.post("/api/v1/satellite/detections/manual", json={
+        "admin_unit_id": str(unit.id), "lat": 27.65, "lng": 84.35,
+    }, headers=headers)
+    detection_id = create_resp.json()["id"]
+
+    resp = client.post(f"/api/v1/satellite/detections/{detection_id}/send-to-mission", headers=headers)
+    assert resp.status_code == 201
+    body = resp.json()
+    assert body["status"] == "planned"
+    assert body["mission_type"] == "verification"
+
+    missions = client.get("/api/v1/missions").json()
+    assert any(m["id"] == body["id"] for m in missions)
+
+    listed = client.get(f"/api/v1/satellite/detections?admin_unit_id={unit.id}")
+    features = listed.json()["features"]
+    assert features[0]["properties"]["mission_status"] == "planned"
+
+
+def test_send_detection_to_mission_requires_auth(client, db):
+    tenant, unit = _make_tenant_unit_and_pin(db, "MISSIONNO")
+    create_resp = client.post("/api/v1/satellite/detections/manual", json={
+        "admin_unit_id": str(unit.id), "lat": 27.65, "lng": 84.35,
+    }, headers=_auth_header(db, tenant))
+    detection_id = create_resp.json()["id"]
+
+    resp = client.post(f"/api/v1/satellite/detections/{detection_id}/send-to-mission")
+    assert resp.status_code == 401
+
+
 def test_list_acquisitions_shows_positive_and_negative_scans(client, db):
     tenant = Tenant(name="T-scans", settings_jsonb={})
     db.add(tenant)

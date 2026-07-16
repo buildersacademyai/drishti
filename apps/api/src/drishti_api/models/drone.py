@@ -34,6 +34,7 @@ class Mission(Base, TenantMixin):
     status = Column(String(20), nullable=False, default="planned")
     admin_unit_id = Column(UUID(as_uuid=True), ForeignKey("admin_units.id"), nullable=False)
     triggered_by = Column(String(255))
+    satellite_detection_id = Column(UUID(as_uuid=True), ForeignKey("satellite_detections.id"), nullable=True)
     planned_at = Column(DateTime, default=datetime.utcnow)
     executed_at = Column(DateTime, nullable=True)
 

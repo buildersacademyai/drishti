@@ -7,6 +7,16 @@ import type { SelectedDistrict } from "./DistrictPanel";
 import { addDroneLayer } from "./DroneLayer";
 import { addInterventionLayer } from "./InterventionLayer";
 
+export interface WaterPinProperties {
+  id: string;
+  detection_type: string;
+  confidence: number;
+  area_sqm: number | null;
+  promoted: string;
+  notes: string | null;
+  mission_status: string | null;
+}
+
 interface Props {
   satelliteGeoJSON: GeoJSON.FeatureCollection | null;
   detections: Detection[];
@@ -17,6 +27,7 @@ interface Props {
   onDetectionClick?: (detection: Detection) => void;
   onDistrictClick?: (district: SelectedDistrict) => void;
   onMapClickForPin?: (lat: number, lng: number) => void;
+  onWaterPinClick?: (pin: WaterPinProperties) => void;
 }
 
 // Cheap representative point for a Polygon/MultiPolygon — first vertex of the
@@ -129,7 +140,7 @@ class LegendControl implements maplibregl.IControl {
 export function MapView({
   satelliteGeoJSON, detections, interventions,
   riskDistricts, selectedDistrictBounds, pinning,
-  onDetectionClick, onDistrictClick, onMapClickForPin,
+  onDetectionClick, onDistrictClick, onMapClickForPin, onWaterPinClick,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -137,6 +148,8 @@ export function MapView({
   detectionsRef.current = detections;
   const pinningRef = useRef(pinning);
   pinningRef.current = pinning;
+  const onWaterPinClickRef = useRef(onWaterPinClick);
+  onWaterPinClickRef.current = onWaterPinClick;
   const onMapClickForPinRef = useRef(onMapClickForPin);
   onMapClickForPinRef.current = onMapClickForPin;
 
@@ -261,7 +274,16 @@ export function MapView({
         source: "district-water-points",
         paint: {
           "circle-radius": 12,
-          "circle-color": ["case", ["==", ["get", "detection_type"], "manual_pin"], "#10b981", "#0ea5e9"],
+          // Mission status wins once a mission exists; otherwise color by
+          // source (manual pin vs auto-detected).
+          "circle-color": [
+            "case",
+            ["==", ["get", "mission_status"], "completed"], "#22c55e",
+            ["==", ["get", "mission_status"], "in_progress"], "#a855f7",
+            ["==", ["get", "mission_status"], "planned"], "#f59e0b",
+            ["==", ["get", "detection_type"], "manual_pin"], "#10b981",
+            "#0ea5e9",
+          ],
           "circle-stroke-color": "#ffffff",
           "circle-stroke-width": 2,
         },
@@ -376,11 +398,42 @@ export function MapView({
 
       container.appendChild(title);
       container.appendChild(body);
+
+      if (props.mission_status) {
+        const missionLine = document.createElement("div");
+        missionLine.style.cssText = "font-size:11px;color:#64748b;margin-top:4px;";
+        missionLine.textContent = `Mission: ${String(props.mission_status).replace("_", " ")}`;
+        container.appendChild(missionLine);
+      }
+
+      const hint = document.createElement("div");
+      hint.style.cssText = "font-size:10px;color:#cbd5e1;margin-top:4px;";
+      hint.textContent = "Click for details";
+      container.appendChild(hint);
+
       pinPopup.setLngLat(e.lngLat).setDOMContent(container).addTo(map);
     });
     map.on("mouseleave", "district-water-points-circle", () => {
       map.getCanvas().style.cursor = "";
       pinPopup.remove();
+    });
+
+    // Water source pin click — opens the detail/CRUD panel, short-circuited
+    // by pin-placement mode (a click while placing a new pin shouldn't also
+    // open an existing pin's panel).
+    map.on("click", "district-water-points-circle", (e) => {
+      if (pinningRef.current) return;
+      if (!e.features?.length || !onWaterPinClickRef.current) return;
+      const props = e.features[0].properties ?? {};
+      onWaterPinClickRef.current({
+        id: props.id,
+        detection_type: props.detection_type,
+        confidence: props.confidence,
+        area_sqm: props.area_sqm ?? null,
+        promoted: props.promoted,
+        notes: props.notes ?? null,
+        mission_status: props.mission_status ?? null,
+      });
     });
 
     mapRef.current = map;

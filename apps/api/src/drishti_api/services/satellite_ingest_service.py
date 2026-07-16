@@ -6,12 +6,18 @@ from shapely.geometry import Point
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from ..models.drone import Mission
 from ..models.geo import AdminUnit
 from ..models.intervention import Alert
 from ..models.satellite import SatelliteAcquisition, SatelliteDetection
 
 DEFAULT_MIN_AREA_SQM = 200.0
 MANUAL_PIN_RADIUS_DEGREES = 3.0 / 111_320  # ~3m, rough deg/meter at these latitudes
+
+
+class DetectionHasMissionError(Exception):
+    """Raised when trying to delete a detection that already has a mission
+    attached — deleting it would orphan that mission's paper trail."""
 
 FetchFn = Callable[..., list[dict]]
 
@@ -129,6 +135,38 @@ def create_manual_water_source(
     db.add(detection)
     db.flush()
     return detection
+
+
+def update_detection_notes(db: Session, detection: SatelliteDetection, notes: str | None) -> SatelliteDetection:
+    detection.notes = notes
+    db.flush()
+    return detection
+
+
+def delete_detection(db: Session, detection: SatelliteDetection) -> None:
+    has_mission = (
+        db.query(Mission).filter(Mission.satellite_detection_id == detection.id).first() is not None
+    )
+    if has_mission:
+        raise DetectionHasMissionError()
+    db.delete(detection)
+    db.flush()
+
+
+def send_detection_to_mission(
+    db: Session, detection: SatelliteDetection, admin_unit_id, triggered_by: str = "satellite_detection"
+) -> Mission:
+    mission = Mission(
+        mission_type="verification",
+        status="planned",
+        admin_unit_id=admin_unit_id,
+        satellite_detection_id=detection.id,
+        triggered_by=triggered_by,
+        tenant_id=detection.tenant_id,
+    )
+    db.add(mission)
+    db.flush()
+    return mission
 
 
 def run_ingestion_for_all_admin_units(

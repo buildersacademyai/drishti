@@ -63,7 +63,7 @@ export interface Alert {
 
 export const fetchSatelliteDetections = () =>
   get<{ type: "FeatureCollection"; features: GeoJSON.Feature[] }>(
-    "/api/v1/satellite-detections"
+    "/api/v1/satellite/detections"
   );
 
 export const fetchDetections = (params?: {

@@ -2,8 +2,10 @@ import uuid
 import json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import func, select
 from ..db import get_db
+from ..models.geo import AdminUnit
+from ..models.intervention import Alert
 from ..models.satellite import SatelliteAcquisition, SatelliteDetection
 from ..schemas.satellite import SatelliteAcquisitionCreate, SatelliteAcquisitionOut
 from ..config import settings
@@ -24,6 +26,45 @@ def create_acquisition(body: SatelliteAcquisitionCreate, db: Session = Depends(g
     db.commit()
     db.refresh(acq)
     return acq
+
+
+@router.get("/acquisitions")
+def list_acquisitions(admin_unit_id: uuid.UUID | None = None, db: Session = Depends(get_db)):
+    detection_counts = dict(
+        db.execute(
+            select(SatelliteDetection.acquisition_id, func.count(SatelliteDetection.id))
+            .group_by(SatelliteDetection.acquisition_id)
+        ).all()
+    )
+    new_site_counts = dict(
+        db.execute(
+            select(SatelliteDetection.acquisition_id, func.count(Alert.id))
+            .join(Alert, Alert.satellite_detection_id == SatelliteDetection.id)
+            .group_by(SatelliteDetection.acquisition_id)
+        ).all()
+    )
+
+    stmt = select(SatelliteAcquisition, AdminUnit.name).join(
+        AdminUnit, SatelliteAcquisition.admin_unit_id == AdminUnit.id
+    )
+    if admin_unit_id:
+        stmt = stmt.where(SatelliteAcquisition.admin_unit_id == admin_unit_id)
+    stmt = stmt.order_by(SatelliteAcquisition.acquired_at.desc())
+
+    rows = db.execute(stmt).all()
+    return [
+        {
+            "id": str(acq.id),
+            "admin_unit_id": str(acq.admin_unit_id),
+            "admin_unit_name": admin_unit_name,
+            "source": acq.source,
+            "cloud_cover_pct": acq.cloud_cover_pct,
+            "acquired_at": acq.acquired_at.isoformat() if acq.acquired_at else None,
+            "detection_count": detection_counts.get(acq.id, 0),
+            "new_site_count": new_site_counts.get(acq.id, 0),
+        }
+        for acq, admin_unit_name in rows
+    ]
 
 
 @router.get("/detections")

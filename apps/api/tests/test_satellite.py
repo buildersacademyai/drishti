@@ -1,4 +1,7 @@
+from datetime import datetime, timedelta
+
 from drishti_api.models.geo import Tenant, AdminUnit
+from drishti_api.models.intervention import Alert
 from drishti_api.models.satellite import SatelliteAcquisition, SatelliteDetection
 from geoalchemy2.shape import from_shape
 from shapely.geometry import box
@@ -73,6 +76,60 @@ def test_promote_detection(client, db):
     resp = client.post(f"/api/v1/satellite/detections/{det.id}/promote")
     assert resp.status_code == 200
     assert resp.json()["promoted"] == "promoted"
+
+
+def test_list_acquisitions_shows_positive_and_negative_scans(client, db):
+    tenant = Tenant(name="T-scans", settings_jsonb={})
+    db.add(tenant)
+    db.flush()
+    unit = AdminUnit(tenant_id=tenant.id, level=2, code="NP-SC", name="ScanDistrict",
+                     population=0, child_pop_under_15=0)
+    db.add(unit)
+    db.flush()
+
+    # Negative scan: acquisition with zero detections
+    clean_acq = SatelliteAcquisition(tenant_id=tenant.id, admin_unit_id=unit.id,
+                                     source="sentinel-2", cloud_cover_pct=8.0,
+                                     acquired_at=datetime.utcnow() - timedelta(days=7))
+    db.add(clean_acq)
+    db.flush()
+
+    # Positive scan: acquisition with a detection that triggered an alert (genuinely new site)
+    hit_acq = SatelliteAcquisition(tenant_id=tenant.id, admin_unit_id=unit.id,
+                                   source="sentinel-2", cloud_cover_pct=4.0,
+                                   acquired_at=datetime.utcnow())
+    db.add(hit_acq)
+    db.flush()
+    det = SatelliteDetection(
+        tenant_id=tenant.id, acquisition_id=hit_acq.id,
+        geometry=from_shape(box(84.3, 27.6, 84.4, 27.7), srid=4326),
+        detection_type="standing_water", confidence=0.9, area_sqm=500.0,
+    )
+    db.add(det)
+    db.flush()
+    alert = Alert(satellite_detection_id=det.id, severity="high",
+                  recipient_role="admin", channel="dashboard", sent_at=datetime.utcnow())
+    db.add(alert)
+    db.flush()
+
+    resp = client.get(f"/api/v1/satellite/acquisitions?admin_unit_id={unit.id}")
+    assert resp.status_code == 200
+    rows = resp.json()
+    assert len(rows) == 2
+
+    by_id = {r["id"]: r for r in rows}
+    clean_row = by_id[str(clean_acq.id)]
+    hit_row = by_id[str(hit_acq.id)]
+
+    assert clean_row["admin_unit_name"] == "ScanDistrict"
+    assert clean_row["detection_count"] == 0
+    assert clean_row["new_site_count"] == 0
+
+    assert hit_row["detection_count"] == 1
+    assert hit_row["new_site_count"] == 1
+
+    # newest first
+    assert rows[0]["id"] == str(hit_acq.id)
 
 
 def test_create_mission(client, db):

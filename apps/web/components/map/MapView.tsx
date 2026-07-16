@@ -13,8 +13,10 @@ interface Props {
   interventions: Intervention[];
   riskDistricts?: Record<string, number>;
   selectedDistrictBounds?: [[number, number], [number, number]] | null;
+  pinning?: boolean;
   onDetectionClick?: (detection: Detection) => void;
   onDistrictClick?: (district: SelectedDistrict) => void;
+  onMapClickForPin?: (lat: number, lng: number) => void;
 }
 
 // Cheap representative point for a Polygon/MultiPolygon — first vertex of the
@@ -126,12 +128,17 @@ class LegendControl implements maplibregl.IControl {
 
 export function MapView({
   satelliteGeoJSON, detections, interventions,
-  riskDistricts, selectedDistrictBounds, onDetectionClick, onDistrictClick,
+  riskDistricts, selectedDistrictBounds, pinning,
+  onDetectionClick, onDistrictClick, onMapClickForPin,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const detectionsRef = useRef(detections);
   detectionsRef.current = detections;
+  const pinningRef = useRef(pinning);
+  pinningRef.current = pinning;
+  const onMapClickForPinRef = useRef(onMapClickForPin);
+  onMapClickForPinRef.current = onMapClickForPin;
 
   const risk = riskDistricts ?? DEFAULT_RISK;
 
@@ -276,8 +283,16 @@ export function MapView({
       addInterventionLayer(map, interventions);
     });
 
+    // Pin placement — takes over all map clicks while active, short-circuiting
+    // the detection/district click handlers below.
+    map.on("click", (e) => {
+      if (!pinningRef.current || !onMapClickForPinRef.current) return;
+      onMapClickForPinRef.current(e.lngLat.lat, e.lngLat.lng);
+    });
+
     // Detection click
     map.on("click", "drone-points", (e) => {
+      if (pinningRef.current) return;
       if (!e.features?.length || !onDetectionClick) return;
       const coords = (e.features[0].geometry as GeoJSON.Point).coordinates;
       const det = detectionsRef.current.find(
@@ -288,6 +303,7 @@ export function MapView({
 
     // District click → zoom + panel
     map.on("click", "district-fill", (e) => {
+      if (pinningRef.current) return;
       if (!e.features?.length) return;
       if (map.queryRenderedFeatures(e.point, { layers: ["drone-points"] }).length) return;
 
@@ -394,6 +410,12 @@ export function MapView({
       })),
     });
   }, [selectedDistrictBounds, satelliteGeoJSON]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.getCanvas().style.cursor = pinning ? "crosshair" : "";
+  }, [pinning]);
 
   return <div ref={containerRef} className="absolute inset-0" />;
 }

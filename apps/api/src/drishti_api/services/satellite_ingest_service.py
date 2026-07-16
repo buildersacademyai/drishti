@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Callable
 
 from geoalchemy2.shape import from_shape
+from shapely.geometry import Point
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -10,6 +11,7 @@ from ..models.intervention import Alert
 from ..models.satellite import SatelliteAcquisition, SatelliteDetection
 
 DEFAULT_MIN_AREA_SQM = 200.0
+MANUAL_PIN_RADIUS_DEGREES = 3.0 / 111_320  # ~3m, rough deg/meter at these latitudes
 
 FetchFn = Callable[..., list[dict]]
 
@@ -85,6 +87,43 @@ def maybe_create_detection_alerts(db: Session, new_sites: list[SatelliteDetectio
         alerts.append(alert)
     db.flush()
     return alerts
+
+
+def _get_or_create_manual_acquisition(db: Session, admin_unit: AdminUnit) -> SatelliteAcquisition:
+    acquisition = (
+        db.query(SatelliteAcquisition)
+        .filter(SatelliteAcquisition.admin_unit_id == admin_unit.id)
+        .filter(SatelliteAcquisition.source == "manual")
+        .first()
+    )
+    if acquisition is None:
+        acquisition = SatelliteAcquisition(admin_unit_id=admin_unit.id, source="manual", cloud_cover_pct=0.0)
+        db.add(acquisition)
+        db.flush()
+    return acquisition
+
+
+def create_manual_water_source(
+    db: Session, admin_unit: AdminUnit, lat: float, lng: float, notes: str | None = None
+) -> SatelliteDetection:
+    """A human directly identified this site — no alert (they already know
+    about it), but it's persisted the same way an automated detection would
+    be, so it shows up everywhere automated sites do (map, scan detail, counts).
+    """
+    acquisition = _get_or_create_manual_acquisition(db, admin_unit)
+    point_polygon = Point(lng, lat).buffer(MANUAL_PIN_RADIUS_DEGREES)
+
+    detection = SatelliteDetection(
+        acquisition_id=acquisition.id,
+        geometry=from_shape(point_polygon, srid=4326),
+        detection_type="manual_pin",
+        confidence=1.0,
+        area_sqm=None,
+        notes=notes,
+    )
+    db.add(detection)
+    db.flush()
+    return detection
 
 
 def run_ingestion_for_all_admin_units(

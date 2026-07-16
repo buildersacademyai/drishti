@@ -4,6 +4,7 @@ from drishti_api.models.geo import AdminUnit, Tenant
 from drishti_api.models.intervention import Alert
 from drishti_api.models.satellite import SatelliteAcquisition, SatelliteDetection
 from drishti_api.services.satellite_ingest_service import (
+    create_manual_water_source,
     find_new_sites,
     maybe_create_detection_alerts,
     persist_acquisition_and_detections,
@@ -133,3 +134,37 @@ def test_run_ingestion_scoped_by_tenant(db):
 
     assert len(results) == 1
     assert results[0]["admin_unit_id"] == unit1.id
+
+
+def test_create_manual_water_source_persists_point_as_polygon(db):
+    tenant, unit = _make_tenant_and_unit(db, name="H1")
+
+    detection = create_manual_water_source(db, unit, lat=27.65, lng=84.35, notes="near village well")
+
+    assert detection.detection_type == "manual_pin"
+    assert detection.notes == "near village well"
+    assert detection.area_sqm is None
+    saved = db.query(SatelliteDetection).filter(SatelliteDetection.id == detection.id).one()
+    assert saved.geometry is not None
+
+
+def test_create_manual_water_source_reuses_manual_acquisition(db):
+    tenant, unit = _make_tenant_and_unit(db, name="H2")
+
+    d1 = create_manual_water_source(db, unit, lat=27.65, lng=84.35)
+    d2 = create_manual_water_source(db, unit, lat=27.66, lng=84.36)
+
+    assert d1.acquisition_id == d2.acquisition_id
+    manual_acqs = db.query(SatelliteAcquisition).filter(
+        SatelliteAcquisition.admin_unit_id == unit.id,
+        SatelliteAcquisition.source == "manual",
+    ).all()
+    assert len(manual_acqs) == 1
+
+
+def test_create_manual_water_source_does_not_create_alert(db):
+    tenant, unit = _make_tenant_and_unit(db, name="H3")
+
+    detection = create_manual_water_source(db, unit, lat=27.65, lng=84.35)
+
+    assert db.query(Alert).filter(Alert.satellite_detection_id == detection.id).count() == 0

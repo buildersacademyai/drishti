@@ -18,3 +18,10 @@ class SatelliteAcquisitionOut(BaseModel):
     storage_uri: str | None
     acquired_at: datetime
     model_config = {"from_attributes": True}
+
+
+class ManualWaterSourceCreate(BaseModel):
+    admin_unit_id: uuid.UUID
+    lat: float
+    lng: float
+    notes: str | None = None

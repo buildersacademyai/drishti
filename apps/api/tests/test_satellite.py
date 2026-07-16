@@ -78,6 +78,36 @@ def test_promote_detection(client, db):
     assert resp.json()["promoted"] == "promoted"
 
 
+def test_create_manual_water_source(client, db):
+    tenant = Tenant(name="T-manual", settings_jsonb={})
+    db.add(tenant)
+    db.flush()
+    unit = AdminUnit(tenant_id=tenant.id, level=2, code="NP-MN", name="ManualDistrict",
+                     population=0, child_pop_under_15=0)
+    db.add(unit)
+    db.flush()
+
+    resp = client.post("/api/v1/satellite/detections/manual", json={
+        "admin_unit_id": str(unit.id),
+        "lat": 27.65,
+        "lng": 84.35,
+        "notes": "near village well",
+    })
+    assert resp.status_code == 201
+    body = resp.json()
+    assert body["detection_type"] == "manual_pin"
+    assert body["notes"] == "near village well"
+
+    listed = client.get(f"/api/v1/satellite/detections?admin_unit_id={unit.id}")
+    assert listed.status_code == 200
+    features = listed.json()["features"]
+    assert len(features) == 1
+    assert features[0]["properties"]["detection_type"] == "manual_pin"
+
+    alerts = db.query(Alert).filter(Alert.satellite_detection_id == body["id"]).count()
+    assert alerts == 0
+
+
 def test_list_acquisitions_shows_positive_and_negative_scans(client, db):
     tenant = Tenant(name="T-scans", settings_jsonb={})
     db.add(tenant)

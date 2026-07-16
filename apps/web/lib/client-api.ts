@@ -108,6 +108,8 @@ export interface Alert {
   severity: string;
   channel: string;
   recipient_role: string | null;
+  admin_unit_name: string | null;
+  risk_score: number | null;
   acknowledged_at: string | null;
   created_at: string | null;
 }

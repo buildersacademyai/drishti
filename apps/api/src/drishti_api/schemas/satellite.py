@@ -25,3 +25,7 @@ class ManualWaterSourceCreate(BaseModel):
     lat: float
     lng: float
     notes: str | None = Field(default=None, max_length=500)
+
+
+class DetectionNotesUpdate(BaseModel):
+    notes: str | None = Field(default=None, max_length=500)

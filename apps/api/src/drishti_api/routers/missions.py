@@ -33,7 +33,17 @@ def list_missions(status: str | None = None, mission_type: str | None = None,
     if mission_type:
         stmt = stmt.where(Mission.mission_type == mission_type)
     missions = db.execute(stmt).scalars().all()
-    return [{"id": str(m.id), "status": m.status, "mission_type": m.mission_type} for m in missions]
+    return [
+        {
+            "id": str(m.id),
+            "status": m.status,
+            "mission_type": m.mission_type,
+            "admin_unit_id": str(m.admin_unit_id),
+            "satellite_detection_id": str(m.satellite_detection_id) if m.satellite_detection_id else None,
+            "planned_at": m.planned_at.isoformat() if m.planned_at else None,
+        }
+        for m in missions
+    ]
 
 
 @router.post("/{mission_id}/dispatch", status_code=200)

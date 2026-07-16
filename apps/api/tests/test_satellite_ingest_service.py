@@ -1,14 +1,19 @@
 from shapely.geometry import box
 
+from drishti_api.models.drone import Mission
 from drishti_api.models.geo import AdminUnit, Tenant
 from drishti_api.models.intervention import Alert
 from drishti_api.models.satellite import SatelliteAcquisition, SatelliteDetection
 from drishti_api.services.satellite_ingest_service import (
+    DetectionHasMissionError,
     create_manual_water_source,
+    delete_detection,
     find_new_sites,
     maybe_create_detection_alerts,
     persist_acquisition_and_detections,
     run_ingestion_for_all_admin_units,
+    send_detection_to_mission,
+    update_detection_notes,
 )
 
 SITE_A = box(84.30, 27.60, 84.31, 27.61)  # a small polygon, "site A"
@@ -168,3 +173,50 @@ def test_create_manual_water_source_does_not_create_alert(db):
     detection = create_manual_water_source(db, unit, lat=27.65, lng=84.35)
 
     assert db.query(Alert).filter(Alert.satellite_detection_id == detection.id).count() == 0
+
+
+def test_update_detection_notes(db):
+    tenant, unit = _make_tenant_and_unit(db, name="I1")
+    detection = create_manual_water_source(db, unit, lat=27.65, lng=84.35, notes="old note")
+
+    updated = update_detection_notes(db, detection, "new note")
+
+    assert updated.notes == "new note"
+    db.refresh(detection)
+    assert detection.notes == "new note"
+
+
+def test_delete_detection_removes_row(db):
+    tenant, unit = _make_tenant_and_unit(db, name="I2")
+    detection = create_manual_water_source(db, unit, lat=27.65, lng=84.35)
+    detection_id = detection.id
+
+    delete_detection(db, detection)
+
+    assert db.query(SatelliteDetection).filter(SatelliteDetection.id == detection_id).first() is None
+
+
+def test_delete_detection_blocked_when_mission_exists(db):
+    tenant, unit = _make_tenant_and_unit(db, name="I3")
+    detection = create_manual_water_source(db, unit, lat=27.65, lng=84.35)
+    send_detection_to_mission(db, detection, unit.id)
+
+    try:
+        delete_detection(db, detection)
+        assert False, "expected DetectionHasMissionError"
+    except DetectionHasMissionError:
+        pass
+
+    assert db.query(SatelliteDetection).filter(SatelliteDetection.id == detection.id).first() is not None
+
+
+def test_send_detection_to_mission_creates_planned_mission(db):
+    tenant, unit = _make_tenant_and_unit(db, name="I4")
+    detection = create_manual_water_source(db, unit, lat=27.65, lng=84.35)
+
+    mission = send_detection_to_mission(db, detection, unit.id)
+
+    assert mission.status == "planned"
+    assert mission.mission_type == "verification"
+    assert mission.satellite_detection_id == detection.id
+    assert mission.admin_unit_id == unit.id

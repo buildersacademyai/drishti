@@ -26,6 +26,7 @@ export const apiPost = <T>(path: string, body?: unknown) =>
   req<T>(path, { method: "POST", body: body != null ? JSON.stringify(body) : undefined });
 export const apiPatch = <T>(path: string, body?: unknown) =>
   req<T>(path, { method: "PATCH", body: body != null ? JSON.stringify(body) : undefined });
+export const apiDelete = <T>(path: string) => req<T>(path, { method: "DELETE" });
 
 // Auth
 export const login = (email: string, password: string) =>
@@ -82,6 +83,14 @@ export const createManualWaterSource = (body: { admin_unit_id: string; lat: numb
   apiPost<ManualWaterSource>("/api/v1/satellite/detections/manual", body);
 export const getSatelliteDetectionsGeoJSON = () =>
   apiGet<GeoJSON.FeatureCollection>("/api/v1/satellite/detections");
+export const updateDetectionNotes = (id: string, notes: string | null) =>
+  apiPatch<{ id: string; notes: string | null }>(`/api/v1/satellite/detections/${id}`, { notes });
+export const deleteDetection = (id: string) =>
+  apiDelete<void>(`/api/v1/satellite/detections/${id}`);
+export const sendDetectionToMission = (id: string) =>
+  apiPost<{ id: string; status: string; mission_type: string; satellite_detection_id: string }>(
+    `/api/v1/satellite/detections/${id}/send-to-mission`
+  );
 
 // Admin units
 export const getAdminUnits = () => apiGet<AdminUnitRef[]>("/api/v1/admin-units");

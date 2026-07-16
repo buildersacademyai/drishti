@@ -1,8 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { getAcquisitions, type Acquisition } from "@/lib/client-api";
 
 export default function ScansPage() {
+  const router = useRouter();
   const [acquisitions, setAcquisitions] = useState<Acquisition[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,18 +54,22 @@ export default function ScansPage() {
             </thead>
             <tbody>
               {acquisitions.map((a) => (
-                <tr key={a.id} className="border-b border-[#f1f5f9] hover:bg-[#f8fafc]/50 transition-colors">
+                <tr
+                  key={a.id}
+                  onClick={() => router.push(`/dashboard/scans/${a.id}`)}
+                  className="border-b border-[#f1f5f9] hover:bg-[#f8fafc]/50 transition-colors cursor-pointer"
+                >
                   <td className="px-4 py-3 font-medium text-[#0f172a]">{a.admin_unit_name ?? "—"}</td>
                   <td className="px-4 py-3 text-[#64748b] text-sm capitalize">{a.source}</td>
                   <td className="px-4 py-3 text-[#64748b] text-sm">{a.cloud_cover_pct.toFixed(1)}%</td>
                   <td className="px-4 py-3 text-[#0f172a] text-sm font-semibold">{a.detection_count}</td>
                   <td className="px-4 py-3">
                     {a.new_site_count > 0 ? (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-[#10b981]/15 text-[#059669]">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-[#10b981]/15 text-[#059669] hover:underline">
                         {a.new_site_count} new site{a.new_site_count !== 1 ? "s" : ""}
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-[#f1f5f9] text-[#94a3b8]">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-[#f1f5f9] text-[#94a3b8] hover:underline">
                         No new activity
                       </span>
                     )}

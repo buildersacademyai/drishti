@@ -67,6 +67,56 @@ def list_acquisitions(admin_unit_id: uuid.UUID | None = None, db: Session = Depe
     ]
 
 
+@router.get("/acquisitions/{acquisition_id}")
+def get_acquisition_detail(acquisition_id: uuid.UUID, db: Session = Depends(get_db)):
+    row = db.execute(
+        select(SatelliteAcquisition, AdminUnit.name)
+        .join(AdminUnit, SatelliteAcquisition.admin_unit_id == AdminUnit.id)
+        .where(SatelliteAcquisition.id == acquisition_id)
+    ).first()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Acquisition not found")
+    acq, admin_unit_name = row
+
+    detections = db.execute(
+        select(SatelliteDetection).where(SatelliteDetection.acquisition_id == acquisition_id)
+    ).scalars().all()
+
+    new_site_ids = set(
+        db.execute(
+            select(SatelliteDetection.id)
+            .join(Alert, Alert.satellite_detection_id == SatelliteDetection.id)
+            .where(SatelliteDetection.acquisition_id == acquisition_id)
+        ).scalars().all()
+    )
+
+    detection_rows = []
+    for d in detections:
+        geom_json = db.execute(
+            select(SatelliteDetection.geometry.ST_AsGeoJSON()).where(SatelliteDetection.id == d.id)
+        ).scalar()
+        detection_rows.append({
+            "id": str(d.id),
+            "detection_type": d.detection_type,
+            "confidence": d.confidence,
+            "area_sqm": d.area_sqm,
+            "promoted": d.promoted,
+            "is_new_site": d.id in new_site_ids,
+            "geometry": json.loads(geom_json) if geom_json else None,
+        })
+    detection_rows.sort(key=lambda d: -(d["area_sqm"] or 0))
+
+    return {
+        "id": str(acq.id),
+        "admin_unit_id": str(acq.admin_unit_id),
+        "admin_unit_name": admin_unit_name,
+        "source": acq.source,
+        "cloud_cover_pct": acq.cloud_cover_pct,
+        "acquired_at": acq.acquired_at.isoformat() if acq.acquired_at else None,
+        "detections": detection_rows,
+    }
+
+
 @router.get("/detections")
 def list_detections(admin_unit_id: uuid.UUID | None = None, db: Session = Depends(get_db)):
     stmt = select(SatelliteDetection)

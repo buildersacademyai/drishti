@@ -76,6 +76,8 @@ export const getPredictions = () => apiGet<Prediction[]>("/api/v1/predictions");
 
 // Satellite scans
 export const getAcquisitions = () => apiGet<Acquisition[]>("/api/v1/satellite/acquisitions");
+export const getAcquisitionDetail = (id: string) =>
+  apiGet<AcquisitionDetail>(`/api/v1/satellite/acquisitions/${id}`);
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -136,4 +138,24 @@ export interface Acquisition {
   acquired_at: string | null;
   detection_count: number;
   new_site_count: number;
+}
+
+export interface AcquisitionDetection {
+  id: string;
+  detection_type: string;
+  confidence: number;
+  area_sqm: number | null;
+  promoted: string;
+  is_new_site: boolean;
+  geometry: GeoJSON.Geometry | null;
+}
+
+export interface AcquisitionDetail {
+  id: string;
+  admin_unit_id: string;
+  admin_unit_name: string | null;
+  source: string;
+  cloud_cover_pct: number;
+  acquired_at: string | null;
+  detections: AcquisitionDetection[];
 }

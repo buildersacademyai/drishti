@@ -132,6 +132,56 @@ def test_list_acquisitions_shows_positive_and_negative_scans(client, db):
     assert rows[0]["id"] == str(hit_acq.id)
 
 
+def test_get_acquisition_detail_includes_per_detection_new_site_flag(client, db):
+    tenant = Tenant(name="T-scan-detail", settings_jsonb={})
+    db.add(tenant)
+    db.flush()
+    unit = AdminUnit(tenant_id=tenant.id, level=2, code="NP-SD", name="DetailDistrict",
+                     population=0, child_pop_under_15=0)
+    db.add(unit)
+    db.flush()
+    acq = SatelliteAcquisition(tenant_id=tenant.id, admin_unit_id=unit.id,
+                               source="sentinel-2", cloud_cover_pct=6.5)
+    db.add(acq)
+    db.flush()
+
+    new_det = SatelliteDetection(
+        tenant_id=tenant.id, acquisition_id=acq.id,
+        geometry=from_shape(box(84.3, 27.6, 84.4, 27.7), srid=4326),
+        detection_type="standing_water", confidence=0.92, area_sqm=500.0,
+    )
+    old_det = SatelliteDetection(
+        tenant_id=tenant.id, acquisition_id=acq.id,
+        geometry=from_shape(box(85.0, 28.0, 85.1, 28.1), srid=4326),
+        detection_type="standing_water", confidence=0.7, area_sqm=200.0,
+    )
+    db.add_all([new_det, old_det])
+    db.flush()
+    alert = Alert(satellite_detection_id=new_det.id, severity="high",
+                  recipient_role="admin", channel="dashboard", sent_at=datetime.utcnow())
+    db.add(alert)
+    db.flush()
+
+    resp = client.get(f"/api/v1/satellite/acquisitions/{acq.id}")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["id"] == str(acq.id)
+    assert data["admin_unit_name"] == "DetailDistrict"
+    assert data["cloud_cover_pct"] == 6.5
+    assert len(data["detections"]) == 2
+
+    by_id = {d["id"]: d for d in data["detections"]}
+    assert by_id[str(new_det.id)]["is_new_site"] is True
+    assert by_id[str(new_det.id)]["area_sqm"] == 500.0
+    assert by_id[str(old_det.id)]["is_new_site"] is False
+
+
+def test_get_acquisition_detail_404_for_unknown_id(client):
+    import uuid as uuid_lib
+    resp = client.get(f"/api/v1/satellite/acquisitions/{uuid_lib.uuid4()}")
+    assert resp.status_code == 404
+
+
 def test_create_mission(client, db):
     tenant = Tenant(name="T4", settings_jsonb={})
     db.add(tenant)

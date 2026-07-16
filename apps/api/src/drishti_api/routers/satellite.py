@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func, select
 from ..db import get_db
+from ..dependencies import get_current_user, CurrentUser
 from ..models.geo import AdminUnit
 from ..models.intervention import Alert
 from ..models.satellite import SatelliteAcquisition, SatelliteDetection
@@ -148,9 +149,13 @@ def list_detections(admin_unit_id: uuid.UUID | None = None, db: Session = Depend
 
 
 @router.post("/detections/manual", status_code=201)
-def create_manual_detection(body: ManualWaterSourceCreate, db: Session = Depends(get_db)):
+def create_manual_detection(
+    body: ManualWaterSourceCreate,
+    db: Session = Depends(get_db),
+    user: CurrentUser = Depends(get_current_user),
+):
     admin_unit = db.get(AdminUnit, body.admin_unit_id)
-    if not admin_unit:
+    if not admin_unit or str(admin_unit.tenant_id) != user.tenant_id:
         raise HTTPException(status_code=404, detail="Admin unit not found")
 
     detection = create_manual_water_source(db, admin_unit, lat=body.lat, lng=body.lng, notes=body.notes)

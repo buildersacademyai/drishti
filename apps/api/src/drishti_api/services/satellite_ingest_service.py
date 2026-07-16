@@ -94,10 +94,14 @@ def _get_or_create_manual_acquisition(db: Session, admin_unit: AdminUnit) -> Sat
         db.query(SatelliteAcquisition)
         .filter(SatelliteAcquisition.admin_unit_id == admin_unit.id)
         .filter(SatelliteAcquisition.source == "manual")
+        .filter(SatelliteAcquisition.tenant_id == admin_unit.tenant_id)
         .first()
     )
     if acquisition is None:
-        acquisition = SatelliteAcquisition(admin_unit_id=admin_unit.id, source="manual", cloud_cover_pct=0.0)
+        acquisition = SatelliteAcquisition(
+            admin_unit_id=admin_unit.id, source="manual", cloud_cover_pct=0.0,
+            tenant_id=admin_unit.tenant_id,
+        )
         db.add(acquisition)
         db.flush()
     return acquisition
@@ -120,6 +124,7 @@ def create_manual_water_source(
         confidence=1.0,
         area_sqm=None,
         notes=notes,
+        tenant_id=admin_unit.tenant_id,
     )
     db.add(detection)
     db.flush()

@@ -44,9 +44,9 @@ export function DistrictPanel({ district, detections, interventions, onClose }: 
   const rl = district.risk != null ? riskLabel(district.risk) : null;
 
   return (
-    <div className="absolute top-4 left-4 z-20 w-72 bg-white rounded-2xl border border-[#e5e7eb] shadow-xl overflow-hidden">
+    <div className="absolute top-4 left-4 z-20 w-72 bg-white rounded-2xl border border-[#e2e8f0] shadow-xl overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 bg-[#1e3a5f] text-white">
+      <div className="flex items-center justify-between px-5 py-4 bg-[#0f172a] text-white">
         <div>
           <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-0.5">District</div>
           <div className="font-bold text-lg capitalize">{district.name.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}</div>
@@ -63,7 +63,7 @@ export function DistrictPanel({ district, detections, interventions, onClose }: 
         {/* Risk badge */}
         {rl && (
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#9ca3af] font-medium">Malaria Risk</span>
+            <span className="text-xs text-[#94a3b8] font-medium">Malaria Risk</span>
             <div className="flex items-center gap-2">
               <div className="w-24 h-2 bg-[#f3f4f6] rounded-full overflow-hidden">
                 <div
@@ -83,7 +83,7 @@ export function DistrictPanel({ district, detections, interventions, onClose }: 
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3">
-          <Stat value={localDetections.length} label="Detections" color="text-[#f59e0b]" />
+          <Stat value={localDetections.length} label="Detections" color="text-[#38bdf8]" />
           <Stat value={highConf} label="High conf." color="text-red-500" />
           <Stat value={localInterventions.length} label="Interventions" color="text-blue-500" />
           <Stat value={completedInt} label="Completed" color="text-green-500" />
@@ -92,7 +92,7 @@ export function DistrictPanel({ district, detections, interventions, onClose }: 
         {/* Detection breakdown */}
         {localDetections.length > 0 && (
           <div className="border-t border-[#f3f4f6] pt-4 space-y-2">
-            <div className="text-xs font-bold text-[#9ca3af] uppercase tracking-wider mb-2">
+            <div className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider mb-2">
               Detection Types
             </div>
             {Object.entries(
@@ -102,8 +102,8 @@ export function DistrictPanel({ district, detections, interventions, onClose }: 
               }, {})
             ).map(([type, count]) => (
               <div key={type} className="flex justify-between text-sm">
-                <span className="text-[#6b7280] capitalize">{type.replace(/_/g, " ")}</span>
-                <span className="font-semibold text-[#1e3a5f]">{count}</span>
+                <span className="text-[#64748b] capitalize">{type.replace(/_/g, " ")}</span>
+                <span className="font-semibold text-[#0f172a]">{count}</span>
               </div>
             ))}
           </div>
@@ -112,7 +112,7 @@ export function DistrictPanel({ district, detections, interventions, onClose }: 
         {/* Intervention status */}
         {localInterventions.length > 0 && (
           <div className="border-t border-[#f3f4f6] pt-4 space-y-2">
-            <div className="text-xs font-bold text-[#9ca3af] uppercase tracking-wider mb-2">
+            <div className="text-xs font-bold text-[#94a3b8] uppercase tracking-wider mb-2">
               Intervention Status
             </div>
             {Object.entries(
@@ -122,15 +122,15 @@ export function DistrictPanel({ district, detections, interventions, onClose }: 
               }, {})
             ).map(([status, count]) => (
               <div key={status} className="flex justify-between text-sm">
-                <span className="text-[#6b7280] capitalize">{status.replace(/_/g, " ")}</span>
-                <span className="font-semibold text-[#1e3a5f]">{count}</span>
+                <span className="text-[#64748b] capitalize">{status.replace(/_/g, " ")}</span>
+                <span className="font-semibold text-[#0f172a]">{count}</span>
               </div>
             ))}
           </div>
         )}
 
         {localDetections.length === 0 && localInterventions.length === 0 && (
-          <p className="text-xs text-[#9ca3af] text-center py-2">No field data for this district yet.</p>
+          <p className="text-xs text-[#94a3b8] text-center py-2">No field data for this district yet.</p>
         )}
       </div>
     </div>
@@ -139,9 +139,9 @@ export function DistrictPanel({ district, detections, interventions, onClose }: 
 
 function Stat({ value, label, color }: { value: number; label: string; color: string }) {
   return (
-    <div className="bg-[#f8f7f4] rounded-xl p-3 text-center">
+    <div className="bg-[#f8fafc] rounded-xl p-3 text-center">
       <div className={`text-2xl font-black ${color}`}>{value}</div>
-      <div className="text-[10px] text-[#9ca3af] uppercase tracking-wide mt-0.5">{color && label}</div>
+      <div className="text-[10px] text-[#94a3b8] uppercase tracking-wide mt-0.5">{color && label}</div>
     </div>
   );
 }

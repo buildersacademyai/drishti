@@ -50,7 +50,7 @@ function Avatar({ photo, name, accent }: { photo: number; name: string; accent: 
   return (
     <div
       className={`relative w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center text-xl font-black mb-6 ${
-        accent ? "bg-[#f59e0b] text-[#050d1a]" : "bg-[#1e3a5f]/10 text-[#1e3a5f]"
+        accent ? "bg-[#38bdf8] text-[#0f172a]" : "bg-[#0f172a]/10 text-[#0f172a]"
       }`}
     >
       <span>{name.charAt(0)}</span>
@@ -71,7 +71,7 @@ function Avatar({ photo, name, accent }: { photo: number; name: string; accent: 
 
 export function Team() {
   return (
-    <section id="team" className="py-28 bg-[#f8f7f4]">
+    <section id="team" className="py-28 bg-[#f8fafc]">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -79,14 +79,14 @@ export function Team() {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <div className="text-xs font-bold text-[#1e3a5f] uppercase tracking-[0.2em] mb-4">
+          <div className="text-xs font-bold text-[#0f172a] uppercase tracking-[0.2em] mb-4">
             The Team
           </div>
-          <h2 className="text-4xl lg:text-5xl font-black text-[#1a1a2e] mb-6 max-w-3xl leading-tight">
+          <h2 className="text-4xl lg:text-5xl font-black text-[#0f172a] mb-6 max-w-3xl leading-tight">
             Built by drone engineers and{" "}
-            <span style={{ color: "#f59e0b" }}>public health experts.</span>
+            <span style={{ color: "#38bdf8" }}>public health experts.</span>
           </h2>
-          <p className="text-lg text-[#6b7280] max-w-2xl leading-relaxed">
+          <p className="text-lg text-[#64748b] max-w-2xl leading-relaxed">
             A cross-disciplinary team combining deep software engineering, epidemiology
             expertise, and operational drone experience in Nepal.
           </p>
@@ -102,25 +102,25 @@ export function Team() {
               transition={{ delay: i * 0.1 }}
               className={`p-8 rounded-2xl border ${
                 m.accent
-                  ? "bg-[#1e3a5f] border-[#1e3a5f]"
-                  : "bg-white border-[#e5e7eb]"
+                  ? "bg-[#0f172a] border-[#0f172a]"
+                  : "bg-white border-[#e2e8f0]"
               }`}
             >
               <Avatar photo={m.photo} name={m.name} accent={m.accent} />
 
-              <div className={`text-xs font-bold uppercase tracking-wider mb-1 ${m.accent ? "text-[#f59e0b]" : "text-[#1e3a5f]"}`}>
+              <div className={`text-xs font-bold uppercase tracking-wider mb-1 ${m.accent ? "text-[#38bdf8]" : "text-[#0f172a]"}`}>
                 {m.org}
               </div>
-              <div className={`font-black text-lg mb-1 ${m.accent ? "text-white" : "text-[#1a1a2e]"}`}>
+              <div className={`font-black text-lg mb-1 ${m.accent ? "text-white" : "text-[#0f172a]"}`}>
                 {m.name}
               </div>
-              <div className={`text-sm font-medium mb-1 ${m.accent ? "text-white/70" : "text-[#1e3a5f]"}`}>
+              <div className={`text-sm font-medium mb-1 ${m.accent ? "text-white/70" : "text-[#0f172a]"}`}>
                 {m.role}
               </div>
-              <div className={`text-xs mb-4 ${m.accent ? "text-white/40" : "text-[#9ca3af]"}`}>
+              <div className={`text-xs mb-4 ${m.accent ? "text-white/40" : "text-[#94a3b8]"}`}>
                 {m.focus}
               </div>
-              <div className={`text-sm leading-relaxed ${m.accent ? "text-white/70" : "text-[#6b7280]"}`}>
+              <div className={`text-sm leading-relaxed ${m.accent ? "text-white/70" : "text-[#64748b]"}`}>
                 {m.bio}
               </div>
             </motion.div>
@@ -132,17 +132,17 @@ export function Team() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="mt-8 p-6 rounded-2xl bg-[#1e3a5f]/5 border border-[#1e3a5f]/15 flex flex-col md:flex-row items-center justify-between gap-4"
+          className="mt-8 p-6 rounded-2xl bg-[#0f172a]/5 border border-[#0f172a]/15 flex flex-col md:flex-row items-center justify-between gap-4"
         >
           <div>
-            <div className="font-black text-[#1a1a2e] text-lg">BuildersAcademy.ai</div>
-            <div className="text-sm text-[#6b7280]">Platform engineering and AI research lead behind Drishti</div>
+            <div className="font-black text-[#0f172a] text-lg">BuildersAcademy.ai</div>
+            <div className="text-sm text-[#64748b]">Platform engineering and AI research lead behind Drishti</div>
           </div>
           <a
             href="https://buildersacademy.ai"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-5 py-2.5 rounded-xl bg-[#1e3a5f] text-white text-sm font-semibold hover:bg-[#2d5a8e] transition-colors flex-shrink-0"
+            className="px-5 py-2.5 rounded-xl bg-[#0f172a] text-white text-sm font-semibold hover:bg-[#1e293b] transition-colors flex-shrink-0"
           >
             buildersacademy.ai →
           </a>

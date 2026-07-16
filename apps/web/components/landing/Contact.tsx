@@ -24,7 +24,7 @@ const channels = [
 
 export function Contact() {
   return (
-    <section id="contact" className="py-28 bg-[#f8f7f4]">
+    <section id="contact" className="py-28 bg-[#f8fafc]">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <motion.div
@@ -32,14 +32,14 @@ export function Contact() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <div className="text-xs font-bold text-[#1e3a5f] uppercase tracking-[0.2em] mb-4">
+            <div className="text-xs font-bold text-[#0f172a] uppercase tracking-[0.2em] mb-4">
               Get Involved
             </div>
-            <h2 className="text-4xl lg:text-5xl font-black text-[#1a1a2e] mb-6 leading-tight">
+            <h2 className="text-4xl lg:text-5xl font-black text-[#0f172a] mb-6 leading-tight">
               Partner with us.{" "}
-              <span style={{ color: "#f59e0b" }}>Build with us.</span>
+              <span style={{ color: "#38bdf8" }}>Build with us.</span>
             </h2>
-            <p className="text-lg text-[#6b7280] leading-relaxed mb-8">
+            <p className="text-lg text-[#64748b] leading-relaxed mb-8">
               Are you a public health authority, emergency response agency, NGO, research
               institution, or developer working on climate-response challenges? We want to
               hear from you — especially if you operate in a region facing disease,
@@ -53,11 +53,11 @@ export function Contact() {
                 { role: "Researchers", cta: "Access anonymized datasets for study" },
                 { role: "Funders", cta: "Support open-source public health infrastructure" },
               ].map((c) => (
-                <div key={c.role} className="flex items-center gap-3 p-4 rounded-xl border border-[#e5e7eb] bg-white">
-                  <div className="w-2 h-2 rounded-full bg-[#f59e0b] flex-shrink-0" />
+                <div key={c.role} className="flex items-center gap-3 p-4 rounded-xl border border-[#e2e8f0] bg-white">
+                  <div className="w-2 h-2 rounded-full bg-[#10b981] flex-shrink-0" />
                   <div>
-                    <span className="font-bold text-[#1a1a2e] text-sm">{c.role}: </span>
-                    <span className="text-sm text-[#6b7280]">{c.cta}</span>
+                    <span className="font-bold text-[#0f172a] text-sm">{c.role}: </span>
+                    <span className="text-sm text-[#64748b]">{c.cta}</span>
                   </div>
                 </div>
               ))}
@@ -76,16 +76,16 @@ export function Contact() {
                 href={c.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-5 p-6 rounded-2xl border border-[#e5e7eb] bg-white hover:border-[#1e3a5f] hover:shadow-lg transition-all group"
+                className="flex items-center gap-5 p-6 rounded-2xl border border-[#e2e8f0] bg-white hover:border-[#0f172a] hover:shadow-lg transition-all group"
               >
-                <div className="w-12 h-12 rounded-xl bg-[#1e3a5f]/10 flex items-center justify-center text-2xl group-hover:bg-[#1e3a5f] transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-[#0f172a]/10 flex items-center justify-center text-2xl group-hover:bg-[#0f172a] transition-colors">
                   {c.icon}
                 </div>
                 <div>
-                  <div className="font-bold text-[#1a1a2e]">{c.title}</div>
-                  <div className="text-sm text-[#6b7280]">{c.value}</div>
+                  <div className="font-bold text-[#0f172a]">{c.title}</div>
+                  <div className="text-sm text-[#64748b]">{c.value}</div>
                 </div>
-                <div className="ml-auto text-[#1e3a5f] opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="ml-auto text-[#0f172a] opacity-0 group-hover:opacity-100 transition-opacity">
                   →
                 </div>
               </a>

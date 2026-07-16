@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Satellite-to-drone dengue prevention for climate-vulnerable communities.",
     start_url: "/dashboard/map",
     display: "standalone",
-    background_color: "#f8f7f4",
-    theme_color: "#1e3a5f",
+    background_color: "#ffffff",
+    theme_color: "#0f172a",
     orientation: "portrait-primary",
     icons: [
       {

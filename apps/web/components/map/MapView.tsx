@@ -71,7 +71,7 @@ class LegendControl implements maplibregl.IControl {
     ];
 
     const title = document.createElement("div");
-    title.style.cssText = "font-size:11px;font-weight:700;color:#1e3a5f;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;";
+    title.style.cssText = "font-size:11px;font-weight:700;color:#0f172a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;";
     title.textContent = "Legend";
     panel.appendChild(title);
 
@@ -81,7 +81,7 @@ class LegendControl implements maplibregl.IControl {
       const dot = document.createElement("span");
       dot.style.cssText = `width:11px;height:11px;border-radius:2px;flex-shrink:0;background:${item.color};border:1px solid rgba(0,0,0,.1);`;
       const lbl = document.createElement("span");
-      lbl.style.cssText = "font-size:11px;color:#6b7280;";
+      lbl.style.cssText = "font-size:11px;color:#64748b;";
       lbl.textContent = item.label;
       row.appendChild(dot);
       row.appendChild(lbl);
@@ -188,7 +188,7 @@ export function MapView({
         id: "nepal-border",
         type: "line",
         source: "nepal-districts",
-        paint: { "line-color": "#1e3a5f", "line-width": 2.5 },
+        paint: { "line-color": "#0f172a", "line-width": 2.5 },
       });
 
       // District labels (above zoom 7)
@@ -203,7 +203,7 @@ export function MapView({
           "text-size": ["interpolate", ["linear"], ["zoom"], 7, 8, 10, 12],
         },
         paint: {
-          "text-color": "#1e3a5f",
+          "text-color": "#0f172a",
           "text-halo-color": "#ffffff",
           "text-halo-width": 1.5,
         },
@@ -268,10 +268,10 @@ export function MapView({
       const name = e.features[0].properties?.DISTRICT as string;
       const score = risk[name];
       const riskHtml = score != null
-        ? `<div style="font-size:11px;color:#6b7280;margin-top:2px;">Risk: <strong style="color:${riskColor(score)}">${(score * 100).toFixed(0)}%</strong></div>`
+        ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">Risk: <strong style="color:${riskColor(score)}">${(score * 100).toFixed(0)}%</strong></div>`
         : "";
       popup.setLngLat(e.lngLat)
-        .setHTML(`<div style="font-family:sans-serif;font-size:12px;font-weight:600;color:#1e3a5f;">${name}</div>${riskHtml}`)
+        .setHTML(`<div style="font-family:sans-serif;font-size:12px;font-weight:600;color:#0f172a;">${name}</div>${riskHtml}`)
         .addTo(map);
     });
     map.on("mouseleave", "district-fill", () => {

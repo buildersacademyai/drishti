@@ -54,7 +54,7 @@ const steps = [
 
 export function Process() {
   return (
-    <section id="process" className="py-28 bg-[#050d1a]">
+    <section id="process" className="py-28 bg-white">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -62,20 +62,20 @@ export function Process() {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <div className="text-xs font-bold text-[#f59e0b] uppercase tracking-[0.2em] mb-4">
+          <div className="text-xs font-bold text-[#0284c7] uppercase tracking-[0.2em] mb-4">
             How It Works
           </div>
-          <h2 className="text-4xl lg:text-5xl font-black text-white mb-6 max-w-3xl leading-tight">
+          <h2 className="text-4xl lg:text-5xl font-black text-[#0f172a] mb-6 max-w-3xl leading-tight">
             Detect → Verify → Respond → Predict.{" "}
             <span className="gradient-text">One shared pipeline, five missions.</span>
           </h2>
-          <p className="text-lg text-white/50 max-w-2xl leading-relaxed">
+          <p className="text-lg text-[#64748b] max-w-2xl leading-relaxed">
             The same satellite-to-drone architecture powers every scope. Here&apos;s the
             pipeline in action for Disease Control — our most mature, furthest-along implementation.
           </p>
         </motion.div>
 
-        <div className="text-xs font-bold text-[#f59e0b] uppercase tracking-[0.2em] mb-6">
+        <div className="text-xs font-bold text-[#0284c7] uppercase tracking-[0.2em] mb-6">
           Worked example: Disease Control
         </div>
 
@@ -87,20 +87,20 @@ export function Process() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.06 }}
-              className="relative p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] transition-colors group"
+              className="relative p-6 rounded-2xl bg-white border border-[#e2e8f0] hover:bg-[#f8fafc] transition-colors group"
             >
               {/* Step connector */}
               {i < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-1/2 -right-2 w-4 h-0.5 bg-gradient-to-r from-white/20 to-transparent z-10" />
+                <div className="hidden lg:block absolute top-1/2 -right-2 w-4 h-0.5 bg-gradient-to-r from-[#cbd5e1] to-transparent z-10" />
               )}
 
               <div className="flex items-start justify-between mb-4">
                 <span className="text-3xl">{s.icon}</span>
-                <span className="text-xs font-black text-white/20">{s.step}</span>
+                <span className="text-xs font-black text-[#cbd5e1]">{s.step}</span>
               </div>
 
-              <h3 className="text-sm font-bold text-white mb-2">{s.title}</h3>
-              <p className="text-xs text-white/40 leading-relaxed">{s.desc}</p>
+              <h3 className="text-sm font-bold text-[#0f172a] mb-2">{s.title}</h3>
+              <p className="text-xs text-[#64748b] leading-relaxed">{s.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -108,13 +108,13 @@ export function Process() {
         {/* Phase labels */}
         <div className="mt-8 grid grid-cols-3 gap-4 text-center">
           {[
-            { label: "VERIFY", sub: "Steps 1–3 · Satellite", color: "text-blue-400" },
-            { label: "VALIDATE", sub: "Steps 4–5 · Drone", color: "text-amber-400" },
-            { label: "EXECUTE", sub: "Steps 6–8 · Intervention + Predict", color: "text-green-400" },
+            { label: "VERIFY", sub: "Steps 1–3 · Satellite", color: "text-[#0284c7]" },
+            { label: "VALIDATE", sub: "Steps 4–5 · Drone", color: "text-[#475569]" },
+            { label: "EXECUTE", sub: "Steps 6–8 · Intervention + Predict", color: "text-[#059669]" },
           ].map((p) => (
-            <div key={p.label} className="p-4 rounded-xl border border-white/10">
+            <div key={p.label} className="p-4 rounded-xl border border-[#e2e8f0]">
               <div className={`text-xs font-black ${p.color} tracking-widest mb-1`}>{p.label}</div>
-              <div className="text-xs text-white/30">{p.sub}</div>
+              <div className="text-xs text-[#94a3b8]">{p.sub}</div>
             </div>
           ))}
         </div>

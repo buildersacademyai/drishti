@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth-client";
 import { Sidebar } from "@/components/admin/Sidebar";
 import { DroneLoader } from "@/components/DroneLoader";
-import { LogoIcon } from "@/components/LogoIcon";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -20,8 +19,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-[#050d1a] flex flex-col items-center justify-center gap-6">
-        <LogoIcon size={72} />
+      <div className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center gap-6">
+        <img src="/logo.png" alt="Drishti" className="w-24 h-24 rounded-xl object-contain" />
         <DroneLoader />
         <p className="text-white/20 text-[10px] tracking-[0.3em] uppercase">Loading</p>
       </div>
@@ -29,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex h-screen bg-[#f8f7f4]">
+    <div className="flex h-screen bg-[#f8fafc]">
       <Sidebar />
       <div className="flex-1 ml-56 flex flex-col min-h-screen overflow-auto">
         {children}

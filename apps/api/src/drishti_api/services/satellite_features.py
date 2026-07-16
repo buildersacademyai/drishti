@@ -6,6 +6,7 @@ import rasterio
 from geoalchemy2.shape import to_shape
 from rasterio.features import shapes as rio_shapes
 from rasterio.mask import mask as rio_mask
+from scipy import ndimage
 from shapely.geometry import mapping, shape as shapely_shape
 from shapely.ops import transform as shapely_transform
 
@@ -15,9 +16,11 @@ STAC_URL = "https://planetarycomputer.microsoft.com/api/stac/v1"
 COLLECTION = "sentinel-2-l2a"
 NDWI_THRESHOLD = 0.0
 MAX_CLOUD_COVER_PCT = 20
+# 8-connected structuring element for the morphological cleanup below.
+_MORPH_STRUCTURE = np.ones((3, 3), dtype=bool)
 
 
-def fetch_water_polygons_for_district(admin_unit: AdminUnit, min_area_sqm: float = 50.0) -> list[dict]:
+def fetch_water_polygons_for_district(admin_unit: AdminUnit, min_area_sqm: float = 200.0) -> list[dict]:
     """Real Sentinel-2 NDWI water-body extraction via Microsoft Planetary Computer.
 
     Not exercised by the automated test suite (network + live imagery) —
@@ -65,6 +68,14 @@ def fetch_water_polygons_for_district(admin_unit: AdminUnit, min_area_sqm: float
     denom = green_band + nir_band
     ndwi = np.where(denom == 0, 0.0, (green_band - nir_band) / np.where(denom == 0, 1, denom))
     water_mask = ndwi > NDWI_THRESHOLD
+
+    # Raw per-pixel thresholding fragments a single contiguous river into
+    # hundreds of speckle-noise polygons (mixed pixels, shadow, turbidity
+    # break up what's really one water body). Opening removes isolated
+    # single-pixel noise; closing re-merges the gaps that fragment a real,
+    # continuous water body into disconnected pieces.
+    water_mask = ndimage.binary_opening(water_mask, structure=_MORPH_STRUCTURE)
+    water_mask = ndimage.binary_closing(water_mask, structure=_MORPH_STRUCTURE, iterations=2)
 
     to_4326 = pyproj.Transformer.from_crs(scene_crs, "EPSG:4326", always_xy=True).transform
     geod = pyproj.Geod(ellps="WGS84")

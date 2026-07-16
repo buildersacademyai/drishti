@@ -110,6 +110,7 @@ export interface Alert {
   recipient_role: string | null;
   admin_unit_name: string | null;
   risk_score: number | null;
+  detection_area_sqm: number | null;
   acknowledged_at: string | null;
   created_at: string | null;
 }

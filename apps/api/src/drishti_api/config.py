@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production-use-secrets-token-hex-32"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24  # 24 hours
+    planetary_computer_api_key: str | None = None
 
     model_config = {"env_file": ".env"}
 

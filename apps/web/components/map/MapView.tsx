@@ -127,12 +127,22 @@ export function MapView({
         version: 8,
         glyphs: "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
         sources: {
-          // ESRI satellite imagery
+          // OSM street map — fallback base layer where Esri has no deep-zoom coverage
+          osm: {
+            type: "raster",
+            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            maxzoom: 19,
+            attribution: "© OpenStreetMap contributors",
+          },
+          // ESRI satellite imagery — real coverage in rural Nepal often tops out well
+          // below z19; layer maxzoom below caps where we stop drawing it so OSM
+          // shows through instead of Esri's "map data not currently available" tile.
           satellite: {
             type: "raster",
             tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
             tileSize: 256,
-            maxzoom: 19,
+            maxzoom: 16,
             attribution: "© Esri, Maxar, Earthstar Geographics",
           },
           // ESRI road + label overlay
@@ -140,12 +150,13 @@ export function MapView({
             type: "raster",
             tiles: ["https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"],
             tileSize: 256,
-            maxzoom: 19,
+            maxzoom: 16,
           },
         },
         layers: [
-          { id: "satellite", type: "raster", source: "satellite" },
-          { id: "esri-labels", type: "raster", source: "esri-labels", paint: { "raster-opacity": 0.85 } },
+          { id: "osm", type: "raster", source: "osm" },
+          { id: "satellite", type: "raster", source: "satellite", maxzoom: 16 },
+          { id: "esri-labels", type: "raster", source: "esri-labels", maxzoom: 16, paint: { "raster-opacity": 0.85 } },
         ],
       },
       center: CENTER,

@@ -74,6 +74,9 @@ export const acknowledgeAlert = (id: string) =>
 // Predictions
 export const getPredictions = () => apiGet<Prediction[]>("/api/v1/predictions");
 
+// Satellite scans
+export const getAcquisitions = () => apiGet<Acquisition[]>("/api/v1/satellite/acquisitions");
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export interface Mission {
@@ -122,4 +125,15 @@ export interface Prediction {
   uncertainty: number;
   target_horizon: number;
   target_date: string | null;
+}
+
+export interface Acquisition {
+  id: string;
+  admin_unit_id: string;
+  admin_unit_name: string | null;
+  source: string;
+  cloud_cover_pct: number;
+  acquired_at: string | null;
+  detection_count: number;
+  new_site_count: number;
 }

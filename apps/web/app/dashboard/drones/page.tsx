@@ -7,6 +7,7 @@ interface Drone {
   name: string;
   model: string;
   serial_number: string;
+  connection_string: string;
   status: string;
   battery_pct: number | null;
   total_flight_hours: number;
@@ -49,7 +50,7 @@ export default function DronesPage() {
   const [selected, setSelected] = useState<Drone | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
-  const [form, setForm] = useState({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "" });
+  const [form, setForm] = useState({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "", connection_string: "" });
 
   async function load() {
     setLoading(true);
@@ -75,9 +76,10 @@ export default function DronesPage() {
         home_lat: form.home_lat ? parseFloat(form.home_lat) : undefined,
         home_lng: form.home_lng ? parseFloat(form.home_lng) : undefined,
         notes: form.notes || undefined,
+        connection_string: form.connection_string || undefined,
       });
       setShowForm(false);
-      setForm({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "" });
+      setForm({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "", connection_string: "" });
       setMsg({ text: "Drone registered.", ok: true });
       load();
     } catch (err) {
@@ -99,6 +101,16 @@ export default function DronesPage() {
     try {
       await apiPatch(`/api/v1/drones/${id}`, { battery_pct: pct });
       setMsg({ text: "Battery updated.", ok: true });
+      load();
+    } catch (err) {
+      setMsg({ text: err instanceof Error ? err.message : "Failed", ok: false });
+    }
+  }
+
+  async function handleConnectionStringUpdate(id: string, connectionString: string) {
+    try {
+      await apiPatch(`/api/v1/drones/${id}`, { connection_string: connectionString });
+      setMsg({ text: "Connection string updated.", ok: true });
       load();
     } catch (err) {
       setMsg({ text: err instanceof Error ? err.message : "Failed", ok: false });
@@ -163,6 +175,7 @@ export default function DronesPage() {
               { label: "Serial Number", key: "serial_number", placeholder: "SN-123456" },
               { label: "Home Lat", key: "home_lat", placeholder: "27.529" },
               { label: "Home Lng", key: "home_lng", placeholder: "84.354" },
+              { label: "Connection String", key: "connection_string", placeholder: "udp:127.0.0.1:14550" },
               { label: "Notes", key: "notes", placeholder: "optional" },
             ].map(f => (
               <div key={f.key} className="space-y-1">
@@ -302,6 +315,25 @@ export default function DronesPage() {
                   onMouseUp={e => handleBatteryUpdate(selected.id, parseInt((e.target as HTMLInputElement).value))}
                   className="w-full accent-[#0f172a]"
                 />
+              </div>
+
+              {/* MAVLink connection */}
+              <div className="bg-white border border-[#e2e8f0] rounded-xl p-4 shadow-sm space-y-3">
+                <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wide">MAVLink Connection</p>
+                <input
+                  type="text"
+                  defaultValue={selected.connection_string}
+                  placeholder="udp:127.0.0.1:14550"
+                  onBlur={e => {
+                    if (e.target.value !== selected.connection_string) {
+                      handleConnectionStringUpdate(selected.id, e.target.value);
+                    }
+                  }}
+                  className="w-full border border-[#e2e8f0] rounded-lg px-3 py-2 text-xs font-mono text-[#0f172a] focus:outline-none focus:ring-1 focus:ring-[#0f172a]/30"
+                />
+                <p className="text-[10px] text-[#94a3b8]">
+                  {selected.connection_string ? "Live telemetry polling every 10s." : "No connection set — status/battery must be updated manually."}
+                </p>
               </div>
             </>
           ) : (

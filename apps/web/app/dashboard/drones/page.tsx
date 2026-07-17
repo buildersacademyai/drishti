@@ -8,6 +8,7 @@ interface Drone {
   model: string;
   serial_number: string;
   connection_string: string;
+  telemetry_source_ip: string;
   status: string;
   battery_pct: number | null;
   total_flight_hours: number;
@@ -52,7 +53,7 @@ export default function DronesPage() {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "" });
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
-  const [form, setForm] = useState({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "", connection_string: "" });
+  const [form, setForm] = useState({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "", connection_string: "", telemetry_source_ip: "" });
 
   async function load() {
     setLoading(true);
@@ -79,9 +80,10 @@ export default function DronesPage() {
         home_lng: form.home_lng ? parseFloat(form.home_lng) : undefined,
         notes: form.notes || undefined,
         connection_string: form.connection_string || undefined,
+        telemetry_source_ip: form.telemetry_source_ip || undefined,
       });
       setShowForm(false);
-      setForm({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "", connection_string: "" });
+      setForm({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "", connection_string: "", telemetry_source_ip: "" });
       setMsg({ text: "Drone registered.", ok: true });
       load();
     } catch (err) {
@@ -113,6 +115,16 @@ export default function DronesPage() {
     try {
       await apiPatch(`/api/v1/drones/${id}`, { connection_string: connectionString });
       setMsg({ text: "Connection string updated.", ok: true });
+      load();
+    } catch (err) {
+      setMsg({ text: err instanceof Error ? err.message : "Failed", ok: false });
+    }
+  }
+
+  async function handleTelemetrySourceIpUpdate(id: string, telemetrySourceIp: string) {
+    try {
+      await apiPatch(`/api/v1/drones/${id}`, { telemetry_source_ip: telemetrySourceIp });
+      setMsg({ text: "Telemetry source IP updated.", ok: true });
       load();
     } catch (err) {
       setMsg({ text: err instanceof Error ? err.message : "Failed", ok: false });
@@ -210,6 +222,7 @@ export default function DronesPage() {
               { label: "Home Lat", key: "home_lat", placeholder: "27.529" },
               { label: "Home Lng", key: "home_lng", placeholder: "84.354" },
               { label: "Connection String", key: "connection_string", placeholder: "udp:127.0.0.1:14550" },
+              { label: "Telemetry Source IP", key: "telemetry_source_ip", placeholder: "192.168.4.1" },
               { label: "Notes", key: "notes", placeholder: "optional" },
             ].map(f => (
               <div key={f.key} className="space-y-1">
@@ -389,6 +402,28 @@ export default function DronesPage() {
               />
               <p className="text-[10px] text-[#94a3b8]">
                 {selected.connection_string ? "Live telemetry polling every 10s." : "No connection set — status/battery must be updated manually."}
+              </p>
+            </div>
+
+            {/* Telemetry source IP */}
+            <div className="p-4 space-y-3">
+              <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wide">Telemetry Source IP</p>
+              <input
+                key={selected.id}
+                type="text"
+                defaultValue={selected.telemetry_source_ip}
+                placeholder="192.168.4.1"
+                onBlur={e => {
+                  if (e.target.value !== selected.telemetry_source_ip) {
+                    handleTelemetrySourceIpUpdate(selected.id, e.target.value);
+                  }
+                }}
+                className="w-full border border-[#e2e8f0] rounded-lg px-3 py-2 text-xs font-mono text-[#0f172a] focus:outline-none focus:ring-1 focus:ring-[#0f172a]/30"
+              />
+              <p className="text-[10px] text-[#94a3b8]">
+                {selected.telemetry_source_ip
+                  ? "Only telemetry from this IP is trusted — packets from anyone else on the network are rejected."
+                  : "Unset — any device on the network can send telemetry for this drone. Set this to the drone's actual IP to prevent spoofing."}
               </p>
             </div>
           </div>

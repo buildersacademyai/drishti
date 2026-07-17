@@ -1,3 +1,4 @@
+import ipaddress
 import uuid
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
@@ -23,6 +24,15 @@ def _validate_connection_string(connection_string: str) -> None:
         )
 
 
+def _validate_telemetry_source_ip(telemetry_source_ip: str) -> None:
+    if not telemetry_source_ip:
+        return
+    try:
+        ipaddress.ip_address(telemetry_source_ip)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="telemetry_source_ip must be a valid IP address")
+
+
 class CreateDroneRequest(BaseModel):
     name: str
     model: str = ""
@@ -31,6 +41,7 @@ class CreateDroneRequest(BaseModel):
     home_lng: float | None = None
     notes: str = ""
     connection_string: str = ""
+    telemetry_source_ip: str = ""
 
 
 class UpdateDroneRequest(BaseModel):
@@ -46,6 +57,7 @@ class UpdateDroneRequest(BaseModel):
     notes: str | None = None
     current_mission_id: str | None = None
     connection_string: str | None = None
+    telemetry_source_ip: str | None = None
 
 
 def _serialize(d: Drone) -> dict:
@@ -55,6 +67,7 @@ def _serialize(d: Drone) -> dict:
         "model": d.model or "",
         "serial_number": d.serial_number or "",
         "connection_string": d.connection_string or "",
+        "telemetry_source_ip": d.telemetry_source_ip or "",
         "status": d.status,
         "battery_pct": d.battery_pct,
         "total_flight_hours": d.total_flight_hours or 0,
@@ -86,6 +99,7 @@ def get_drone(drone_id: uuid.UUID, db: Session = Depends(get_db)):
 @router.post("", status_code=201)
 def create_drone(body: CreateDroneRequest, db: Session = Depends(get_db)):
     _validate_connection_string(body.connection_string)
+    _validate_telemetry_source_ip(body.telemetry_source_ip)
     d = Drone(
         id=uuid.uuid4(),
         tenant_id=settings.seed_tenant_id,
@@ -93,6 +107,7 @@ def create_drone(body: CreateDroneRequest, db: Session = Depends(get_db)):
         model=body.model or None,
         serial_number=body.serial_number or None,
         connection_string=body.connection_string or None,
+        telemetry_source_ip=body.telemetry_source_ip or None,
         status="at_station",
         home_lat=body.home_lat,
         home_lng=body.home_lng,
@@ -134,6 +149,9 @@ def update_drone(drone_id: uuid.UUID, body: UpdateDroneRequest, db: Session = De
     if body.connection_string is not None:
         _validate_connection_string(body.connection_string)
         d.connection_string = body.connection_string or None
+    if body.telemetry_source_ip is not None:
+        _validate_telemetry_source_ip(body.telemetry_source_ip)
+        d.telemetry_source_ip = body.telemetry_source_ip or None
     if body.current_mission_id is not None:
         d.current_mission_id = uuid.UUID(body.current_mission_id)
     d.last_seen = datetime.utcnow()

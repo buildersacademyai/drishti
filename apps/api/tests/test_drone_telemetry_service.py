@@ -211,3 +211,36 @@ def _make_tenant_for_telemetry(db):
     db.add(tenant)
     db.flush()
     return tenant
+
+
+def test_poll_drone_connection_now_updates_row_and_returns_snapshot(db):
+    from drishti_api.services.drone_telemetry_service import poll_drone_connection_now
+
+    tenant = _make_tenant_for_telemetry(db)
+    drone = _make_drone(db, tenant.id, "Eagle-7", connection_string="udp:127.0.0.1:14550")
+    heartbeat = FakeMessage(base_mode=ARMED_BASE_MODE)
+    position = FakeMessage(lat=275_290_000, lon=843_540_000)
+    sys_status = FakeMessage(battery_remaining=61)
+    fake = FakeConnection(heartbeat=heartbeat, messages={"GLOBAL_POSITION_INT": position, "SYS_STATUS": sys_status})
+
+    snapshot = poll_drone_connection_now(db, drone, connect_fn=lambda conn_str: fake)
+
+    assert snapshot == {"armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": 61}
+    db.refresh(drone)
+    assert drone.status == "in_field"
+    assert drone.battery_pct == 61
+    assert drone.last_seen is not None
+
+
+def test_poll_drone_connection_now_returns_none_when_unreachable(db):
+    from drishti_api.services.drone_telemetry_service import poll_drone_connection_now
+
+    tenant = _make_tenant_for_telemetry(db)
+    drone = _make_drone(db, tenant.id, "Eagle-8", connection_string="udp:127.0.0.1:14550")
+    fake = FakeConnection(heartbeat=None)
+
+    snapshot = poll_drone_connection_now(db, drone, connect_fn=lambda conn_str: fake)
+
+    assert snapshot is None
+    db.refresh(drone)
+    assert drone.last_seen is None

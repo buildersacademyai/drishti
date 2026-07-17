@@ -34,6 +34,11 @@ class CreateDroneRequest(BaseModel):
 
 
 class UpdateDroneRequest(BaseModel):
+    name: str | None = None
+    model: str | None = None
+    serial_number: str | None = None
+    home_lat: float | None = None
+    home_lng: float | None = None
     status: str | None = None
     battery_pct: int | None = None
     current_lat: float | None = None
@@ -104,6 +109,16 @@ def update_drone(drone_id: uuid.UUID, body: UpdateDroneRequest, db: Session = De
     d = db.get(Drone, drone_id)
     if not d:
         raise HTTPException(status_code=404, detail="Drone not found")
+    if body.name is not None:
+        d.name = body.name
+    if body.model is not None:
+        d.model = body.model or None
+    if body.serial_number is not None:
+        d.serial_number = body.serial_number or None
+    if body.home_lat is not None:
+        d.home_lat = body.home_lat
+    if body.home_lng is not None:
+        d.home_lng = body.home_lng
     if body.status is not None:
         if body.status not in VALID_STATUSES:
             raise HTTPException(status_code=422, detail=f"Invalid status. Valid: {VALID_STATUSES}")

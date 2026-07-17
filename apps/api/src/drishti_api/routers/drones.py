@@ -22,7 +22,7 @@ CONNECTION_STALE_AFTER_S = 30  # 3x the beat poll interval
 WORKER_RESPONSE_TIMEOUT_S = HEARTBEAT_TIMEOUT_S + 3 * MESSAGE_TIMEOUT_S + 5
 
 VALID_STATUSES = {"at_station", "in_field", "charging", "maintenance", "offline"}
-VALID_CONNECTION_SCHEMES = ("udp:", "tcp:")
+VALID_CONNECTION_SCHEMES = ("udp:", "udpout:", "udpin:", "tcp:")
 
 
 def _validate_connection_string(connection_string: str) -> None:

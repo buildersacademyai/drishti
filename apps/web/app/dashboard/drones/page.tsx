@@ -101,16 +101,6 @@ export default function DronesPage() {
     }
   }
 
-  async function handleBatteryUpdate(id: string, pct: number) {
-    try {
-      await apiPatch(`/api/v1/drones/${id}`, { battery_pct: pct });
-      setMsg({ text: "Battery updated.", ok: true });
-      load();
-    } catch (err) {
-      setMsg({ text: err instanceof Error ? err.message : "Failed", ok: false });
-    }
-  }
-
   async function handleConnectionStringUpdate(id: string, connectionString: string) {
     try {
       await apiPatch(`/api/v1/drones/${id}`, { connection_string: connectionString });
@@ -335,6 +325,10 @@ export default function DronesPage() {
             </div>
 
             <div className="p-4 space-y-3 text-sm border-b border-[#f3f4f6]">
+              <div className="flex justify-between items-center gap-3">
+                <span className="text-[#94a3b8]">Battery</span>
+                <BatteryBar pct={selected.battery_pct} />
+              </div>
               <Row label="Model" value={selected.model || "—"} />
               <Row label="Serial" value={selected.serial_number || "—"} mono />
               <Row label="Flight Hours" value={`${selected.total_flight_hours.toFixed(1)} h`} />
@@ -369,20 +363,6 @@ export default function DronesPage() {
                   );
                 })}
               </div>
-            </div>
-
-            {/* Battery control */}
-            <div className="p-4 space-y-3 border-b border-[#f3f4f6]">
-              <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wide">Update Battery</p>
-              <BatteryBar pct={selected.battery_pct} />
-              <input
-                type="range"
-                min={0}
-                max={100}
-                defaultValue={selected.battery_pct ?? 0}
-                onMouseUp={e => handleBatteryUpdate(selected.id, parseInt((e.target as HTMLInputElement).value))}
-                className="w-full accent-[#0f172a]"
-              />
             </div>
 
             {/* MAVLink connection */}

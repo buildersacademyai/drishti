@@ -309,47 +309,19 @@ export default function DronesPage() {
                     </button>
                   )}
                 </div>
-                {editing ? (
-                  <form onSubmit={handleEditSave} key={selected.id} className="p-4 space-y-3">
-                    {[
-                      { label: "Name", key: "name", placeholder: "Eagle-1" },
-                      { label: "Model", key: "model", placeholder: "DJI Matrice 300 RTK" },
-                      { label: "Serial Number", key: "serial_number", placeholder: "SN-123456" },
-                      { label: "Home Lat", key: "home_lat", placeholder: "27.529" },
-                      { label: "Home Lng", key: "home_lng", placeholder: "84.354" },
-                      { label: "Notes", key: "notes", placeholder: "optional" },
-                    ].map(f => (
-                      <div key={f.key} className="space-y-1">
-                        <label className="text-xs font-medium text-[#64748b]">{f.label}</label>
-                        <input
-                          required={f.key === "name"}
-                          value={(editForm as Record<string, string>)[f.key]}
-                          onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })}
-                          placeholder={f.placeholder}
-                          className="w-full border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#0f172a] focus:outline-none focus:ring-1 focus:ring-[#0f172a]/30"
-                        />
-                      </div>
-                    ))}
-                    <div className="flex gap-2 pt-1">
-                      <button type="submit" className="bg-[#0f172a] text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-[#1e293b]">Save</button>
-                      <button type="button" onClick={() => setEditing(false)} className="border border-[#e2e8f0] text-[#64748b] text-xs px-3 py-1.5 rounded-lg hover:bg-[#f8fafc]">Cancel</button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="p-4 space-y-3 text-sm">
-                    <Row label="Model" value={selected.model || "—"} />
-                    <Row label="Serial" value={selected.serial_number || "—"} mono />
-                    <Row label="Flight Hours" value={`${selected.total_flight_hours.toFixed(1)} h`} />
-                    <Row label="Registered" value={selected.registered_at ? new Date(selected.registered_at).toLocaleDateString() : "—"} />
-                    {selected.home_lat != null && (
-                      <Row label="Home Base" value={`${selected.home_lat.toFixed(4)}, ${selected.home_lng?.toFixed(4)}`} mono />
-                    )}
-                    {selected.current_lat != null && (
-                      <Row label="Last Coords" value={`${selected.current_lat.toFixed(4)}, ${selected.current_lng?.toFixed(4)}`} mono />
-                    )}
-                    {selected.notes && <Row label="Notes" value={selected.notes} />}
-                  </div>
-                )}
+                <div className="p-4 space-y-3 text-sm">
+                  <Row label="Model" value={selected.model || "—"} />
+                  <Row label="Serial" value={selected.serial_number || "—"} mono />
+                  <Row label="Flight Hours" value={`${selected.total_flight_hours.toFixed(1)} h`} />
+                  <Row label="Registered" value={selected.registered_at ? new Date(selected.registered_at).toLocaleDateString() : "—"} />
+                  {selected.home_lat != null && (
+                    <Row label="Home Base" value={`${selected.home_lat.toFixed(4)}, ${selected.home_lng?.toFixed(4)}`} mono />
+                  )}
+                  {selected.current_lat != null && (
+                    <Row label="Last Coords" value={`${selected.current_lat.toFixed(4)}, ${selected.current_lng?.toFixed(4)}`} mono />
+                  )}
+                  {selected.notes && <Row label="Notes" value={selected.notes} />}
+                </div>
               </div>
 
               {/* Status control */}
@@ -417,6 +389,49 @@ export default function DronesPage() {
           )}
         </div>
       </div>
+
+      {/* Edit drone modal */}
+      {editing && selected && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+          onClick={() => setEditing(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="bg-[#0f172a] px-5 py-4">
+              <p className="text-white/60 text-xs uppercase tracking-wide">Edit Drone</p>
+              <p className="text-white font-bold text-lg mt-0.5">{selected.name}</p>
+            </div>
+            <form onSubmit={handleEditSave} key={selected.id} className="p-5 space-y-3">
+              {[
+                { label: "Name", key: "name", placeholder: "Eagle-1" },
+                { label: "Model", key: "model", placeholder: "DJI Matrice 300 RTK" },
+                { label: "Serial Number", key: "serial_number", placeholder: "SN-123456" },
+                { label: "Home Lat", key: "home_lat", placeholder: "27.529" },
+                { label: "Home Lng", key: "home_lng", placeholder: "84.354" },
+                { label: "Notes", key: "notes", placeholder: "optional" },
+              ].map(f => (
+                <div key={f.key} className="space-y-1">
+                  <label className="text-xs font-medium text-[#64748b]">{f.label}</label>
+                  <input
+                    required={f.key === "name"}
+                    value={(editForm as Record<string, string>)[f.key]}
+                    onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })}
+                    placeholder={f.placeholder}
+                    className="w-full border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#0f172a] focus:outline-none focus:ring-1 focus:ring-[#0f172a]/30"
+                  />
+                </div>
+              ))}
+              <div className="flex gap-2 pt-1">
+                <button type="submit" className="bg-[#0f172a] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#1e293b]">Save</button>
+                <button type="button" onClick={() => setEditing(false)} className="border border-[#e2e8f0] text-[#64748b] text-sm px-4 py-2 rounded-lg hover:bg-[#f8fafc]">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -137,7 +137,9 @@ def poll_all_drones(db: Session, connect_fn=mavutil.mavlink_connection) -> list:
     connection failure is swallowed here so the rest of the fleet still
     updates this cycle — the next 10s tick retries naturally.
     """
-    drones = db.query(Drone).filter(Drone.connection_string.isnot(None)).all()
+    drones = db.query(Drone).filter(
+        Drone.connection_string.isnot(None), Drone.telemetry_paused.is_(False)
+    ).all()
     updated = []
     for drone in drones:
         try:
@@ -165,3 +167,21 @@ def poll_drone_connection_now(db: Session, drone: Drone, connect_fn=mavutil.mavl
     _apply_snapshot(drone, snapshot)
     db.flush()
     return snapshot
+
+
+def pause_drone_telemetry(db: Session, drone: Drone) -> None:
+    """User-initiated "Disconnect" — stops the periodic poller from touching
+    this drone and drops its persistent connection so the socket/port isn't
+    held open for a link the user explicitly wants idle.
+    """
+    drone.telemetry_paused = True
+    if drone.connection_string:
+        _discard_connection(drone.connection_string)
+    db.flush()
+
+
+def resume_drone_telemetry(db: Session, drone: Drone) -> None:
+    """User-initiated "Connect" after a manual disconnect — periodic polling
+    picks the drone back up on the next beat tick."""
+    drone.telemetry_paused = False
+    db.flush()

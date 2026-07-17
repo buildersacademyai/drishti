@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, ForeignKey, DateTime, JSON, Float, Integer
+from sqlalchemy import Column, String, ForeignKey, DateTime, JSON, Float, Integer, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from geoalchemy2 import Geometry
 from .base import Base, TenantMixin
@@ -30,6 +30,7 @@ class Drone(Base, TenantMixin):
     speed_mps = Column(Float, nullable=True)            # groundspeed, m/s
     gps_fix_type = Column(Integer, nullable=True)        # 0/1=no fix, 2=2D, 3=3D, 4+=DGPS/RTK
     satellites_visible = Column(Integer, nullable=True)
+    telemetry_paused = Column(Boolean, nullable=False, default=False)  # user-initiated "Disconnect"
     notes = Column(String(500), nullable=True)
     registered_at = Column(DateTime, default=datetime.utcnow)
 

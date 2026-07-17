@@ -1,4 +1,9 @@
+from datetime import datetime
+
 from pymavlink import mavutil
+from sqlalchemy.orm import Session
+
+from ..models.drone import Drone
 
 HEARTBEAT_TIMEOUT_S = 5
 MESSAGE_TIMEOUT_S = 5
@@ -35,3 +40,33 @@ def poll_drone_telemetry(drone, connect_fn=mavutil.mavlink_connection) -> dict |
         }
     finally:
         conn.close()
+
+
+def poll_all_drones(db: Session, connect_fn=mavutil.mavlink_connection) -> list:
+    """Every drone with a connection_string gets one poll. A single drone's
+    connection failure is swallowed here so the rest of the fleet still
+    updates this cycle — the next 10s tick retries naturally.
+    """
+    drones = db.query(Drone).filter(Drone.connection_string.isnot(None)).all()
+    updated = []
+    for drone in drones:
+        try:
+            snapshot = poll_drone_telemetry(drone, connect_fn=connect_fn)
+        except Exception:
+            continue
+        if snapshot is None:
+            continue
+
+        if drone.status not in ("maintenance", "offline"):
+            drone.status = "in_field" if snapshot["armed"] else "at_station"
+        if snapshot["battery_pct"] is not None:
+            drone.battery_pct = snapshot["battery_pct"]
+        if snapshot["lat"] is not None:
+            drone.current_lat = snapshot["lat"]
+        if snapshot["lng"] is not None:
+            drone.current_lng = snapshot["lng"]
+        drone.last_seen = datetime.utcnow()
+        updated.append(drone.id)
+
+    db.flush()
+    return updated

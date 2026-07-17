@@ -108,6 +108,29 @@ services:
       - ../apps/api/src:/app/src
     restart: unless-stopped
 
+  beat:
+    container_name: drishti-beat
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+
+    command: celery -A drishti_api.workers.celery_app beat --loglevel=info
+    environment:
+      DATABASE_URL: postgresql+psycopg2://drishti:drishti@drishti-postgres:5432/drishti
+      REDIS_URL: redis://drishti-redis:6379/0
+      MINIO_ENDPOINT: drishti-minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: drishti-imagery
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../apps/api/src:/app/src
+    restart: unless-stopped
+
 volumes:
   pgdata:
   minio_data:

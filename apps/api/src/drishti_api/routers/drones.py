@@ -12,6 +12,15 @@ from ..models.drone import Drone
 router = APIRouter()
 
 VALID_STATUSES = {"at_station", "in_field", "charging", "maintenance", "offline"}
+VALID_CONNECTION_SCHEMES = ("udp:", "tcp:")
+
+
+def _validate_connection_string(connection_string: str) -> None:
+    if connection_string and not connection_string.startswith(VALID_CONNECTION_SCHEMES):
+        raise HTTPException(
+            status_code=422,
+            detail=f"connection_string must start with one of {VALID_CONNECTION_SCHEMES}",
+        )
 
 
 class CreateDroneRequest(BaseModel):
@@ -71,6 +80,7 @@ def get_drone(drone_id: uuid.UUID, db: Session = Depends(get_db)):
 
 @router.post("", status_code=201)
 def create_drone(body: CreateDroneRequest, db: Session = Depends(get_db)):
+    _validate_connection_string(body.connection_string)
     d = Drone(
         id=uuid.uuid4(),
         tenant_id=settings.seed_tenant_id,
@@ -107,6 +117,7 @@ def update_drone(drone_id: uuid.UUID, body: UpdateDroneRequest, db: Session = De
     if body.notes is not None:
         d.notes = body.notes
     if body.connection_string is not None:
+        _validate_connection_string(body.connection_string)
         d.connection_string = body.connection_string or None
     if body.current_mission_id is not None:
         d.current_mission_id = uuid.UUID(body.current_mission_id)

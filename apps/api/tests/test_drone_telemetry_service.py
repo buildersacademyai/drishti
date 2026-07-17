@@ -20,6 +20,14 @@ class FakeMessage(SimpleNamespace):
     pass
 
 
+class FakeMav:
+    def __init__(self):
+        self.heartbeat_send_count = 0
+
+    def heartbeat_send(self, *args, **kwargs):
+        self.heartbeat_send_count += 1
+
+
 class FakeConnection:
     """Stands in for mavutil.mavlink_connection(...) — no real sockets."""
 
@@ -28,6 +36,7 @@ class FakeConnection:
         self._messages = messages or {}
         self.closed = False
         self.clients = clients if clients is not None else set()
+        self.mav = FakeMav()
 
     def wait_heartbeat(self, timeout=None):
         return self._heartbeat
@@ -173,6 +182,19 @@ def test_poll_drone_telemetry_treats_unknown_battery_as_none():
     result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
 
     assert result == {"armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": None, **NO_EXTRA_TELEMETRY}
+
+
+def test_poll_drone_telemetry_announces_itself_before_waiting():
+    """In udpout: (dial-out) mode, real flight controllers/bridges often
+    won't stream telemetry to a client until they've heard from it — we
+    have to send our own heartbeat first, not just passively wait."""
+    drone = SimpleNamespace(connection_string="udpout:192.168.4.1:14550")
+    heartbeat = FakeMessage(base_mode=DISARMED_BASE_MODE)
+    fake = FakeConnection(heartbeat=heartbeat, messages={})
+
+    poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
+
+    assert fake.mav.heartbeat_send_count == 1
 
 
 def test_poll_drone_telemetry_reuses_connection_across_calls():

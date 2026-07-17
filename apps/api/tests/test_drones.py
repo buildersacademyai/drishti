@@ -50,6 +50,19 @@ def test_create_drone_accepts_udp_and_tcp_schemes(client, db):
     })
     assert resp_udp.status_code == 201
 
+
+def test_create_drone_accepts_udpout_scheme(client, db):
+    """Some drones (e.g. an ESP8266 running as its own UDP server) expect
+    us to dial out to them, not wait for a push — plain udp: always binds
+    and listens regardless of what's in the string (pymavlink default),
+    so connecting out needs the explicit udpout: prefix."""
+    resp = client.post("/api/v1/drones", json={
+        "name": "Eagle-5b",
+        "connection_string": "udpout:192.168.4.1:14550",
+    })
+    assert resp.status_code == 201
+    assert resp.json()["connection_string"] == "udpout:192.168.4.1:14550"
+
     resp_tcp = client.post("/api/v1/drones", json={
         "name": "Eagle-6",
         "connection_string": "tcp:127.0.0.1:5760",

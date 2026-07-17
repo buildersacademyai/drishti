@@ -51,10 +51,24 @@ def poll_drone_telemetry(drone, connect_fn=mavutil.mavlink_connection) -> dict |
 
     conn = _get_connection(drone.connection_string, connect_fn)
     try:
+        # Passive wait_heartbeat() never sends anything on its own. In
+        # udpin:/listen mode that's fine (the drone pushes to us), but in
+        # udpout:/tcp: (we dial out) mode a real flight controller or
+        # bridge often won't start streaming to a client it hasn't heard
+        # from — announce ourselves as a GCS first, every poll.
+        conn.mav.heartbeat_send(
+            mavutil.mavlink.MAV_TYPE_GCS, mavutil.mavlink.MAV_AUTOPILOT_INVALID,
+            0, 0, mavutil.mavlink.MAV_STATE_ACTIVE,
+        )
         heartbeat = conn.wait_heartbeat(timeout=HEARTBEAT_TIMEOUT_S)
         if heartbeat is None:
             return None
 
+        # Only meaningful in listen mode ("udp:"/"udpin:") — pymavlink's
+        # mavudp only populates .clients for connections it's serving
+        # (bound/listening). In udpout/tcp (we dial out) mode .clients stays
+        # empty, so this check silently no-ops; there's no equivalent sender
+        # to verify when we're the one who opened the connection.
         expected_ip = getattr(drone, "telemetry_source_ip", None)
         if expected_ip:
             observed_ips = {addr[0] for addr in getattr(conn, "clients", set())}

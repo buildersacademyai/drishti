@@ -30,15 +30,6 @@ const members = [
     accent: false,
     photo: 2,
   },
-  {
-    name: "Field Partner",
-    role: "Public Health Advisor",
-    org: "Nepal MoHP",
-    focus: "Epidemiology · VBD Surveillance · Bagmati Province",
-    bio: "Domain expertise on dengue surveillance protocols, EDCD reporting systems, and community health worker networks across Nepal's mid-hill districts.",
-    accent: false,
-    photo: 3,
-  },
 ];
 
 const PHOTO_EXTENSIONS = ["jpg", "jpeg", "png"];
@@ -92,7 +83,7 @@ export function Team() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {members.map((m, i) => (
             <motion.div
               key={m.name}

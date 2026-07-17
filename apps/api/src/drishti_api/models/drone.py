@@ -13,6 +13,7 @@ class Drone(Base, TenantMixin):
     name = Column(String(100), nullable=False)           # "Eagle-1"
     model = Column(String(100), nullable=True)           # "DJI Matrice 300 RTK"
     serial_number = Column(String(100), nullable=True)
+    connection_string = Column(String(255), nullable=True)  # MAVLink endpoint, e.g. "udp:127.0.0.1:14550"
     status = Column(String(30), nullable=False, default="at_station")
     # at_station | in_field | charging | maintenance | offline
     battery_pct = Column(Integer, nullable=True)         # 0-100

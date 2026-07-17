@@ -134,3 +134,116 @@ def test_new_drone_flight_telemetry_fields_are_null(client, db):
     assert body["speed_mps"] is None
     assert body["gps_fix_type"] is None
     assert body["satellites_visible"] is None
+
+
+class _SyncTaskResult:
+    """Stands in for the AsyncResult returned by task.apply_async(...) — the
+    router calls .get(timeout=...) on it, expecting either a value or an
+    exception. Connect/disconnect run in the worker process (real MAVLink
+    connections live there), so router-level tests dispatch a fake task
+    instead of a real one — the underlying service functions already have
+    their own direct unit tests.
+    """
+    def __init__(self, value=None, raises=None):
+        self._value = value
+        self._raises = raises
+
+    def get(self, timeout=None):
+        if self._raises is not None:
+            raise self._raises
+        return self._value
+
+
+def test_disconnect_drone_404_when_not_found(client, db, monkeypatch):
+    from drishti_api.routers import drones as drones_router
+    monkeypatch.setattr(drones_router.disconnect_now, "apply_async",
+                        lambda args, **kw: _SyncTaskResult({"telemetry_paused": True}))
+
+    resp = client.post(f"/api/v1/drones/{uuid.uuid4()}/disconnect")
+    assert resp.status_code == 404
+
+
+def test_disconnect_drone_sets_paused_and_not_connected(client, db, monkeypatch):
+    from datetime import datetime
+    from drishti_api.models.drone import Drone
+    from drishti_api.routers import drones as drones_router
+    from drishti_api.services.drone_telemetry_service import pause_drone_telemetry
+
+    created = client.post("/api/v1/drones", json={
+        "name": "Eagle-15", "connection_string": "udp:0.0.0.0:14550",
+    }).json()
+    row = db.get(Drone, uuid.UUID(created["id"]))
+    row.last_seen = datetime.utcnow()  # simulate a live link
+    db.commit()
+    assert client.get(f"/api/v1/drones/{created['id']}").json()["connected"] is True
+
+    def fake_apply_async(args, **kwargs):
+        drone = db.get(Drone, uuid.UUID(args[0]))
+        pause_drone_telemetry(db, drone)
+        db.commit()
+        return _SyncTaskResult({"telemetry_paused": True})
+
+    monkeypatch.setattr(drones_router.disconnect_now, "apply_async", fake_apply_async)
+
+    resp = client.post(f"/api/v1/drones/{created['id']}/disconnect")
+    assert resp.status_code == 200
+
+    after = client.get(f"/api/v1/drones/{created['id']}").json()
+    assert after["connected"] is False
+    assert after["telemetry_paused"] is True
+
+
+def test_disconnect_drone_504_when_worker_does_not_respond(client, db, monkeypatch):
+    from drishti_api.routers import drones as drones_router
+
+    created = client.post("/api/v1/drones", json={"name": "Eagle-16a"}).json()
+    monkeypatch.setattr(drones_router.disconnect_now, "apply_async",
+                        lambda args, **kw: _SyncTaskResult(raises=TimeoutError()))
+
+    resp = client.post(f"/api/v1/drones/{created['id']}/disconnect")
+    assert resp.status_code == 504
+
+
+def test_connect_drone_clears_paused_flag(client, db, monkeypatch):
+    from drishti_api.models.drone import Drone
+    from drishti_api.routers import drones as drones_router
+    from drishti_api.services.drone_telemetry_service import pause_drone_telemetry, resume_drone_telemetry
+
+    created = client.post("/api/v1/drones", json={
+        "name": "Eagle-16", "connection_string": "udp:0.0.0.0:19999",
+    }).json()
+
+    def fake_disconnect(args, **kwargs):
+        drone = db.get(Drone, uuid.UUID(args[0]))
+        pause_drone_telemetry(db, drone)
+        db.commit()
+        return _SyncTaskResult({"telemetry_paused": True})
+
+    def fake_connect(args, **kwargs):
+        drone = db.get(Drone, uuid.UUID(args[0]))
+        resume_drone_telemetry(db, drone)
+        db.commit()
+        return _SyncTaskResult({"connected": False})
+
+    monkeypatch.setattr(drones_router.disconnect_now, "apply_async", fake_disconnect)
+    monkeypatch.setattr(drones_router.connect_now, "apply_async", fake_connect)
+
+    client.post(f"/api/v1/drones/{created['id']}/disconnect")
+    assert client.get(f"/api/v1/drones/{created['id']}").json()["telemetry_paused"] is True
+
+    client.post(f"/api/v1/drones/{created['id']}/connect")
+
+    assert client.get(f"/api/v1/drones/{created['id']}").json()["telemetry_paused"] is False
+
+
+def test_connect_drone_504_when_worker_does_not_respond(client, db, monkeypatch):
+    from drishti_api.routers import drones as drones_router
+
+    created = client.post("/api/v1/drones", json={
+        "name": "Eagle-16b", "connection_string": "udp:0.0.0.0:19998",
+    }).json()
+    monkeypatch.setattr(drones_router.connect_now, "apply_async",
+                        lambda args, **kw: _SyncTaskResult(raises=TimeoutError()))
+
+    resp = client.post(f"/api/v1/drones/{created['id']}/connect")
+    assert resp.status_code == 504

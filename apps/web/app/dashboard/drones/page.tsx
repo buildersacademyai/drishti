@@ -10,6 +10,7 @@ interface Drone {
   connection_string: string;
   telemetry_source_ip: string;
   connected: boolean;
+  telemetry_paused: boolean;
   status: string;
   battery_pct: number | null;
   total_flight_hours: number;
@@ -60,15 +61,15 @@ function formatHeading(deg: number | null): string {
   return `${deg.toFixed(0)}° ${compass}`;
 }
 
-function BatteryBar({ pct }: { pct: number | null }) {
+function BatteryBar({ pct, stale }: { pct: number | null; stale?: boolean }) {
   if (pct == null) return <span className="text-[#94a3b8] text-xs">—</span>;
-  const color = pct >= 60 ? "#22c55e" : pct >= 25 ? "#f59e0b" : "#ef4444";
+  const color = stale ? "#94a3b8" : pct >= 60 ? "#22c55e" : pct >= 25 ? "#f59e0b" : "#ef4444";
   return (
     <div className="flex items-center gap-2">
       <div className="w-16 h-2 bg-[#f3f4f6] rounded-full overflow-hidden">
         <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
-      <span className="text-xs font-medium" style={{ color }}>{pct}%</span>
+      <span className="text-xs font-medium" style={{ color }}>{pct}%{stale ? " (stale)" : ""}</span>
     </div>
   );
 }
@@ -149,6 +150,19 @@ export default function DronesPage() {
           ? { text: "Connected — telemetry received.", ok: true }
           : { text: "No response from drone. Check connection string / that it's powered on and in range.", ok: false }
       );
+      load();
+    } catch (err) {
+      setMsg({ text: err instanceof Error ? err.message : "Failed", ok: false });
+    } finally {
+      setConnectingId(null);
+    }
+  }
+
+  async function handleDisconnect(id: string) {
+    setConnectingId(id);
+    try {
+      await apiPost(`/api/v1/drones/${id}/disconnect`);
+      setMsg({ text: "Disconnected.", ok: true });
       load();
     } catch (err) {
       setMsg({ text: err instanceof Error ? err.message : "Failed", ok: false });
@@ -316,11 +330,14 @@ export default function DronesPage() {
                     </span>
                     {d.connection_string && (
                       <button
-                        onClick={e => { e.stopPropagation(); handleConnect(d.id); }}
+                        onClick={e => {
+                          e.stopPropagation();
+                          d.connected ? handleDisconnect(d.id) : handleConnect(d.id);
+                        }}
                         disabled={connectingId === d.id}
-                        className="text-xs font-semibold text-[#0f172a] border border-[#e2e8f0] rounded-full px-2.5 py-1 hover:bg-[#f8fafc] disabled:opacity-50"
+                        className={`text-xs font-semibold rounded-full px-2.5 py-1 disabled:opacity-50 ${d.connected ? "border border-red-200 text-red-600 hover:bg-red-50" : "border border-[#e2e8f0] text-[#0f172a] hover:bg-[#f8fafc]"}`}
                       >
-                        {connectingId === d.id ? "Connecting…" : "Connect"}
+                        {connectingId === d.id ? "…" : d.connected ? "Disconnect" : "Connect"}
                       </button>
                     )}
                   </div>
@@ -329,7 +346,7 @@ export default function DronesPage() {
                 <div className="mt-3 grid grid-cols-3 gap-3 text-xs">
                   <div>
                     <p className="text-[#94a3b8] mb-1">Battery</p>
-                    <BatteryBar pct={d.battery_pct} />
+                    <BatteryBar pct={d.battery_pct} stale={!!d.connection_string && !d.connected} />
                   </div>
                   <div>
                     <p className="text-[#94a3b8] mb-1">Flight Hours</p>
@@ -388,7 +405,7 @@ export default function DronesPage() {
             <div className="p-4 space-y-3 text-sm border-b border-[#f3f4f6]">
               <div className="flex justify-between items-center gap-3">
                 <span className="text-[#94a3b8]">Battery</span>
-                <BatteryBar pct={selected.battery_pct} />
+                <BatteryBar pct={selected.battery_pct} stale={!!selected.connection_string && !selected.connected} />
               </div>
               <Row label="Model" value={selected.model || "—"} />
               <Row label="Serial" value={selected.serial_number || "—"} mono />
@@ -498,11 +515,11 @@ export default function DronesPage() {
               </p>
               {selected.connection_string && (
                 <button
-                  onClick={() => handleConnect(selected.id)}
+                  onClick={() => selected.connected ? handleDisconnect(selected.id) : handleConnect(selected.id)}
                   disabled={connectingId === selected.id}
-                  className="w-full text-sm font-semibold text-white bg-[#0f172a] rounded-lg px-3 py-2 hover:bg-[#1e293b] disabled:opacity-50"
+                  className={`w-full text-sm font-semibold rounded-lg px-3 py-2 disabled:opacity-50 ${selected.connected ? "text-red-600 border border-red-200 hover:bg-red-50" : "text-white bg-[#0f172a] hover:bg-[#1e293b]"}`}
                 >
-                  {connectingId === selected.id ? "Connecting…" : "Connect Now"}
+                  {connectingId === selected.id ? "…" : selected.connected ? "Disconnect" : "Connect Now"}
                 </button>
               )}
             </div>

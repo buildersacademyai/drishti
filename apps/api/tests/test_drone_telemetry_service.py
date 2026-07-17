@@ -241,8 +241,11 @@ from drishti_api.models.drone import Drone
 from drishti_api.services.drone_telemetry_service import poll_all_drones
 
 
-def _make_drone(db, tenant_id, name, connection_string=None, status="at_station"):
-    drone = Drone(tenant_id=tenant_id, name=name, connection_string=connection_string, status=status)
+def _make_drone(db, tenant_id, name, connection_string=None, status="at_station", telemetry_paused=False):
+    drone = Drone(
+        tenant_id=tenant_id, name=name, connection_string=connection_string,
+        status=status, telemetry_paused=telemetry_paused,
+    )
     db.add(drone)
     db.flush()
     return drone
@@ -270,6 +273,17 @@ def test_poll_all_drones_updates_drone_with_connection_string(db):
 def test_poll_all_drones_skips_drone_without_connection_string(db):
     tenant = _make_tenant_for_telemetry(db)
     drone = _make_drone(db, tenant.id, "Eagle-2", connection_string=None)
+
+    updated = poll_all_drones(db, connect_fn=lambda conn_str: FakeConnection())
+
+    assert updated == []
+    db.refresh(drone)
+    assert drone.last_seen is None
+
+
+def test_poll_all_drones_skips_paused_drone(db):
+    tenant = _make_tenant_for_telemetry(db)
+    drone = _make_drone(db, tenant.id, "Eagle-9", connection_string="udp:127.0.0.1:14550", telemetry_paused=True)
 
     updated = poll_all_drones(db, connect_fn=lambda conn_str: FakeConnection())
 
@@ -358,3 +372,30 @@ def test_poll_drone_connection_now_returns_none_when_unreachable(db):
     assert snapshot is None
     db.refresh(drone)
     assert drone.last_seen is None
+
+
+def test_pause_drone_telemetry_sets_flag_and_discards_cached_connection(db):
+    from drishti_api.services.drone_telemetry_service import _connections, pause_drone_telemetry
+
+    tenant = _make_tenant_for_telemetry(db)
+    drone = _make_drone(db, tenant.id, "Eagle-10", connection_string="udp:127.0.0.1:14550")
+    fake = FakeConnection(heartbeat=FakeMessage(base_mode=DISARMED_BASE_MODE), messages={})
+    poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
+    assert "udp:127.0.0.1:14550" in _connections
+
+    pause_drone_telemetry(db, drone)
+
+    assert drone.telemetry_paused is True
+    assert fake.closed is True
+    assert "udp:127.0.0.1:14550" not in _connections
+
+
+def test_resume_drone_telemetry_clears_flag(db):
+    from drishti_api.services.drone_telemetry_service import resume_drone_telemetry
+
+    tenant = _make_tenant_for_telemetry(db)
+    drone = _make_drone(db, tenant.id, "Eagle-11", connection_string="udp:127.0.0.1:14550", telemetry_paused=True)
+
+    resume_drone_telemetry(db, drone)
+
+    assert drone.telemetry_paused is False

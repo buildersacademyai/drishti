@@ -9,11 +9,17 @@ from sqlalchemy import select
 from ..config import settings
 from ..db import get_db
 from ..models.drone import Drone
-from ..services.drone_telemetry_service import poll_drone_connection_now
+from ..services.drone_telemetry_service import HEARTBEAT_TIMEOUT_S, MESSAGE_TIMEOUT_S
+from ..workers.drone_telemetry import connect_now, disconnect_now
 
 router = APIRouter()
 
 CONNECTION_STALE_AFTER_S = 30  # 3x the beat poll interval
+# Worst case inside poll_drone_telemetry: one heartbeat wait plus three
+# sequential message timeouts (position, sys_status, gps_raw) if the drone
+# doesn't send some of those message types at all. +5s margin for task
+# queue/broker round-trip overhead.
+WORKER_RESPONSE_TIMEOUT_S = HEARTBEAT_TIMEOUT_S + 3 * MESSAGE_TIMEOUT_S + 5
 
 VALID_STATUSES = {"at_station", "in_field", "charging", "maintenance", "offline"}
 VALID_CONNECTION_SCHEMES = ("udp:", "tcp:")
@@ -64,7 +70,7 @@ class UpdateDroneRequest(BaseModel):
 
 
 def _is_connected(d: Drone) -> bool:
-    if not d.connection_string or not d.last_seen:
+    if d.telemetry_paused or not d.connection_string or not d.last_seen:
         return False
     return (datetime.utcnow() - d.last_seen).total_seconds() < CONNECTION_STALE_AFTER_S
 
@@ -78,6 +84,7 @@ def _serialize(d: Drone) -> dict:
         "connection_string": d.connection_string or "",
         "telemetry_source_ip": d.telemetry_source_ip or "",
         "connected": _is_connected(d),
+        "telemetry_paused": d.telemetry_paused,
         "status": d.status,
         "battery_pct": d.battery_pct,
         "total_flight_hours": d.total_flight_hours or 0,
@@ -181,11 +188,25 @@ def connect_drone(drone_id: uuid.UUID, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Drone not found")
     if not d.connection_string:
         raise HTTPException(status_code=422, detail="No connection_string configured for this drone")
-    snapshot = poll_drone_connection_now(db, d)
-    db.commit()
-    if snapshot is None:
-        return {"connected": False}
-    return {"connected": True, **snapshot}
+    # Dispatched to the worker rather than run here: the persistent MAVLink
+    # connection cache only lives in the worker process, and only one
+    # process can hold the UDP socket for a given connection_string at a
+    # time — the API process opening its own would race the worker for it.
+    try:
+        return connect_now.apply_async(args=[str(drone_id)]).get(timeout=WORKER_RESPONSE_TIMEOUT_S)
+    except Exception:
+        raise HTTPException(status_code=504, detail="Drone did not respond in time")
+
+
+@router.post("/{drone_id}/disconnect")
+def disconnect_drone(drone_id: uuid.UUID, db: Session = Depends(get_db)):
+    d = db.get(Drone, drone_id)
+    if not d:
+        raise HTTPException(status_code=404, detail="Drone not found")
+    try:
+        return disconnect_now.apply_async(args=[str(drone_id)]).get(timeout=WORKER_RESPONSE_TIMEOUT_S)
+    except Exception:
+        raise HTTPException(status_code=504, detail="Could not reach worker to disconnect")
 
 
 @router.delete("/{drone_id}", status_code=204)

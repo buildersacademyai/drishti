@@ -11,6 +11,7 @@ celery_app = Celery(
         "drishti_api.workers.imagery_process",
         "drishti_api.workers.prediction_run",
         "drishti_api.workers.scan_run",
+        "drishti_api.workers.drone_telemetry",
     ],
 )
 celery_app.conf.update(
@@ -23,6 +24,10 @@ celery_app.conf.update(
         "daily-risk-scan": {
             "task": "scan.run_daily_risk_scan",
             "schedule": crontab(hour=2, minute=0),
+        },
+        "drone-telemetry-poll": {
+            "task": "drone.poll_telemetry",
+            "schedule": 10.0,
         },
         # Automated NDWI water-body scanning (satellite.ingest_district) is
         # intentionally NOT scheduled here. Persistent false positives

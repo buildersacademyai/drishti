@@ -48,6 +48,18 @@ def poll_drone_telemetry(drone, connect_fn=mavutil.mavlink_connection) -> dict |
         conn.close()
 
 
+def _apply_snapshot(drone: Drone, snapshot: dict) -> None:
+    if drone.status not in ("maintenance", "offline"):
+        drone.status = "in_field" if snapshot["armed"] else "at_station"
+    if snapshot["battery_pct"] is not None:
+        drone.battery_pct = snapshot["battery_pct"]
+    if snapshot["lat"] is not None:
+        drone.current_lat = snapshot["lat"]
+    if snapshot["lng"] is not None:
+        drone.current_lng = snapshot["lng"]
+    drone.last_seen = datetime.utcnow()
+
+
 def poll_all_drones(db: Session, connect_fn=mavutil.mavlink_connection) -> list:
     """Every drone with a connection_string gets one poll. A single drone's
     connection failure is swallowed here so the rest of the fleet still
@@ -63,16 +75,21 @@ def poll_all_drones(db: Session, connect_fn=mavutil.mavlink_connection) -> list:
         if snapshot is None:
             continue
 
-        if drone.status not in ("maintenance", "offline"):
-            drone.status = "in_field" if snapshot["armed"] else "at_station"
-        if snapshot["battery_pct"] is not None:
-            drone.battery_pct = snapshot["battery_pct"]
-        if snapshot["lat"] is not None:
-            drone.current_lat = snapshot["lat"]
-        if snapshot["lng"] is not None:
-            drone.current_lng = snapshot["lng"]
-        drone.last_seen = datetime.utcnow()
+        _apply_snapshot(drone, snapshot)
         updated.append(drone.id)
 
     db.flush()
     return updated
+
+
+def poll_drone_connection_now(db: Session, drone: Drone, connect_fn=mavutil.mavlink_connection) -> dict | None:
+    """On-demand single poll — e.g. a user clicking "Connect" in the UI wants
+    an immediate answer, not to wait for the next beat tick. Same apply-to-row
+    logic as poll_all_drones, just for one drone right now.
+    """
+    snapshot = poll_drone_telemetry(drone, connect_fn=connect_fn)
+    if snapshot is None:
+        return None
+    _apply_snapshot(drone, snapshot)
+    db.flush()
+    return snapshot

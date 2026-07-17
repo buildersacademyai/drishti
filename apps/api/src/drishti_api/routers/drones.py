@@ -9,8 +9,11 @@ from sqlalchemy import select
 from ..config import settings
 from ..db import get_db
 from ..models.drone import Drone
+from ..services.drone_telemetry_service import poll_drone_connection_now
 
 router = APIRouter()
+
+CONNECTION_STALE_AFTER_S = 30  # 3x the beat poll interval
 
 VALID_STATUSES = {"at_station", "in_field", "charging", "maintenance", "offline"}
 VALID_CONNECTION_SCHEMES = ("udp:", "tcp:")
@@ -60,6 +63,12 @@ class UpdateDroneRequest(BaseModel):
     telemetry_source_ip: str | None = None
 
 
+def _is_connected(d: Drone) -> bool:
+    if not d.connection_string or not d.last_seen:
+        return False
+    return (datetime.utcnow() - d.last_seen).total_seconds() < CONNECTION_STALE_AFTER_S
+
+
 def _serialize(d: Drone) -> dict:
     return {
         "id": str(d.id),
@@ -68,6 +77,7 @@ def _serialize(d: Drone) -> dict:
         "serial_number": d.serial_number or "",
         "connection_string": d.connection_string or "",
         "telemetry_source_ip": d.telemetry_source_ip or "",
+        "connected": _is_connected(d),
         "status": d.status,
         "battery_pct": d.battery_pct,
         "total_flight_hours": d.total_flight_hours or 0,
@@ -157,6 +167,20 @@ def update_drone(drone_id: uuid.UUID, body: UpdateDroneRequest, db: Session = De
     d.last_seen = datetime.utcnow()
     db.commit()
     return _serialize(d)
+
+
+@router.post("/{drone_id}/connect")
+def connect_drone(drone_id: uuid.UUID, db: Session = Depends(get_db)):
+    d = db.get(Drone, drone_id)
+    if not d:
+        raise HTTPException(status_code=404, detail="Drone not found")
+    if not d.connection_string:
+        raise HTTPException(status_code=422, detail="No connection_string configured for this drone")
+    snapshot = poll_drone_connection_now(db, d)
+    db.commit()
+    if snapshot is None:
+        return {"connected": False}
+    return {"connected": True, **snapshot}
 
 
 @router.delete("/{drone_id}", status_code=204)

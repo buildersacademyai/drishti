@@ -1,3 +1,5 @@
+import uuid
+
 from drishti_api.models.geo import Tenant
 
 
@@ -106,3 +108,19 @@ def test_create_drone_rejects_invalid_telemetry_source_ip(client, db):
         "name": "Eagle-11", "telemetry_source_ip": "not-an-ip",
     })
     assert resp.status_code == 422
+
+
+def test_connect_drone_404_when_not_found(client, db):
+    resp = client.post(f"/api/v1/drones/{uuid.uuid4()}/connect")
+    assert resp.status_code == 404
+
+
+def test_connect_drone_422_when_no_connection_string(client, db):
+    created = client.post("/api/v1/drones", json={"name": "Eagle-12"}).json()
+    resp = client.post(f"/api/v1/drones/{created['id']}/connect")
+    assert resp.status_code == 422
+
+
+def test_new_drone_is_not_connected_by_default(client, db):
+    resp = client.post("/api/v1/drones", json={"name": "Eagle-13"})
+    assert resp.json()["connected"] is False

@@ -9,6 +9,7 @@ interface Drone {
   serial_number: string;
   connection_string: string;
   telemetry_source_ip: string;
+  connected: boolean;
   status: string;
   battery_pct: number | null;
   total_flight_hours: number;
@@ -54,6 +55,7 @@ export default function DronesPage() {
   const [editForm, setEditForm] = useState({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "" });
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [form, setForm] = useState({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "", connection_string: "", telemetry_source_ip: "" });
+  const [connectingId, setConnectingId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -108,6 +110,23 @@ export default function DronesPage() {
       load();
     } catch (err) {
       setMsg({ text: err instanceof Error ? err.message : "Failed", ok: false });
+    }
+  }
+
+  async function handleConnect(id: string) {
+    setConnectingId(id);
+    try {
+      const res = await apiPost<{ connected: boolean }>(`/api/v1/drones/${id}/connect`);
+      setMsg(
+        res.connected
+          ? { text: "Connected — telemetry received.", ok: true }
+          : { text: "No response from drone. Check connection string / that it's powered on and in range.", ok: false }
+      );
+      load();
+    } catch (err) {
+      setMsg({ text: err instanceof Error ? err.message : "Failed", ok: false });
+    } finally {
+      setConnectingId(null);
     }
   }
 
@@ -260,9 +279,24 @@ export default function DronesPage() {
                       <p className="text-xs text-[#94a3b8]">{d.model || "Unknown model"} {d.serial_number ? `· ${d.serial_number}` : ""}</p>
                     </div>
                   </div>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${m.color}`}>
-                    {m.label}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full border ${d.connected ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-500 border-gray-200"}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${d.connected ? "bg-emerald-500 animate-pulse" : "bg-gray-400"}`} />
+                      {d.connected ? "Connected" : "Not Connected"}
+                    </span>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${m.color}`}>
+                      {m.label}
+                    </span>
+                    {d.connection_string && (
+                      <button
+                        onClick={e => { e.stopPropagation(); handleConnect(d.id); }}
+                        disabled={connectingId === d.id}
+                        className="text-xs font-semibold text-[#0f172a] border border-[#e2e8f0] rounded-full px-2.5 py-1 hover:bg-[#f8fafc] disabled:opacity-50"
+                      >
+                        {connectingId === d.id ? "Connecting…" : "Connect"}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="mt-3 grid grid-cols-3 gap-3 text-xs">
@@ -367,7 +401,13 @@ export default function DronesPage() {
 
             {/* MAVLink connection */}
             <div className="p-4 space-y-3">
-              <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wide">MAVLink Connection</p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wide">MAVLink Connection</p>
+                <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border ${selected.connected ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-500 border-gray-200"}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${selected.connected ? "bg-emerald-500 animate-pulse" : "bg-gray-400"}`} />
+                  {selected.connected ? "Connected" : "Not Connected"}
+                </span>
+              </div>
               <input
                 key={selected.id}
                 type="text"
@@ -383,6 +423,15 @@ export default function DronesPage() {
               <p className="text-[10px] text-[#94a3b8]">
                 {selected.connection_string ? "Live telemetry polling every 10s." : "No connection set — status/battery must be updated manually."}
               </p>
+              {selected.connection_string && (
+                <button
+                  onClick={() => handleConnect(selected.id)}
+                  disabled={connectingId === selected.id}
+                  className="w-full text-sm font-semibold text-white bg-[#0f172a] rounded-lg px-3 py-2 hover:bg-[#1e293b] disabled:opacity-50"
+                >
+                  {connectingId === selected.id ? "Connecting…" : "Connect Now"}
+                </button>
+              )}
             </div>
 
             {/* Telemetry source IP */}

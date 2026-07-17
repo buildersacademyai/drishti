@@ -73,3 +73,19 @@ def test_poll_drone_telemetry_handles_missing_position_and_battery():
     result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
 
     assert result == {"armed": False, "lat": None, "lng": None, "battery_pct": None}
+
+
+def test_poll_drone_telemetry_treats_unknown_battery_as_none():
+    drone = SimpleNamespace(connection_string="udp:127.0.0.1:14550")
+    heartbeat = FakeMessage(base_mode=ARMED_BASE_MODE)
+    position = FakeMessage(lat=275_290_000, lon=843_540_000)  # 27.529, 84.354
+    sys_status = FakeMessage(battery_remaining=-1)  # MAVLink unknown battery sentinel
+    fake = FakeConnection(
+        heartbeat=heartbeat,
+        messages={"GLOBAL_POSITION_INT": position, "SYS_STATUS": sys_status},
+    )
+
+    result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
+
+    assert result == {"armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": None}
+    assert fake.closed is True

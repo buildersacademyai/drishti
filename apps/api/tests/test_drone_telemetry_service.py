@@ -144,6 +144,18 @@ def test_poll_all_drones_preserves_manual_maintenance_status(db):
     assert drone.status == "maintenance"
 
 
+def test_poll_all_drones_preserves_manual_offline_status(db):
+    tenant = _make_tenant_for_telemetry(db)
+    drone = _make_drone(db, tenant.id, "Eagle-6", connection_string="udp:127.0.0.1:14550", status="offline")
+    heartbeat = FakeMessage(base_mode=ARMED_BASE_MODE)
+    fake = FakeConnection(heartbeat=heartbeat, messages={})
+
+    poll_all_drones(db, connect_fn=lambda conn_str: fake)
+
+    db.refresh(drone)
+    assert drone.status == "offline"
+
+
 def test_poll_all_drones_one_failure_does_not_block_others(db):
     tenant = _make_tenant_for_telemetry(db)
     bad_drone = _make_drone(db, tenant.id, "Eagle-4", connection_string="udp:bad:1")

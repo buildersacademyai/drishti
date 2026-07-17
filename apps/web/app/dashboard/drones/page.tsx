@@ -231,9 +231,8 @@ export default function DronesPage() {
         </form>
       )}
 
-      <div className="grid grid-cols-3 gap-4">
-        {/* Drone cards */}
-        <div className="col-span-2 space-y-3">
+      {/* Drone cards */}
+      <div className="space-y-3">
           {loading ? (
             <p className="text-center text-[#64748b] py-12">Loading…</p>
           ) : drones.length === 0 ? (
@@ -288,107 +287,113 @@ export default function DronesPage() {
               </div>
             );
           })}
-        </div>
-
-        {/* Detail / control panel */}
-        <div className="space-y-3">
-          {selected ? (
-            <>
-              <div className="bg-white border border-[#e2e8f0] rounded-xl overflow-hidden shadow-sm">
-                <div className="bg-[#0f172a] px-5 py-4 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-white/60 text-xs uppercase tracking-wide">Drone Details</p>
-                    <p className="text-white font-bold text-lg mt-0.5">{selected.name}</p>
-                  </div>
-                  {!editing && (
-                    <button
-                      onClick={() => startEditing(selected)}
-                      className="text-xs font-semibold text-white/80 hover:text-white border border-white/30 rounded-lg px-2.5 py-1"
-                    >
-                      Edit
-                    </button>
-                  )}
-                </div>
-                <div className="p-4 space-y-3 text-sm">
-                  <Row label="Model" value={selected.model || "—"} />
-                  <Row label="Serial" value={selected.serial_number || "—"} mono />
-                  <Row label="Flight Hours" value={`${selected.total_flight_hours.toFixed(1)} h`} />
-                  <Row label="Registered" value={selected.registered_at ? new Date(selected.registered_at).toLocaleDateString() : "—"} />
-                  {selected.home_lat != null && (
-                    <Row label="Home Base" value={`${selected.home_lat.toFixed(4)}, ${selected.home_lng?.toFixed(4)}`} mono />
-                  )}
-                  {selected.current_lat != null && (
-                    <Row label="Last Coords" value={`${selected.current_lat.toFixed(4)}, ${selected.current_lng?.toFixed(4)}`} mono />
-                  )}
-                  {selected.notes && <Row label="Notes" value={selected.notes} />}
-                </div>
-              </div>
-
-              {/* Status control */}
-              <div className="bg-white border border-[#e2e8f0] rounded-xl p-4 shadow-sm space-y-3">
-                <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wide">Change Status</p>
-                <div className="grid grid-cols-1 gap-1.5">
-                  {ALL_STATUSES.map(s => {
-                    const m = STATUS_META[s];
-                    const active = selected.status === s;
-                    return (
-                      <button
-                        key={s}
-                        onClick={() => handleStatusChange(selected.id, s)}
-                        disabled={active}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors ${active ? `${m.color} cursor-default` : "border-[#e2e8f0] text-[#64748b] hover:bg-[#f8fafc]"}`}
-                      >
-                        <span className={`w-2 h-2 rounded-full ${m.dot}`} />
-                        {m.label}
-                        {active && <span className="ml-auto">✓</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Battery control */}
-              <div className="bg-white border border-[#e2e8f0] rounded-xl p-4 shadow-sm space-y-3">
-                <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wide">Update Battery</p>
-                <BatteryBar pct={selected.battery_pct} />
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  defaultValue={selected.battery_pct ?? 0}
-                  onMouseUp={e => handleBatteryUpdate(selected.id, parseInt((e.target as HTMLInputElement).value))}
-                  className="w-full accent-[#0f172a]"
-                />
-              </div>
-
-              {/* MAVLink connection */}
-              <div className="bg-white border border-[#e2e8f0] rounded-xl p-4 shadow-sm space-y-3">
-                <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wide">MAVLink Connection</p>
-                <input
-                  key={selected.id}
-                  type="text"
-                  defaultValue={selected.connection_string}
-                  placeholder="udp:127.0.0.1:14550"
-                  onBlur={e => {
-                    if (e.target.value !== selected.connection_string) {
-                      handleConnectionStringUpdate(selected.id, e.target.value);
-                    }
-                  }}
-                  className="w-full border border-[#e2e8f0] rounded-lg px-3 py-2 text-xs font-mono text-[#0f172a] focus:outline-none focus:ring-1 focus:ring-[#0f172a]/30"
-                />
-                <p className="text-[10px] text-[#94a3b8]">
-                  {selected.connection_string ? "Live telemetry polling every 10s." : "No connection set — status/battery must be updated manually."}
-                </p>
-              </div>
-            </>
-          ) : (
-            <div className="bg-white border border-[#e2e8f0] rounded-xl p-6 text-center shadow-sm">
-              <div className="text-3xl mb-2">👈</div>
-              <p className="text-sm text-[#94a3b8]">Select a drone to view details and controls</p>
-            </div>
-          )}
-        </div>
       </div>
+
+      {/* Drone detail / control popup */}
+      {selected && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-40 p-4"
+          onClick={() => setSelected(null)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-lg w-full max-w-md max-h-[85vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="bg-[#0f172a] px-5 py-4 flex items-center justify-between gap-3 sticky top-0">
+              <div>
+                <p className="text-white/60 text-xs uppercase tracking-wide">Drone Details</p>
+                <p className="text-white font-bold text-lg mt-0.5">{selected.name}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => startEditing(selected)}
+                  className="text-xs font-semibold text-white/80 hover:text-white border border-white/30 rounded-lg px-2.5 py-1"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => setSelected(null)}
+                  className="text-white/80 hover:text-white text-lg leading-none px-1"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 space-y-3 text-sm border-b border-[#f3f4f6]">
+              <Row label="Model" value={selected.model || "—"} />
+              <Row label="Serial" value={selected.serial_number || "—"} mono />
+              <Row label="Flight Hours" value={`${selected.total_flight_hours.toFixed(1)} h`} />
+              <Row label="Registered" value={selected.registered_at ? new Date(selected.registered_at).toLocaleDateString() : "—"} />
+              {selected.home_lat != null && (
+                <Row label="Home Base" value={`${selected.home_lat.toFixed(4)}, ${selected.home_lng?.toFixed(4)}`} mono />
+              )}
+              {selected.current_lat != null && (
+                <Row label="Last Coords" value={`${selected.current_lat.toFixed(4)}, ${selected.current_lng?.toFixed(4)}`} mono />
+              )}
+              {selected.notes && <Row label="Notes" value={selected.notes} />}
+            </div>
+
+            {/* Status control */}
+            <div className="p-4 space-y-3 border-b border-[#f3f4f6]">
+              <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wide">Change Status</p>
+              <div className="grid grid-cols-1 gap-1.5">
+                {ALL_STATUSES.map(s => {
+                  const m = STATUS_META[s];
+                  const active = selected.status === s;
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => handleStatusChange(selected.id, s)}
+                      disabled={active}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors ${active ? `${m.color} cursor-default` : "border-[#e2e8f0] text-[#64748b] hover:bg-[#f8fafc]"}`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${m.dot}`} />
+                      {m.label}
+                      {active && <span className="ml-auto">✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Battery control */}
+            <div className="p-4 space-y-3 border-b border-[#f3f4f6]">
+              <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wide">Update Battery</p>
+              <BatteryBar pct={selected.battery_pct} />
+              <input
+                type="range"
+                min={0}
+                max={100}
+                defaultValue={selected.battery_pct ?? 0}
+                onMouseUp={e => handleBatteryUpdate(selected.id, parseInt((e.target as HTMLInputElement).value))}
+                className="w-full accent-[#0f172a]"
+              />
+            </div>
+
+            {/* MAVLink connection */}
+            <div className="p-4 space-y-3">
+              <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wide">MAVLink Connection</p>
+              <input
+                key={selected.id}
+                type="text"
+                defaultValue={selected.connection_string}
+                placeholder="udp:127.0.0.1:14550"
+                onBlur={e => {
+                  if (e.target.value !== selected.connection_string) {
+                    handleConnectionStringUpdate(selected.id, e.target.value);
+                  }
+                }}
+                className="w-full border border-[#e2e8f0] rounded-lg px-3 py-2 text-xs font-mono text-[#0f172a] focus:outline-none focus:ring-1 focus:ring-[#0f172a]/30"
+              />
+              <p className="text-[10px] text-[#94a3b8]">
+                {selected.connection_string ? "Live telemetry polling every 10s." : "No connection set — status/battery must be updated manually."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit drone modal */}
       {editing && selected && (

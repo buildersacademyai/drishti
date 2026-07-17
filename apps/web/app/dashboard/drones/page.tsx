@@ -33,6 +33,13 @@ const STATUS_META: Record<string, { label: string; color: string; dot: string }>
 
 const ALL_STATUSES = Object.keys(STATUS_META);
 
+function formatSecondsAgo(isoTimestamp: string | null): string {
+  if (!isoTimestamp) return "Never";
+  const seconds = Math.max(0, Math.round((Date.now() - new Date(isoTimestamp).getTime()) / 1000));
+  if (seconds < 60) return `${seconds}s ago`;
+  return `${Math.round(seconds / 60)}m ago`;
+}
+
 function BatteryBar({ pct }: { pct: number | null }) {
   if (pct == null) return <span className="text-[#94a3b8] text-xs">—</span>;
   const color = pct >= 60 ? "#22c55e" : pct >= 25 ? "#f59e0b" : "#ef4444";
@@ -408,6 +415,32 @@ export default function DronesPage() {
                   {selected.connected ? "Connected" : "Not Connected"}
                 </span>
               </div>
+
+              {selected.connected && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 space-y-1.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-emerald-700/70">Last Update</span>
+                    <span className="font-semibold text-emerald-800">{formatSecondsAgo(selected.last_seen)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-emerald-700/70">Armed</span>
+                    <span className="font-semibold text-emerald-800">{selected.status === "in_field" ? "Yes" : "No"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-emerald-700/70">Live Position</span>
+                    <span className="font-mono font-semibold text-emerald-800">
+                      {selected.current_lat != null
+                        ? `${selected.current_lat.toFixed(4)}, ${selected.current_lng?.toFixed(4)}`
+                        : "No GPS fix yet"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-emerald-700/70">Battery</span>
+                    <span className="font-semibold text-emerald-800">{selected.battery_pct != null ? `${selected.battery_pct}%` : "—"}</span>
+                  </div>
+                </div>
+              )}
+
               <input
                 key={selected.id}
                 type="text"

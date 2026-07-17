@@ -124,3 +124,13 @@ def test_connect_drone_422_when_no_connection_string(client, db):
 def test_new_drone_is_not_connected_by_default(client, db):
     resp = client.post("/api/v1/drones", json={"name": "Eagle-13"})
     assert resp.json()["connected"] is False
+
+
+def test_new_drone_flight_telemetry_fields_are_null(client, db):
+    resp = client.post("/api/v1/drones", json={"name": "Eagle-14"})
+    body = resp.json()
+    assert body["altitude_m"] is None
+    assert body["heading_deg"] is None
+    assert body["speed_mps"] is None
+    assert body["gps_fix_type"] is None
+    assert body["satellites_visible"] is None

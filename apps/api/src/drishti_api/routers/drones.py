@@ -87,6 +87,11 @@ def _serialize(d: Drone) -> dict:
         "home_lng": d.home_lng,
         "current_lat": d.current_lat,
         "current_lng": d.current_lng,
+        "altitude_m": d.altitude_m,
+        "heading_deg": d.heading_deg,
+        "speed_mps": d.speed_mps,
+        "gps_fix_type": d.gps_fix_type,
+        "satellites_visible": d.satellites_visible,
         "notes": d.notes or "",
         "registered_at": d.registered_at.isoformat() if d.registered_at else None,
     }

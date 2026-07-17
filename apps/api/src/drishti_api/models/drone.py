@@ -25,6 +25,11 @@ class Drone(Base, TenantMixin):
     home_lng = Column(Float, nullable=True)
     current_lat = Column(Float, nullable=True)
     current_lng = Column(Float, nullable=True)
+    altitude_m = Column(Float, nullable=True)          # relative altitude, meters
+    heading_deg = Column(Float, nullable=True)          # 0-360
+    speed_mps = Column(Float, nullable=True)            # groundspeed, m/s
+    gps_fix_type = Column(Integer, nullable=True)        # 0/1=no fix, 2=2D, 3=3D, 4+=DGPS/RTK
+    satellites_visible = Column(Integer, nullable=True)
     notes = Column(String(500), nullable=True)
     registered_at = Column(DateTime, default=datetime.utcnow)
 

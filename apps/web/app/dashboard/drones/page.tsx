@@ -19,6 +19,11 @@ interface Drone {
   home_lng: number | null;
   current_lat: number | null;
   current_lng: number | null;
+  altitude_m: number | null;
+  heading_deg: number | null;
+  speed_mps: number | null;
+  gps_fix_type: number | null;
+  satellites_visible: number | null;
   notes: string;
   registered_at: string | null;
 }
@@ -38,6 +43,21 @@ function formatSecondsAgo(isoTimestamp: string | null): string {
   const seconds = Math.max(0, Math.round((Date.now() - new Date(isoTimestamp).getTime()) / 1000));
   if (seconds < 60) return `${seconds}s ago`;
   return `${Math.round(seconds / 60)}m ago`;
+}
+
+const GPS_FIX_LABELS: Record<number, string> = {
+  0: "No GPS", 1: "No Fix", 2: "2D Fix", 3: "3D Fix", 4: "DGPS", 5: "RTK Float", 6: "RTK Fixed", 7: "Static", 8: "PPP",
+};
+
+function formatGpsFix(fixType: number | null): string {
+  if (fixType == null) return "—";
+  return GPS_FIX_LABELS[fixType] ?? `Fix ${fixType}`;
+}
+
+function formatHeading(deg: number | null): string {
+  if (deg == null) return "—";
+  const compass = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.round(deg / 45) % 8];
+  return `${deg.toFixed(0)}° ${compass}`;
 }
 
 function BatteryBar({ pct }: { pct: number | null }) {
@@ -433,6 +453,26 @@ export default function DronesPage() {
                         ? `${selected.current_lat.toFixed(4)}, ${selected.current_lng?.toFixed(4)}`
                         : "No GPS fix yet"}
                     </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-emerald-700/70">Altitude</span>
+                    <span className="font-semibold text-emerald-800">{selected.altitude_m != null ? `${selected.altitude_m.toFixed(1)} m` : "—"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-emerald-700/70">Speed</span>
+                    <span className="font-semibold text-emerald-800">{selected.speed_mps != null ? `${selected.speed_mps.toFixed(1)} m/s` : "—"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-emerald-700/70">Heading</span>
+                    <span className="font-semibold text-emerald-800">{formatHeading(selected.heading_deg)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-emerald-700/70">GPS Fix</span>
+                    <span className="font-semibold text-emerald-800">{formatGpsFix(selected.gps_fix_type)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-emerald-700/70">Satellites</span>
+                    <span className="font-semibold text-emerald-800">{selected.satellites_visible ?? "—"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-emerald-700/70">Battery</span>

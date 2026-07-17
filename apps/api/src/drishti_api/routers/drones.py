@@ -21,6 +21,7 @@ class CreateDroneRequest(BaseModel):
     home_lat: float | None = None
     home_lng: float | None = None
     notes: str = ""
+    connection_string: str = ""
 
 
 class UpdateDroneRequest(BaseModel):
@@ -30,6 +31,7 @@ class UpdateDroneRequest(BaseModel):
     current_lng: float | None = None
     notes: str | None = None
     current_mission_id: str | None = None
+    connection_string: str | None = None
 
 
 def _serialize(d: Drone) -> dict:
@@ -38,6 +40,7 @@ def _serialize(d: Drone) -> dict:
         "name": d.name,
         "model": d.model or "",
         "serial_number": d.serial_number or "",
+        "connection_string": d.connection_string or "",
         "status": d.status,
         "battery_pct": d.battery_pct,
         "total_flight_hours": d.total_flight_hours or 0,
@@ -74,6 +77,7 @@ def create_drone(body: CreateDroneRequest, db: Session = Depends(get_db)):
         name=body.name,
         model=body.model or None,
         serial_number=body.serial_number or None,
+        connection_string=body.connection_string or None,
         status="at_station",
         home_lat=body.home_lat,
         home_lng=body.home_lng,
@@ -102,6 +106,8 @@ def update_drone(drone_id: uuid.UUID, body: UpdateDroneRequest, db: Session = De
         d.current_lng = body.current_lng
     if body.notes is not None:
         d.notes = body.notes
+    if body.connection_string is not None:
+        d.connection_string = body.connection_string or None
     if body.current_mission_id is not None:
         d.current_mission_id = uuid.UUID(body.current_mission_id)
     d.last_seen = datetime.utcnow()

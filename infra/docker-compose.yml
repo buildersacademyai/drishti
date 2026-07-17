@@ -91,7 +91,12 @@ services:
       context: ../apps/api
       dockerfile: Dockerfile
 
-    command: celery -A drishti_api.workers.celery_app worker --loglevel=info
+    # concurrency=1: drone telemetry polling keeps a persistent MAVLink
+    # connection per drone in a module-level dict (see
+    # services/drone_telemetry_service.py). That only works if every task
+    # invocation lands in the same process — Celery's default prefork pool
+    # would otherwise scatter polls across processes that don't share it.
+    command: celery -A drishti_api.workers.celery_app worker --loglevel=info --concurrency=1
     environment:
       DATABASE_URL: postgresql+psycopg2://drishti:drishti@drishti-postgres:5432/drishti
       REDIS_URL: redis://drishti-redis:6379/0

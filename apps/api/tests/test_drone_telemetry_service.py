@@ -1,8 +1,19 @@
 from types import SimpleNamespace
 
+import pytest
 from pymavlink import mavutil
 
 from drishti_api.services.drone_telemetry_service import poll_drone_telemetry
+
+
+@pytest.fixture(autouse=True)
+def _clear_connection_cache():
+    """Connections persist across polls (module-level cache) — tests must
+    not leak a cached connection from one test into the next."""
+    from drishti_api.services import drone_telemetry_service
+    drone_telemetry_service._connections.clear()
+    yield
+    drone_telemetry_service._connections.clear()
 
 
 class FakeMessage(SimpleNamespace):
@@ -56,7 +67,6 @@ def test_poll_drone_telemetry_happy_path_returns_snapshot():
     result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
 
     assert result == {"armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": 76, **NO_EXTRA_TELEMETRY}
-    assert fake.closed is True
 
 
 def test_poll_drone_telemetry_reads_altitude_speed_heading_and_gps():
@@ -109,7 +119,6 @@ def test_poll_drone_telemetry_rejects_snapshot_from_unexpected_sender_ip():
     result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
 
     assert result is None
-    assert fake.closed is True
 
 
 def test_poll_drone_telemetry_accepts_snapshot_from_expected_sender_ip():
@@ -139,7 +148,6 @@ def test_poll_drone_telemetry_returns_none_on_heartbeat_timeout():
     result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
 
     assert result is None
-    assert fake.closed is True
 
 
 def test_poll_drone_telemetry_handles_missing_position_and_battery():
@@ -165,7 +173,68 @@ def test_poll_drone_telemetry_treats_unknown_battery_as_none():
     result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
 
     assert result == {"armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": None, **NO_EXTRA_TELEMETRY}
-    assert fake.closed is True
+
+
+def test_poll_drone_telemetry_reuses_connection_across_calls():
+    drone = SimpleNamespace(connection_string="udp:127.0.0.1:14550")
+    heartbeat = FakeMessage(base_mode=DISARMED_BASE_MODE)
+    fake = FakeConnection(heartbeat=heartbeat, messages={})
+    open_count = 0
+
+    def connect_fn(conn_str):
+        nonlocal open_count
+        open_count += 1
+        return fake
+
+    poll_drone_telemetry(drone, connect_fn=connect_fn)
+    poll_drone_telemetry(drone, connect_fn=connect_fn)
+    poll_drone_telemetry(drone, connect_fn=connect_fn)
+
+    assert open_count == 1
+    assert fake.closed is False
+
+
+def test_poll_drone_telemetry_opens_separate_connections_per_connection_string():
+    drone_a = SimpleNamespace(connection_string="udp:127.0.0.1:14550")
+    drone_b = SimpleNamespace(connection_string="udp:127.0.0.1:14551")
+    heartbeat = FakeMessage(base_mode=DISARMED_BASE_MODE)
+    opened = []
+
+    def connect_fn(conn_str):
+        fake = FakeConnection(heartbeat=heartbeat, messages={})
+        opened.append(conn_str)
+        return fake
+
+    poll_drone_telemetry(drone_a, connect_fn=connect_fn)
+    poll_drone_telemetry(drone_b, connect_fn=connect_fn)
+    poll_drone_telemetry(drone_a, connect_fn=connect_fn)
+
+    assert opened == ["udp:127.0.0.1:14550", "udp:127.0.0.1:14551"]
+
+
+def test_poll_drone_telemetry_reopens_and_closes_old_connection_on_error():
+    drone = SimpleNamespace(connection_string="udp:127.0.0.1:14550")
+
+    class FailingConnection(FakeConnection):
+        def wait_heartbeat(self, timeout=None):
+            raise OSError("connection reset")
+
+    failing = FailingConnection()
+    replacement_heartbeat = FakeMessage(base_mode=DISARMED_BASE_MODE)
+    replacement = FakeConnection(heartbeat=replacement_heartbeat, messages={})
+    calls = iter([failing, replacement])
+
+    def connect_fn(conn_str):
+        return next(calls)
+
+    with pytest.raises(OSError):
+        poll_drone_telemetry(drone, connect_fn=connect_fn)
+    assert failing.closed is True
+
+    # Next poll opens a fresh connection instead of reusing the broken one
+    result = poll_drone_telemetry(drone, connect_fn=connect_fn)
+    assert result is not None
+    assert replacement.closed is False
 
 
 from drishti_api.models.drone import Drone

@@ -31,6 +31,9 @@ class FakeConnection:
 ARMED_BASE_MODE = mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED | 64  # armed + custom mode bit
 DISARMED_BASE_MODE = 64
 
+# Fields absent from a snapshot when GLOBAL_POSITION_INT/GPS_RAW_INT weren't sent
+NO_EXTRA_TELEMETRY = {"alt_m": None, "heading_deg": None, "speed_mps": None, "gps_fix_type": None, "satellites_visible": None}
+
 
 def test_poll_drone_telemetry_returns_none_without_connection_string():
     drone = SimpleNamespace(connection_string=None)
@@ -52,8 +55,50 @@ def test_poll_drone_telemetry_happy_path_returns_snapshot():
 
     result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
 
-    assert result == {"armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": 76}
+    assert result == {"armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": 76, **NO_EXTRA_TELEMETRY}
     assert fake.closed is True
+
+
+def test_poll_drone_telemetry_reads_altitude_speed_heading_and_gps():
+    drone = SimpleNamespace(connection_string="udp:127.0.0.1:14550")
+    heartbeat = FakeMessage(base_mode=ARMED_BASE_MODE)
+    position = FakeMessage(
+        lat=275_290_000, lon=843_540_000,
+        relative_alt=15_500,  # mm -> 15.5m
+        hdg=9_000,  # centidegrees -> 90.0 deg
+        vx=300, vy=400, vz=0,  # cm/s -> groundspeed 5.0 m/s (3-4-5 triangle)
+    )
+    sys_status = FakeMessage(battery_remaining=76)
+    gps_raw = FakeMessage(fix_type=3, satellites_visible=11)
+    fake = FakeConnection(
+        heartbeat=heartbeat,
+        messages={"GLOBAL_POSITION_INT": position, "SYS_STATUS": sys_status, "GPS_RAW_INT": gps_raw},
+    )
+
+    result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
+
+    assert result == {
+        "armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": 76,
+        "alt_m": 15.5, "heading_deg": 90.0, "speed_mps": 5.0,
+        "gps_fix_type": 3, "satellites_visible": 11,
+    }
+
+
+def test_poll_drone_telemetry_treats_unknown_heading_and_satellites_as_none():
+    drone = SimpleNamespace(connection_string="udp:127.0.0.1:14550")
+    heartbeat = FakeMessage(base_mode=DISARMED_BASE_MODE)
+    position = FakeMessage(lat=275_290_000, lon=843_540_000, relative_alt=0, hdg=65535, vx=0, vy=0, vz=0)
+    gps_raw = FakeMessage(fix_type=0, satellites_visible=255)  # MAVLink "unknown" sentinels
+    fake = FakeConnection(
+        heartbeat=heartbeat,
+        messages={"GLOBAL_POSITION_INT": position, "GPS_RAW_INT": gps_raw},
+    )
+
+    result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
+
+    assert result["heading_deg"] is None
+    assert result["satellites_visible"] is None
+    assert result["gps_fix_type"] == 0
 
 
 def test_poll_drone_telemetry_rejects_snapshot_from_unexpected_sender_ip():
@@ -74,7 +119,7 @@ def test_poll_drone_telemetry_accepts_snapshot_from_expected_sender_ip():
 
     result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
 
-    assert result == {"armed": False, "lat": None, "lng": None, "battery_pct": None}
+    assert result == {"armed": False, "lat": None, "lng": None, "battery_pct": None, **NO_EXTRA_TELEMETRY}
 
 
 def test_poll_drone_telemetry_skips_sender_check_when_source_ip_not_configured():
@@ -84,7 +129,7 @@ def test_poll_drone_telemetry_skips_sender_check_when_source_ip_not_configured()
 
     result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
 
-    assert result == {"armed": False, "lat": None, "lng": None, "battery_pct": None}
+    assert result == {"armed": False, "lat": None, "lng": None, "battery_pct": None, **NO_EXTRA_TELEMETRY}
 
 
 def test_poll_drone_telemetry_returns_none_on_heartbeat_timeout():
@@ -104,7 +149,7 @@ def test_poll_drone_telemetry_handles_missing_position_and_battery():
 
     result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
 
-    assert result == {"armed": False, "lat": None, "lng": None, "battery_pct": None}
+    assert result == {"armed": False, "lat": None, "lng": None, "battery_pct": None, **NO_EXTRA_TELEMETRY}
 
 
 def test_poll_drone_telemetry_treats_unknown_battery_as_none():
@@ -119,7 +164,7 @@ def test_poll_drone_telemetry_treats_unknown_battery_as_none():
 
     result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
 
-    assert result == {"armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": None}
+    assert result == {"armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": None, **NO_EXTRA_TELEMETRY}
     assert fake.closed is True
 
 
@@ -225,7 +270,7 @@ def test_poll_drone_connection_now_updates_row_and_returns_snapshot(db):
 
     snapshot = poll_drone_connection_now(db, drone, connect_fn=lambda conn_str: fake)
 
-    assert snapshot == {"armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": 61}
+    assert snapshot == {"armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": 61, **NO_EXTRA_TELEMETRY}
     db.refresh(drone)
     assert drone.status == "in_field"
     assert drone.battery_pct == 61

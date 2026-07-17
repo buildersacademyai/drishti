@@ -321,6 +321,7 @@ export default function DronesPage() {
               <div className="bg-white border border-[#e2e8f0] rounded-xl p-4 shadow-sm space-y-3">
                 <p className="text-xs font-bold text-[#94a3b8] uppercase tracking-wide">MAVLink Connection</p>
                 <input
+                  key={selected.id}
                   type="text"
                   defaultValue={selected.connection_string}
                   placeholder="udp:127.0.0.1:14550"

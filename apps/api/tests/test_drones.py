@@ -31,3 +31,33 @@ def test_update_drone_connection_string(client, db):
     })
     assert resp.status_code == 200
     assert resp.json()["connection_string"] == "udp:127.0.0.1:14551"
+
+
+def test_create_drone_rejects_invalid_connection_string_scheme(client, db):
+    resp = client.post("/api/v1/drones", json={
+        "name": "Eagle-4",
+        "connection_string": "serial:/dev/ttyUSB0",
+    })
+    assert resp.status_code == 422
+
+
+def test_create_drone_accepts_udp_and_tcp_schemes(client, db):
+    resp_udp = client.post("/api/v1/drones", json={
+        "name": "Eagle-5",
+        "connection_string": "udp:127.0.0.1:14550",
+    })
+    assert resp_udp.status_code == 201
+
+    resp_tcp = client.post("/api/v1/drones", json={
+        "name": "Eagle-6",
+        "connection_string": "tcp:127.0.0.1:5760",
+    })
+    assert resp_tcp.status_code == 201
+
+
+def test_update_drone_rejects_invalid_connection_string_scheme(client, db):
+    created = client.post("/api/v1/drones", json={"name": "Eagle-7"}).json()
+    resp = client.patch(f"/api/v1/drones/{created['id']}", json={
+        "connection_string": "file:/etc/passwd",
+    })
+    assert resp.status_code == 422

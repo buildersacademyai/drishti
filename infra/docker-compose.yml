@@ -99,6 +99,8 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET: drishti-imagery
+    ports:
+      - "14550:14550/udp"
     depends_on:
       postgres:
         condition: service_healthy

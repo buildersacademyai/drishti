@@ -11,17 +11,45 @@ MESSAGE_TIMEOUT_S = 5
 HEADING_UNKNOWN = 65535  # MAVLink sentinel for "no heading available"
 SATELLITES_UNKNOWN = 255  # MAVLink sentinel for "satellite count not reported"
 
+# Persistent MAVLink connections, keyed by connection_string, shared across
+# poll cycles (and both the periodic beat poll and the on-demand "Connect"
+# button). A fresh bind/close every 10s doesn't survive Docker Desktop's UDP
+# port forwarding reliably — keeping the socket open for the worker
+# process's lifetime does. Requires the worker to run at concurrency=1 so
+# every poll lands in the same process this dict lives in.
+_connections: dict[str, object] = {}
+
+
+def _get_connection(connection_string: str, connect_fn):
+    conn = _connections.get(connection_string)
+    if conn is None:
+        conn = connect_fn(connection_string)
+        _connections[connection_string] = conn
+    return conn
+
+
+def _discard_connection(connection_string: str) -> None:
+    conn = _connections.pop(connection_string, None)
+    if conn is not None:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
 
 def poll_drone_telemetry(drone, connect_fn=mavutil.mavlink_connection) -> dict | None:
-    """Opens a short-lived MAVLink connection, reads one telemetry snapshot,
-    closes. Returns None if there's no connection configured or the drone
-    doesn't answer in time — a single bad poll should never raise, since
-    poll_all_drones must keep going for the other drones.
+    """Reads one telemetry snapshot over a persistent, cached MAVLink
+    connection for this drone's connection_string (opened on first use, kept
+    open afterward). Returns None if there's no connection configured or the
+    drone doesn't answer in time. On a real connection error the cached
+    connection is discarded (closed, evicted) so the next poll opens a fresh
+    one — and the error is re-raised so poll_all_drones can skip this drone
+    for the current cycle without blocking the others.
     """
     if not drone.connection_string:
         return None
 
-    conn = connect_fn(drone.connection_string)
+    conn = _get_connection(drone.connection_string, connect_fn)
     try:
         heartbeat = conn.wait_heartbeat(timeout=HEARTBEAT_TIMEOUT_S)
         if heartbeat is None:
@@ -77,8 +105,9 @@ def poll_drone_telemetry(drone, connect_fn=mavutil.mavlink_connection) -> dict |
             "gps_fix_type": gps_fix_type,
             "satellites_visible": satellites_visible,
         }
-    finally:
-        conn.close()
+    except Exception:
+        _discard_connection(drone.connection_string)
+        raise
 
 
 def _apply_snapshot(drone: Drone, snapshot: dict) -> None:

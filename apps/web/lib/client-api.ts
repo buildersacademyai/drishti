@@ -38,12 +38,14 @@ export const register = (email: string, password: string, name: string, role = "
 // Missions
 export const getMissions = (status?: string) =>
   apiGet<Mission[]>(`/api/v1/missions${status ? `?status=${status}` : ""}`);
-export const createMission = (body: { mission_type: string; admin_unit_id: string }) =>
+export const createMission = (body: { mission_type: string; admin_unit_id: string; name?: string }) =>
   apiPost<Mission>("/api/v1/missions", body);
 export const dispatchMission = (id: string) =>
   apiPost<Mission>(`/api/v1/missions/${id}/dispatch`);
 export const updateMissionStatus = (id: string, status: string) =>
-  apiPatch<{ id: string; status: string; executed_at: string | null }>(`/api/v1/missions/${id}`, { status });
+  apiPatch<{ id: string; status: string; executed_at: string | null; detection_id: string | null }>(
+    `/api/v1/missions/${id}`, { status }
+  );
 
 // Detections
 export const getDetections = (params?: { detection_type?: string; confidence_min?: number }) => {
@@ -58,6 +60,8 @@ export const verifyDetection = (id: string) =>
   apiPost<Detection>(`/api/v1/detections/${id}/verify`);
 export const rejectDetection = (id: string, reason?: string) =>
   apiPost<Detection>(`/api/v1/detections/${id}/reject`, { reason });
+export const classifyDetection = (id: string, positive: boolean) =>
+  apiPost<Detection>(`/api/v1/detections/${id}/classify`, { positive });
 
 // Interventions
 export const getInterventions = () => apiGet<Intervention[]>("/api/v1/interventions");
@@ -101,10 +105,13 @@ export const getAdminUnits = () => apiGet<AdminUnitRef[]>("/api/v1/admin-units")
 
 export interface Mission {
   id: string;
+  name: string | null;
   mission_type: string;
   status: string;
   planned_at?: string;
   admin_unit_id?: string;
+  admin_unit_name?: string | null;
+  satellite_detection_id?: string | null;
 }
 
 export interface Detection {

@@ -1,11 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
-import { getDetections, triggerIntervention, verifyDetection, rejectDetection, type Detection } from "@/lib/client-api";
+import { getDetections, triggerIntervention, verifyDetection, rejectDetection, classifyDetection, type Detection } from "@/lib/client-api";
 
 const TYPE_COLORS: Record<string, string> = {
   larval_habitat: "bg-red-100 text-red-700",
   stagnant_water: "bg-blue-100 text-blue-700",
   adult_mosquito: "bg-purple-100 text-purple-700",
+  larvae_confirmed: "bg-red-100 text-red-700",
+  false_positive: "bg-gray-100 text-gray-500",
+  unclassified: "bg-slate-100 text-slate-600",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -45,6 +48,18 @@ export default function DetectionsPage() {
     try {
       const res = await triggerIntervention(id);
       setActionMsg(`Intervention mission created: ${res.intervention_mission_id.slice(0, 8)}…`);
+      setActionIsError(false);
+      load();
+    } catch (err) {
+      setActionMsg(err instanceof Error ? err.message : "Failed");
+      setActionIsError(true);
+    }
+  }
+
+  async function handleClassify(id: string, positive: boolean) {
+    try {
+      await classifyDetection(id, positive);
+      setActionMsg(positive ? "Marked positive — larvae confirmed." : "Marked false — no larvae found.");
       setActionIsError(false);
       load();
     } catch (err) {
@@ -184,7 +199,23 @@ export default function DetectionsPage() {
                   {d.detected_at ? new Date(d.detected_at).toLocaleString() : "—"}
                 </td>
                 <td className="px-4 py-3">
-                  {d.status === "pending_review" && rejectingId !== d.id && (
+                  {d.status === "pending_review" && d.detection_type === "unclassified" && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleClassify(d.id, true)}
+                        className="text-xs font-semibold text-red-700 hover:text-red-800 transition-colors"
+                      >
+                        Mark Positive
+                      </button>
+                      <button
+                        onClick={() => handleClassify(d.id, false)}
+                        className="text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors"
+                      >
+                        Mark False
+                      </button>
+                    </div>
+                  )}
+                  {d.status === "pending_review" && d.detection_type !== "unclassified" && rejectingId !== d.id && (
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleVerify(d.id)}

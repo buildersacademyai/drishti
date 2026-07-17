@@ -8,6 +8,7 @@ from ..models.detection import Detection
 from ..models.drone import Mission
 from ..models.intervention import AuditLog
 from ..dependencies import get_current_user, CurrentUser
+from ..schemas.detections import DetectionClassify
 from ..config import settings
 
 router = APIRouter()
@@ -55,6 +56,41 @@ def verify_detection(detection_id: uuid.UUID, db: Session = Depends(get_db),
     db.refresh(det)
     return {"id": str(det.id), "status": det.status, "verified_by": str(det.verified_by),
             "verified_at": det.verified_at.isoformat()}
+
+
+@router.post("/{detection_id}/classify", status_code=200)
+def classify_detection(
+    detection_id: uuid.UUID,
+    body: DetectionClassify,
+    db: Session = Depends(get_db),
+    user: CurrentUser = Depends(get_current_user),
+):
+    """For detections created from a completed verification mission — no
+    pre-existing classification to confirm/reject, the admin is setting it
+    from scratch. Combines classification + confirmation in one action,
+    unlike verify/reject which assume detection_type was already set by an
+    upstream CV pipeline.
+    """
+    det = db.get(Detection, detection_id)
+    if not det:
+        raise HTTPException(status_code=404, detail="Detection not found")
+    if det.status != "pending_review":
+        raise HTTPException(status_code=422,
+                            detail=f"Detection is already {det.status}, cannot classify")
+
+    det.detection_type = "larvae_confirmed" if body.positive else "false_positive"
+    det.status = "verified" if body.positive else "rejected"
+    det.verified_by = uuid.UUID(user.user_id)
+    det.verified_at = datetime.utcnow()
+    db.add(AuditLog(
+        tenant_id=settings.seed_tenant_id, actor_id=uuid.UUID(user.user_id),
+        action="detection_classified", entity_type="detection", entity_id=det.id,
+        payload_jsonb={"positive": body.positive},
+    ))
+    db.commit()
+    db.refresh(det)
+    return {"id": str(det.id), "detection_type": det.detection_type, "status": det.status,
+            "verified_by": str(det.verified_by), "verified_at": det.verified_at.isoformat()}
 
 
 @router.post("/{detection_id}/reject", status_code=200)

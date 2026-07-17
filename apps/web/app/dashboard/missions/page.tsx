@@ -21,7 +21,7 @@ export default function MissionsPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ mission_type: "survey", admin_unit_id: "" });
+  const [form, setForm] = useState({ name: "", mission_type: "survey", admin_unit_id: "" });
   const [actionMsg, setActionMsg] = useState("");
 
   async function load() {
@@ -41,9 +41,9 @@ export default function MissionsPage() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     try {
-      await createMission(form);
+      await createMission({ ...form, name: form.name || undefined });
       setShowForm(false);
-      setForm({ mission_type: "survey", admin_unit_id: "" });
+      setForm({ name: "", mission_type: "survey", admin_unit_id: "" });
       setActionMsg("Mission created.");
       load();
     } catch (err) {
@@ -53,8 +53,12 @@ export default function MissionsPage() {
 
   async function handleStatusChange(id: string, status: string) {
     try {
-      await updateMissionStatus(id, status);
-      setActionMsg(`Mission status updated to ${status.replace("_", " ")}.`);
+      const res = await updateMissionStatus(id, status);
+      setActionMsg(
+        res.detection_id
+          ? "Mission completed. A detection is awaiting classification."
+          : `Mission status updated to ${status.replace("_", " ")}.`
+      );
       load();
     } catch (err) {
       setActionMsg(err instanceof Error ? err.message : "Failed");
@@ -106,6 +110,15 @@ export default function MissionsPage() {
           className="mb-6 bg-white border border-[#e2e8f0] rounded-xl p-5 space-y-4 shadow-sm"
         >
           <h2 className="font-semibold text-[#0f172a]">New Mission</h2>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[#64748b]">Name</label>
+            <input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="e.g. Chitwan riverside survey"
+              className="w-full border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#0f172a] focus:outline-none focus:ring-1 focus:ring-[#0f172a]/30"
+            />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[#64748b]">Type</label>
@@ -152,7 +165,8 @@ export default function MissionsPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#e2e8f0] bg-[#f8fafc]">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">ID</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Name</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">District</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Type</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Status</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Planned At</th>
@@ -161,12 +175,15 @@ export default function MissionsPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-[#64748b]">Loading…</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-[#64748b]">Loading…</td></tr>
             ) : missions.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-[#64748b]">No missions found.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-[#64748b]">No missions found.</td></tr>
             ) : missions.map((m) => (
               <tr key={m.id} className="border-b border-[#f3f4f6] hover:bg-[#f8fafc]/50 transition-colors">
-                <td className="px-4 py-3 font-mono text-xs text-[#64748b]">{m.id.slice(0, 8)}…</td>
+                <td className="px-4 py-3 text-[#0f172a] font-medium">
+                  {m.name || <span className="text-[#94a3b8] font-normal font-mono">{m.id.slice(0, 8)}…</span>}
+                </td>
+                <td className="px-4 py-3 text-[#64748b]">{m.admin_unit_name || "—"}</td>
                 <td className="px-4 py-3 text-[#0f172a] font-medium capitalize">{m.mission_type}</td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[m.status] ?? "bg-gray-100 text-gray-600"}`}>

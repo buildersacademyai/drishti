@@ -61,3 +61,23 @@ def test_update_drone_rejects_invalid_connection_string_scheme(client, db):
         "connection_string": "file:/etc/passwd",
     })
     assert resp.status_code == 422
+
+
+def test_update_drone_edits_registration_fields(client, db):
+    created = client.post("/api/v1/drones", json={
+        "name": "Eagle-8", "model": "DJI Mavic", "serial_number": "SN-OLD",
+        "home_lat": 27.0, "home_lng": 84.0,
+    }).json()
+
+    resp = client.patch(f"/api/v1/drones/{created['id']}", json={
+        "name": "Falcon-8", "model": "DJI Matrice 300 RTK", "serial_number": "SN-NEW",
+        "home_lat": 27.529, "home_lng": 84.354,
+    })
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["name"] == "Falcon-8"
+    assert body["model"] == "DJI Matrice 300 RTK"
+    assert body["serial_number"] == "SN-NEW"
+    assert body["home_lat"] == 27.529
+    assert body["home_lng"] == 84.354

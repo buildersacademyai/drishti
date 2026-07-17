@@ -49,6 +49,8 @@ export default function DronesPage() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Drone | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "" });
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [form, setForm] = useState({ name: "", model: "", serial_number: "", home_lat: "", home_lng: "", notes: "", connection_string: "" });
 
@@ -111,6 +113,38 @@ export default function DronesPage() {
     try {
       await apiPatch(`/api/v1/drones/${id}`, { connection_string: connectionString });
       setMsg({ text: "Connection string updated.", ok: true });
+      load();
+    } catch (err) {
+      setMsg({ text: err instanceof Error ? err.message : "Failed", ok: false });
+    }
+  }
+
+  function startEditing(d: Drone) {
+    setEditForm({
+      name: d.name,
+      model: d.model,
+      serial_number: d.serial_number,
+      home_lat: d.home_lat != null ? String(d.home_lat) : "",
+      home_lng: d.home_lng != null ? String(d.home_lng) : "",
+      notes: d.notes,
+    });
+    setEditing(true);
+  }
+
+  async function handleEditSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selected) return;
+    try {
+      await apiPatch(`/api/v1/drones/${selected.id}`, {
+        name: editForm.name,
+        model: editForm.model,
+        serial_number: editForm.serial_number,
+        home_lat: editForm.home_lat ? parseFloat(editForm.home_lat) : undefined,
+        home_lng: editForm.home_lng ? parseFloat(editForm.home_lng) : undefined,
+        notes: editForm.notes,
+      });
+      setMsg({ text: "Drone details updated.", ok: true });
+      setEditing(false);
       load();
     } catch (err) {
       setMsg({ text: err instanceof Error ? err.message : "Failed", ok: false });
@@ -213,7 +247,7 @@ export default function DronesPage() {
             return (
               <div
                 key={d.id}
-                onClick={() => setSelected(isActive ? null : d)}
+                onClick={() => { setSelected(isActive ? null : d); setEditing(false); }}
                 className={`bg-white border rounded-xl p-4 cursor-pointer transition-all shadow-sm ${isActive ? "border-[#0f172a] ring-1 ring-[#0f172a]/20" : "border-[#e2e8f0] hover:border-[#0f172a]/30"}`}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -261,23 +295,61 @@ export default function DronesPage() {
           {selected ? (
             <>
               <div className="bg-white border border-[#e2e8f0] rounded-xl overflow-hidden shadow-sm">
-                <div className="bg-[#0f172a] px-5 py-4">
-                  <p className="text-white/60 text-xs uppercase tracking-wide">Drone Details</p>
-                  <p className="text-white font-bold text-lg mt-0.5">{selected.name}</p>
-                </div>
-                <div className="p-4 space-y-3 text-sm">
-                  <Row label="Model" value={selected.model || "—"} />
-                  <Row label="Serial" value={selected.serial_number || "—"} mono />
-                  <Row label="Flight Hours" value={`${selected.total_flight_hours.toFixed(1)} h`} />
-                  <Row label="Registered" value={selected.registered_at ? new Date(selected.registered_at).toLocaleDateString() : "—"} />
-                  {selected.home_lat != null && (
-                    <Row label="Home Base" value={`${selected.home_lat.toFixed(4)}, ${selected.home_lng?.toFixed(4)}`} mono />
+                <div className="bg-[#0f172a] px-5 py-4 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-white/60 text-xs uppercase tracking-wide">Drone Details</p>
+                    <p className="text-white font-bold text-lg mt-0.5">{selected.name}</p>
+                  </div>
+                  {!editing && (
+                    <button
+                      onClick={() => startEditing(selected)}
+                      className="text-xs font-semibold text-white/80 hover:text-white border border-white/30 rounded-lg px-2.5 py-1"
+                    >
+                      Edit
+                    </button>
                   )}
-                  {selected.current_lat != null && (
-                    <Row label="Last Coords" value={`${selected.current_lat.toFixed(4)}, ${selected.current_lng?.toFixed(4)}`} mono />
-                  )}
-                  {selected.notes && <Row label="Notes" value={selected.notes} />}
                 </div>
+                {editing ? (
+                  <form onSubmit={handleEditSave} key={selected.id} className="p-4 space-y-3">
+                    {[
+                      { label: "Name", key: "name", placeholder: "Eagle-1" },
+                      { label: "Model", key: "model", placeholder: "DJI Matrice 300 RTK" },
+                      { label: "Serial Number", key: "serial_number", placeholder: "SN-123456" },
+                      { label: "Home Lat", key: "home_lat", placeholder: "27.529" },
+                      { label: "Home Lng", key: "home_lng", placeholder: "84.354" },
+                      { label: "Notes", key: "notes", placeholder: "optional" },
+                    ].map(f => (
+                      <div key={f.key} className="space-y-1">
+                        <label className="text-xs font-medium text-[#64748b]">{f.label}</label>
+                        <input
+                          required={f.key === "name"}
+                          value={(editForm as Record<string, string>)[f.key]}
+                          onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })}
+                          placeholder={f.placeholder}
+                          className="w-full border border-[#e2e8f0] rounded-lg px-3 py-2 text-sm text-[#0f172a] focus:outline-none focus:ring-1 focus:ring-[#0f172a]/30"
+                        />
+                      </div>
+                    ))}
+                    <div className="flex gap-2 pt-1">
+                      <button type="submit" className="bg-[#0f172a] text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-[#1e293b]">Save</button>
+                      <button type="button" onClick={() => setEditing(false)} className="border border-[#e2e8f0] text-[#64748b] text-xs px-3 py-1.5 rounded-lg hover:bg-[#f8fafc]">Cancel</button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="p-4 space-y-3 text-sm">
+                    <Row label="Model" value={selected.model || "—"} />
+                    <Row label="Serial" value={selected.serial_number || "—"} mono />
+                    <Row label="Flight Hours" value={`${selected.total_flight_hours.toFixed(1)} h`} />
+                    <Row label="Registered" value={selected.registered_at ? new Date(selected.registered_at).toLocaleDateString() : "—"} />
+                    {selected.home_lat != null && (
+                      <Row label="Home Base" value={`${selected.home_lat.toFixed(4)}, ${selected.home_lng?.toFixed(4)}`} mono />
+                    )}
+                    {selected.current_lat != null && (
+                      <Row label="Last Coords" value={`${selected.current_lat.toFixed(4)}, ${selected.current_lng?.toFixed(4)}`} mono />
+                    )}
+                    {selected.notes && <Row label="Notes" value={selected.notes} />}
+                  </div>
+                )}
               </div>
 
               {/* Status control */}

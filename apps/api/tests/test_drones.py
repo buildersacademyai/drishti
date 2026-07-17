@@ -35,6 +35,23 @@ def test_update_drone_connection_string(client, db):
     assert resp.json()["connection_string"] == "udp:127.0.0.1:14551"
 
 
+def test_editing_a_drone_does_not_fake_a_live_connection(client, db):
+    """Editing any field (name, connection_string, notes, ...) must not
+    stamp last_seen — that would make the connected badge lie about
+    telemetry that was never actually received. Only real polling
+    (poll_all_drones/poll_drone_connection_now) sets last_seen."""
+    created = client.post("/api/v1/drones", json={
+        "name": "Eagle-3b", "connection_string": "udpout:192.168.4.1:14550",
+    }).json()
+    assert created["last_seen"] is None
+    assert created["connected"] is False
+
+    resp = client.patch(f"/api/v1/drones/{created['id']}", json={"notes": "just editing a field"})
+
+    assert resp.json()["last_seen"] is None
+    assert resp.json()["connected"] is False
+
+
 def test_create_drone_rejects_invalid_connection_string_scheme(client, db):
     resp = client.post("/api/v1/drones", json={
         "name": "Eagle-4",

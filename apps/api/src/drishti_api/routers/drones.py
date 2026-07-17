@@ -176,7 +176,6 @@ def update_drone(drone_id: uuid.UUID, body: UpdateDroneRequest, db: Session = De
         d.telemetry_source_ip = body.telemetry_source_ip or None
     if body.current_mission_id is not None:
         d.current_mission_id = uuid.UUID(body.current_mission_id)
-    d.last_seen = datetime.utcnow()
     db.commit()
     return _serialize(d)
 

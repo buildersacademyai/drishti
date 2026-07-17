@@ -24,6 +24,12 @@ def poll_drone_telemetry(drone, connect_fn=mavutil.mavlink_connection) -> dict |
         if heartbeat is None:
             return None
 
+        expected_ip = getattr(drone, "telemetry_source_ip", None)
+        if expected_ip:
+            observed_ips = {addr[0] for addr in getattr(conn, "clients", set())}
+            if observed_ips and not observed_ips.issubset({expected_ip}):
+                return None
+
         armed = bool(heartbeat.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
         position = conn.recv_match(type="GLOBAL_POSITION_INT", blocking=True, timeout=MESSAGE_TIMEOUT_S)
         sys_status = conn.recv_match(type="SYS_STATUS", blocking=True, timeout=MESSAGE_TIMEOUT_S)

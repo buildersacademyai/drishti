@@ -14,6 +14,7 @@ class Drone(Base, TenantMixin):
     model = Column(String(100), nullable=True)           # "DJI Matrice 300 RTK"
     serial_number = Column(String(100), nullable=True)
     connection_string = Column(String(255), nullable=True)  # MAVLink endpoint, e.g. "udp:127.0.0.1:14550"
+    telemetry_source_ip = Column(String(45), nullable=True)  # if set, reject UDP packets from any other sender
     status = Column(String(30), nullable=False, default="at_station")
     # at_station | in_field | charging | maintenance | offline
     battery_pct = Column(Integer, nullable=True)         # 0-100

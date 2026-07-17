@@ -81,3 +81,28 @@ def test_update_drone_edits_registration_fields(client, db):
     assert body["serial_number"] == "SN-NEW"
     assert body["home_lat"] == 27.529
     assert body["home_lng"] == 84.354
+
+
+def test_create_drone_with_telemetry_source_ip_persists_it(client, db):
+    resp = client.post("/api/v1/drones", json={
+        "name": "Eagle-9", "connection_string": "udp:0.0.0.0:14550",
+        "telemetry_source_ip": "192.168.4.1",
+    })
+    assert resp.status_code == 201
+    assert resp.json()["telemetry_source_ip"] == "192.168.4.1"
+
+
+def test_update_drone_telemetry_source_ip(client, db):
+    created = client.post("/api/v1/drones", json={"name": "Eagle-10"}).json()
+    resp = client.patch(f"/api/v1/drones/{created['id']}", json={
+        "telemetry_source_ip": "192.168.4.2",
+    })
+    assert resp.status_code == 200
+    assert resp.json()["telemetry_source_ip"] == "192.168.4.2"
+
+
+def test_create_drone_rejects_invalid_telemetry_source_ip(client, db):
+    resp = client.post("/api/v1/drones", json={
+        "name": "Eagle-11", "telemetry_source_ip": "not-an-ip",
+    })
+    assert resp.status_code == 422

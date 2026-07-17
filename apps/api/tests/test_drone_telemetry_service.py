@@ -12,10 +12,11 @@ class FakeMessage(SimpleNamespace):
 class FakeConnection:
     """Stands in for mavutil.mavlink_connection(...) — no real sockets."""
 
-    def __init__(self, heartbeat=None, messages=None):
+    def __init__(self, heartbeat=None, messages=None, clients=None):
         self._heartbeat = heartbeat
         self._messages = messages or {}
         self.closed = False
+        self.clients = clients if clients is not None else set()
 
     def wait_heartbeat(self, timeout=None):
         return self._heartbeat
@@ -53,6 +54,37 @@ def test_poll_drone_telemetry_happy_path_returns_snapshot():
 
     assert result == {"armed": True, "lat": 27.529, "lng": 84.354, "battery_pct": 76}
     assert fake.closed is True
+
+
+def test_poll_drone_telemetry_rejects_snapshot_from_unexpected_sender_ip():
+    drone = SimpleNamespace(connection_string="udp:0.0.0.0:14550", telemetry_source_ip="192.168.4.1")
+    heartbeat = FakeMessage(base_mode=ARMED_BASE_MODE)
+    fake = FakeConnection(heartbeat=heartbeat, messages={}, clients={("10.0.0.99", 14550)})
+
+    result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
+
+    assert result is None
+    assert fake.closed is True
+
+
+def test_poll_drone_telemetry_accepts_snapshot_from_expected_sender_ip():
+    drone = SimpleNamespace(connection_string="udp:0.0.0.0:14550", telemetry_source_ip="192.168.4.1")
+    heartbeat = FakeMessage(base_mode=DISARMED_BASE_MODE)
+    fake = FakeConnection(heartbeat=heartbeat, messages={}, clients={("192.168.4.1", 14550)})
+
+    result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
+
+    assert result == {"armed": False, "lat": None, "lng": None, "battery_pct": None}
+
+
+def test_poll_drone_telemetry_skips_sender_check_when_source_ip_not_configured():
+    drone = SimpleNamespace(connection_string="udp:0.0.0.0:14550", telemetry_source_ip=None)
+    heartbeat = FakeMessage(base_mode=DISARMED_BASE_MODE)
+    fake = FakeConnection(heartbeat=heartbeat, messages={}, clients={("10.0.0.99", 14550)})
+
+    result = poll_drone_telemetry(drone, connect_fn=lambda conn_str: fake)
+
+    assert result == {"armed": False, "lat": None, "lng": None, "battery_pct": None}
 
 
 def test_poll_drone_telemetry_returns_none_on_heartbeat_timeout():

@@ -30,6 +30,7 @@ class Drone(Base, TenantMixin):
 class Mission(Base, TenantMixin):
     __tablename__ = "missions"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(255), nullable=True)
     mission_type = Column(String(50), nullable=False)
     status = Column(String(20), nullable=False, default="planned")
     admin_unit_id = Column(UUID(as_uuid=True), ForeignKey("admin_units.id"), nullable=False)

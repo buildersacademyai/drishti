@@ -146,3 +146,49 @@ def test_reject_with_reason_and_without(client, db):
 def test_verify_unknown_detection_404(client):
     resp = client.post(f"/api/v1/detections/{uuid_lib.uuid4()}/verify", headers=_auth_header())
     assert resp.status_code == 404
+
+
+def test_classify_positive_sets_larvae_confirmed_and_verified(client, db):
+    tenant, unit, mission = _setup_tenant_unit_mission(db)
+    det = _make_detection(db, tenant, unit, mission, detection_type="unclassified")
+    headers = _auth_header(db, tenant)
+
+    resp = client.post(f"/api/v1/detections/{det.id}/classify", json={"positive": True}, headers=headers)
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["detection_type"] == "larvae_confirmed"
+    assert body["status"] == "verified"
+
+    # now eligible for the existing trigger-intervention flow
+    trigger_resp = client.post(f"/api/v1/detections/{det.id}/trigger-intervention")
+    assert trigger_resp.status_code == 200
+
+
+def test_classify_negative_sets_false_positive_and_rejected(client, db):
+    tenant, unit, mission = _setup_tenant_unit_mission(db)
+    det = _make_detection(db, tenant, unit, mission, detection_type="unclassified")
+    headers = _auth_header(db, tenant)
+
+    resp = client.post(f"/api/v1/detections/{det.id}/classify", json={"positive": False}, headers=headers)
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["detection_type"] == "false_positive"
+    assert body["status"] == "rejected"
+
+
+def test_classify_requires_auth(client, db):
+    tenant, unit, mission = _setup_tenant_unit_mission(db)
+    det = _make_detection(db, tenant, unit, mission, detection_type="unclassified")
+
+    resp = client.post(f"/api/v1/detections/{det.id}/classify", json={"positive": True})
+    assert resp.status_code == 401
+
+
+def test_classify_twice_returns_422(client, db):
+    tenant, unit, mission = _setup_tenant_unit_mission(db)
+    det = _make_detection(db, tenant, unit, mission, detection_type="unclassified")
+    headers = _auth_header(db, tenant)
+    client.post(f"/api/v1/detections/{det.id}/classify", json={"positive": True}, headers=headers)
+
+    resp = client.post(f"/api/v1/detections/{det.id}/classify", json={"positive": False}, headers=headers)
+    assert resp.status_code == 422

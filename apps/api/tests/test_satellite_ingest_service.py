@@ -199,7 +199,7 @@ def test_delete_detection_removes_row(db):
 def test_delete_detection_blocked_when_mission_exists(db):
     tenant, unit = _make_tenant_and_unit(db, name="I3")
     detection = create_manual_water_source(db, unit, lat=27.65, lng=84.35)
-    send_detection_to_mission(db, detection, unit.id)
+    send_detection_to_mission(db, detection, unit)
 
     try:
         delete_detection(db, detection)
@@ -214,9 +214,10 @@ def test_send_detection_to_mission_creates_planned_mission(db):
     tenant, unit = _make_tenant_and_unit(db, name="I4")
     detection = create_manual_water_source(db, unit, lat=27.65, lng=84.35)
 
-    mission = send_detection_to_mission(db, detection, unit.id)
+    mission = send_detection_to_mission(db, detection, unit)
 
     assert mission.status == "planned"
     assert mission.mission_type == "verification"
     assert mission.satellite_detection_id == detection.id
     assert mission.admin_unit_id == unit.id
+    assert mission.name == f"Verification — {unit.name}"

@@ -86,3 +86,41 @@ def test_update_mission_status_404_for_unknown_id(client, db):
     resp = client.patch(f"/api/v1/missions/{uuid_lib.uuid4()}", json={"status": "in_progress"},
                         headers=_auth_header(db, tenant))
     assert resp.status_code == 404
+
+
+def test_completing_verification_mission_creates_detection_for_classification(client, db):
+    tenant, unit, mission = _make_tenant_unit_and_mission(db, "COMPLETE")
+    headers = _auth_header(db, tenant)
+
+    resp = client.patch(f"/api/v1/missions/{mission.id}", json={"status": "completed"}, headers=headers)
+    assert resp.status_code == 200
+    detection_id = resp.json()["detection_id"]
+    assert detection_id is not None
+
+    listed = client.get(f"/api/v1/detections?mission_id={mission.id}").json()
+    assert len(listed) == 1
+    assert listed[0]["id"] == detection_id
+    assert listed[0]["status"] == "pending_review"
+
+
+def test_create_mission_with_name(client, db):
+    tenant, unit, _existing = _make_tenant_unit_and_mission(db, "NAMED")
+
+    resp = client.post("/api/v1/missions", json={
+        "mission_type": "verification",
+        "admin_unit_id": str(unit.id),
+        "name": "Narayani riverside check",
+    })
+    assert resp.status_code == 201
+    assert resp.json()["name"] == "Narayani riverside check"
+
+
+def test_list_missions_includes_name_and_district(client, db):
+    tenant, unit, mission = _make_tenant_unit_and_mission(db, "LISTNAME")
+    mission.name = "Test Mission Name"
+    db.flush()
+
+    listed = client.get("/api/v1/missions").json()
+    row = next(m for m in listed if m["id"] == str(mission.id))
+    assert row["name"] == "Test Mission Name"
+    assert row["admin_unit_name"] == "LISTNAMEDistrict"

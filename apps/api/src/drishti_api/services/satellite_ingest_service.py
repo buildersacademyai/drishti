@@ -154,12 +154,13 @@ def delete_detection(db: Session, detection: SatelliteDetection) -> None:
 
 
 def send_detection_to_mission(
-    db: Session, detection: SatelliteDetection, admin_unit_id, triggered_by: str = "satellite_detection"
+    db: Session, detection: SatelliteDetection, admin_unit: AdminUnit, triggered_by: str = "satellite_detection"
 ) -> Mission:
     mission = Mission(
+        name=f"Verification — {admin_unit.name}",
         mission_type="verification",
         status="planned",
-        admin_unit_id=admin_unit_id,
+        admin_unit_id=admin_unit.id,
         satellite_detection_id=detection.id,
         triggered_by=triggered_by,
         tenant_id=detection.tenant_id,

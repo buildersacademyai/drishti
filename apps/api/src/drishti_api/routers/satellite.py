@@ -250,10 +250,12 @@ def send_detection_to_mission_endpoint(
 ):
     detection = _get_owned_detection(db, detection_id, user)
     acquisition = db.get(SatelliteAcquisition, detection.acquisition_id)
-    mission = send_detection_to_mission(db, detection, acquisition.admin_unit_id)
+    admin_unit = db.get(AdminUnit, acquisition.admin_unit_id)
+    mission = send_detection_to_mission(db, detection, admin_unit)
     db.commit()
     return {
         "id": str(mission.id),
+        "name": mission.name,
         "status": mission.status,
         "mission_type": mission.mission_type,
         "satellite_detection_id": str(mission.satellite_detection_id),

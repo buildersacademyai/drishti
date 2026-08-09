@@ -30,6 +30,15 @@ const members = [
     accent: false,
     photo: 2,
   },
+  {
+    name: "Pratik Thapa",
+    role: "Full-Stack Developer",
+    org: "BuildersAcademy.ai",
+    focus: "Dashboard · API Integration · Admin Panel",
+    bio: "Builds the MapLibre dashboard, API integration, and admin panel that turn satellite, drone, and IoT data into a live tool for FCHVs and district health officers at BuildersAcademy.ai.",
+    accent: false,
+    photo: 3,
+  },
 ];
 
 const PHOTO_EXTENSIONS = ["jpg", "jpeg", "png"];

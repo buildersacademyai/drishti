@@ -50,3 +50,6 @@ CODE_OF_CONDUCT.md
 CONTRIBUTING.md
 SECURITY.md
 .gstack/
+
+# UNICEF application materials (confidential per RFPS terms — never push)
+docs/presentation/

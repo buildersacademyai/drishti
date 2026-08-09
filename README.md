@@ -1,11 +1,11 @@
-# Drishti — AI-Powered Climate & Emergency Response Platform
+# Drishti — Climate & Emergency Response Platform
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![UNICEF Venture Fund](https://img.shields.io/badge/UNICEF%20Venture%20Fund-Applicant%202026-009edb)](https://unicefinnovationfund.org)
 
 > **See the threat. Before it sees you.**
 
-Drishti (दृष्टि — "vision" in Nepali/Sanskrit) is an open-source AI platform that combines satellite imagery, autonomous drones, and machine learning to detect climate and emergency threats — disease outbreaks, wildfires, floods, wildlife loss — across vulnerable regions. Same hardware stack, modular AI models per domain. First deployment: malaria and dengue vector surveillance in Nepal's Terai lowlands.
+Drishti (दृष्टि — "vision" in Nepali/Sanskrit) is an open-source platform that combines satellite imagery, autonomous drones, IoT sensors, and machine learning to detect climate and emergency threats — disease outbreaks, wildfires, floods, wildlife loss — across vulnerable regions. Same hardware stack, modular detection models per domain. First deployment: malaria and dengue vector surveillance in Nepal's Terai lowlands.
 
 ---
 
@@ -20,16 +20,17 @@ Nepal's Terai districts, Drishti's first deployment, carry the highest malaria a
 ## How Drishti Works
 
 ```
-Satellite Scan → Drone Verification → AI Detection → Risk Score → Intervention Dispatch
+Satellite Scan → Drone Verification → Human Review → Risk Score → Intervention Dispatch
 ```
 
-1. **Satellite NDWI Analysis** — Multispectral imagery scans Terai terrain after rainfall, flagging stagnant water bodies as candidate breeding zones across entire districts
-2. **Autonomous Drone Dispatch** — Flagged sites trigger drone deployment for low-altitude ground verification
-3. **Computer Vision (YOLOv8)** — Onboard AI classifies larval presence with GPS-precise coordinates and confidence scores
-4. **Risk Prediction** — Detections feed a district-level ML risk model scoring all 75 Nepal districts in real time
-5. **Intervention Dashboard** — District health officers see live risk maps, create larvicide missions, and track outcomes — all from one platform
+1. **Satellite NDWI Analysis** — Real Sentinel-2 imagery (via Microsoft Planetary Computer) scans Terai terrain after rainfall, flagging stagnant water bodies as candidate breeding zones across entire districts
+2. **Autonomous Drone Dispatch** — Flagged sites trigger drone deployment for low-altitude ground verification, over live MAVLink telemetry (persistent connections, dial-out/UDP support for real hardware in the field)
+3. **Computer Vision (YOLOv8)** — Onboard classification of larval presence with GPS-precise coordinates and confidence scores
+4. **Human Verification** — A health officer verifies or rejects each detection before any intervention is triggered; manual water-source pinning complements the automated satellite scan for sites it might miss
+5. **Risk Prediction** — Verified detections feed a district-level ML risk model scoring all 75 Nepal districts in real time
+6. **Intervention Dashboard** — District health officers see live risk maps, create larvicide missions, and track outcomes — all from one platform
 
-**Future scope:** Forest fire detection, wildlife corridor monitoring, flood damage assessment — same hardware stack, modular AI models.
+**Future scope:** Forest fire detection, wildlife corridor monitoring, flood damage assessment — same hardware stack, modular detection models.
 
 ---
 
@@ -66,7 +67,8 @@ Satellite Scan → Drone Verification → AI Detection → Risk Score → Interv
 | Database | PostgreSQL 16 + PostGIS |
 | Queue | Celery + Redis |
 | Storage | MinIO (S3-compatible) |
-| AI/CV | YOLOv8, NDWI satellite analysis |
+| Computer Vision | YOLOv8, NDWI satellite analysis |
+| Drone Telemetry | MAVLink (pymavlink), persistent UDP connections, dial-out support |
 | IoT | ESP32, GPS module, telemetry over WiFi/4G |
 | Infrastructure | Docker Compose, designed for Kubernetes |
 
@@ -158,8 +160,14 @@ Open [http://localhost:3001](http://localhost:3001)
 | GET | `/api/v1/drones` | List drone fleet |
 | POST | `/api/v1/drones` | Register drone |
 | PATCH | `/api/v1/drones/:id` | Update status/battery/coords |
+| POST | `/api/v1/drones/:id/connect` | Open live MAVLink connection |
+| POST | `/api/v1/drones/:id/disconnect` | Close live MAVLink connection |
 | GET | `/api/v1/missions` | List missions |
 | GET | `/api/v1/detections` | List detections |
+| POST | `/api/v1/detections/:id/verify` | Human verify a detection |
+| POST | `/api/v1/detections/:id/reject` | Human reject a detection |
+| POST | `/api/v1/detections/:id/trigger-intervention` | Dispatch spray mission (gated on verified status) |
+| POST | `/api/v1/satellite/detections/manual` | Manual water-source pin (human-in-the-loop complement to satellite scan) |
 | GET | `/api/v1/predictions` | District risk scores |
 | GET | `/api/v1/alerts` | Active alerts |
 | GET | `/api/v1/interventions` | Intervention log |
@@ -188,6 +196,7 @@ Full API docs at `http://localhost:8000/docs` (Swagger UI)
 | Binaya Tripathi | Founder | Vision · Strategy · Partnerships |
 | Dipak Sharma | Project Lead | Backend · ML · Infrastructure · Drone Systems |
 | Rishav Subedi | Drone Developer | UAV Hardware · Flight Firmware · Autonomous Systems |
+| Pratik Thapa | Full-Stack Developer | Dashboard · API Integration · Admin Panel |
 
 Built by [BuildersAcademy.ai](https://buildersacademy.ai), with field partnership from Nepal MoHP (public health/VBD surveillance) and an agricultural drone operator (UAV operations, Chitwan).
 

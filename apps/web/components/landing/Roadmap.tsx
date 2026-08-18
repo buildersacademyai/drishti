@@ -5,7 +5,7 @@ const milestones = [
   {
     quarter: "Q2 2026",
     phase: "Foundation",
-    status: "active",
+    status: "complete",
     items: [
       "Open-source codebase — Apache 2.0, all code on GitHub",
       "Satellite NDWI pipeline — Chitwan demo data",
@@ -52,14 +52,15 @@ const milestones = [
 ];
 
 const statusStyle: Record<string, { dot: string; border: string; bg: string; label: string; text: string }> = {
+  complete: { dot: "bg-[#10b981]", border: "border-[#10b981]/30", bg: "bg-[#10b981]/5", label: "Complete", text: "text-[#059669]" },
   active: { dot: "bg-[#10b981] animate-pulse", border: "border-[#10b981]/30", bg: "bg-[#10b981]/5", label: "Active", text: "text-[#059669]" },
   planned: { dot: "bg-[#38bdf8]", border: "border-[#38bdf8]/25", bg: "bg-[#38bdf8]/5", label: "Planned", text: "text-[#0284c7]" },
-  future: { dot: "bg-[#94a3b8]", border: "border-[#e2e8f0]", bg: "bg-[#f8fafc]", label: "Future", text: "text-[#64748b]" },
+  future: { dot: "bg-[#94a3b8]", border: "border-[#e2e8f0] dark:border-white/10", bg: "bg-[#f8fafc] dark:bg-[#0f172a]", label: "Future", text: "text-[#64748b] dark:text-[#94a3b8]" },
 };
 
 export function Roadmap() {
   return (
-    <section id="roadmap" className="py-28 bg-white">
+    <section id="roadmap" className="py-28 bg-white dark:bg-[#0b1220]">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -70,11 +71,11 @@ export function Roadmap() {
           <div className="text-xs font-bold text-[#0284c7] uppercase tracking-[0.2em] mb-4">
             Roadmap
           </div>
-          <h2 className="text-4xl lg:text-5xl font-black text-[#0f172a] mb-6 max-w-3xl leading-tight">
+          <h2 className="text-4xl lg:text-5xl font-black text-[#0f172a] dark:text-white mb-6 max-w-3xl leading-tight">
             Foundation → Pilot →{" "}
             <span className="gradient-text">Scale.</span>
           </h2>
-          <p className="text-lg text-[#64748b] max-w-2xl leading-relaxed">
+          <p className="text-lg text-[#64748b] dark:text-[#94a3b8] max-w-2xl leading-relaxed">
             A disciplined 12-month path to measurable impact, starting with Disease Control
             in Nepal — designed to expand across five response domains and to any country
             facing these hazards.
@@ -100,10 +101,10 @@ export function Roadmap() {
                 <div className={`text-xs font-bold uppercase tracking-wider mb-1 ${s.text}`}>
                   {m.quarter}
                 </div>
-                <div className="text-[#0f172a] font-black text-lg mb-4">{m.phase}</div>
+                <div className="text-[#0f172a] dark:text-white font-black text-lg mb-4">{m.phase}</div>
                 <ul className="space-y-2">
                   {m.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-xs text-[#64748b] leading-relaxed">
+                    <li key={item} className="flex items-start gap-2 text-xs text-[#64748b] dark:text-[#94a3b8] leading-relaxed">
                       <span className="mt-0.5 flex-shrink-0 text-[#cbd5e1]">·</span>
                       {item}
                     </li>

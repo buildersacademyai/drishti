@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-white">
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-white dark:bg-[#0b1220]">
       {/* Background gradient blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-[#38bdf8]/10 blur-[120px]" />
@@ -39,7 +39,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-5xl lg:text-6xl font-black text-[#0f172a] leading-[1.05] mb-6"
+              className="text-5xl lg:text-6xl font-black text-[#0f172a] dark:text-white leading-[1.05] mb-6"
             >
               See it from{" "}
               <span className="gradient-text">space.</span>
@@ -48,14 +48,14 @@ export function Hero() {
               <span className="gradient-text">the sky.</span>
               <br />
               Respond before{" "}
-              <span className="text-[#0f172a]">it's too late.</span>
+              <span className="text-[#0f172a] dark:text-white">it's too late.</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg text-[#64748b] leading-relaxed mb-10 max-w-xl"
+              className="text-lg text-[#64748b] dark:text-[#94a3b8] leading-relaxed mb-10 max-w-xl"
             >
               An AI-driven platform combining satellite screening, autonomous drone
               verification, and precision response — for disease control, fire control,
@@ -78,7 +78,7 @@ export function Hero() {
                 href="https://github.com/buildersacademyai/drishti"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3 rounded-xl border border-[#e2e8f0] text-[#0f172a] font-semibold hover:bg-[#f8fafc] transition-colors text-sm"
+                className="px-6 py-3 rounded-xl border border-[#e2e8f0] dark:border-white/10 text-[#0f172a] dark:text-white font-semibold hover:bg-[#f8fafc] dark:hover:bg-[#0f172a] transition-colors text-sm"
               >
                 View on GitHub
               </a>
@@ -89,10 +89,10 @@ export function Hero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="mt-14 grid grid-cols-3 gap-6 pt-10 border-t border-[#e2e8f0]"
+              className="mt-14 grid grid-cols-3 gap-6 pt-10 border-t border-[#e2e8f0] dark:border-white/10"
             >
               {[
-                { value: "5", label: "Response domains" },
+                { value: "1", label: "Active pilot · 4 planned domains" },
                 { value: "72h", label: "Flag to response" },
                 { value: "80%", label: "Less resource waste" },
               ].map((s) => (

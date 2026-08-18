@@ -4,7 +4,6 @@ import { Scopes } from "@/components/landing/Scopes";
 import { Problem } from "@/components/landing/Problem";
 import { Solution } from "@/components/landing/Solution";
 import { Process } from "@/components/landing/Process";
-import { Impact } from "@/components/landing/Impact";
 import { Team } from "@/components/landing/Team";
 import { Roadmap } from "@/components/landing/Roadmap";
 import { Contact } from "@/components/landing/Contact";
@@ -20,7 +19,6 @@ export default function Home() {
         <Problem />
         <Solution />
         <Process />
-        <Impact />
         <Team />
         <Roadmap />
         <Contact />

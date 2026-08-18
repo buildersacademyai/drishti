@@ -1,8 +1,10 @@
 "use client";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 const scopes = [
   {
+    slug: "disease-control",
     icon: "🔬",
     title: "Disease Control",
     description:
@@ -10,6 +12,7 @@ const scopes = [
     status: "active",
   },
   {
+    slug: "fire-control",
     icon: "🔥",
     title: "Fire Control",
     description:
@@ -17,6 +20,7 @@ const scopes = [
     status: "vision",
   },
   {
+    slug: "animal-surveillance",
     icon: "🐾",
     title: "Animal Surveillance",
     description:
@@ -24,6 +28,7 @@ const scopes = [
     status: "vision",
   },
   {
+    slug: "flood-monitoring",
     icon: "🌊",
     title: "Flood Monitoring",
     description:
@@ -31,6 +36,7 @@ const scopes = [
     status: "vision",
   },
   {
+    slug: "emergency-delivery",
     icon: "📦",
     title: "Emergency Delivery",
     description:
@@ -46,7 +52,7 @@ const statusStyle: Record<string, { dot: string; label: string }> = {
 
 export function Scopes() {
   return (
-    <section id="scopes" className="py-28 bg-[#f8fafc]">
+    <section id="scopes" className="py-28 bg-[#f8fafc] dark:bg-[#0f172a]">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -54,14 +60,14 @@ export function Scopes() {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <div className="text-xs font-bold text-[#0f172a] uppercase tracking-[0.2em] mb-4">
+          <div className="text-xs font-bold text-[#0f172a] dark:text-white uppercase tracking-[0.2em] mb-4">
             Scopes
           </div>
-          <h2 className="text-4xl lg:text-5xl font-black text-[#0f172a] mb-6 max-w-3xl leading-tight">
+          <h2 className="text-4xl lg:text-5xl font-black text-[#0f172a] dark:text-white mb-6 max-w-3xl leading-tight">
             One platform.{" "}
             <span style={{ color: "#38bdf8" }}>Five missions.</span>
           </h2>
-          <p className="text-lg text-[#64748b] max-w-2xl leading-relaxed">
+          <p className="text-lg text-[#64748b] dark:text-[#94a3b8] max-w-2xl leading-relaxed">
             Same satellite-to-drone architecture — screen, verify, respond —
             applied wherever climate and emergency response need eyes in the sky.
           </p>
@@ -77,17 +83,24 @@ export function Scopes() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08 }}
-                className="p-8 rounded-2xl bg-white border border-[#e2e8f0] hover:shadow-lg transition-shadow"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <span className="text-4xl">{s.icon}</span>
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-[#64748b]">
-                    <span className={`w-2 h-2 rounded-full ${st.dot}`} />
-                    {st.label}
+                <Link
+                  href={`/missions/${s.slug}`}
+                  className="group block h-full p-8 rounded-2xl bg-white dark:bg-[#0b1220] border border-[#e2e8f0] dark:border-white/10 hover:shadow-lg hover:border-[#38bdf8]/40 transition-all"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <span className="text-4xl">{s.icon}</span>
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-[#64748b] dark:text-[#94a3b8]">
+                      <span className={`w-2 h-2 rounded-full ${st.dot}`} />
+                      {st.label}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-[#0f172a] dark:text-white mb-2">{s.title}</h3>
+                  <p className="text-[#64748b] dark:text-[#94a3b8] text-sm leading-relaxed mb-4">{s.description}</p>
+                  <span className="text-xs font-bold text-[#0284c7] group-hover:underline">
+                    View details →
                   </span>
-                </div>
-                <h3 className="text-lg font-black text-[#0f172a] mb-2">{s.title}</h3>
-                <p className="text-[#64748b] text-sm leading-relaxed">{s.description}</p>
+                </Link>
               </motion.div>
             );
           })}

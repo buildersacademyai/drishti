@@ -9,6 +9,16 @@ Drishti (दृष्टि — "vision" in Nepali/Sanskrit) is an open-source p
 
 ---
 
+## Demo
+
+[![Drishti pitch video](https://img.youtube.com/vi/Xg29Lm65YJA/maxresdefault.jpg)](https://www.youtube.com/watch?v=Xg29Lm65YJA)
+
+**[▶ Watch the pitch video](https://www.youtube.com/watch?v=Xg29Lm65YJA)** — solution walkthrough, team, and roadmap.
+
+**[▶ Watch the platform demo](apps/web/public/drishti1.mp4)** — dashboard and live pipeline in action.
+
+---
+
 ## The Problem
 
 Climate change and emergencies are outpacing manual response. Warming temperatures, shifting weather patterns, and growing climate volatility are creating new risks faster than ground-based teams can track them.

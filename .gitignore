@@ -53,3 +53,6 @@ SECURITY.md
 
 # UNICEF application materials (confidential per RFPS terms — never push)
 docs/presentation/
+
+# Too large for GitHub (677MB, exceeds 100MB push limit) — hosted on YouTube instead
+apps/web/public/drishti.mp4

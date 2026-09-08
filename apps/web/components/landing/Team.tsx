@@ -9,7 +9,7 @@ const members = [
     org: "BuildersAcademy.ai",
     focus: "Vision · Strategy · Partnerships",
     bio: "Founded BuildersAcademy.ai and set the vision for Drishti — turning satellite and drone data into actionable public health intervention.",
-    accent: true,
+    accent: false,
     photo: 0,
   },
   {

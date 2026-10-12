@@ -79,6 +79,7 @@ Satellite Scan → Drone Verification → Human Review → Risk Score → Interv
 | Storage | MinIO (S3-compatible) |
 | Computer Vision | YOLOv8, NDWI satellite analysis |
 | Drone Telemetry | MAVLink (pymavlink), persistent UDP connections, dial-out support |
+| Drone Simulation | PX4 SITL + ROS2 (planned) — mission/payload-swap logic validated in sim before live flights |
 | IoT | ESP32, GPS module, telemetry over WiFi/4G |
 | Infrastructure | Docker Compose, designed for Kubernetes |
 
@@ -188,6 +189,8 @@ Full API docs at `http://localhost:8000/docs` (Swagger UI)
 ---
 
 ## Pilot Plan
+
+**Phase 0 (Month 1, pre-flight):** PX4 SITL + ROS2 simulation — validate mission planning, dispatch, and payload-swap logic against a simulated airframe before any real flight
 
 **Phase 1 (Months 1–2):** Drone flights over Chitwan and Bardiya districts — capture and annotate larval site imagery for YOLOv8 training
 

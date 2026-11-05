@@ -42,6 +42,7 @@ export const createMission = (body: { mission_type: string; admin_unit_id: strin
   apiPost<Mission>("/api/v1/missions", body);
 export const dispatchMission = (id: string) =>
   apiPost<Mission>(`/api/v1/missions/${id}/dispatch`);
+export const deleteMission = (id: string) => apiDelete<void>(`/api/v1/missions/${id}`);
 export const updateMissionStatus = (id: string, status: string) =>
   apiPatch<{ id: string; status: string; executed_at: string | null; detection_id: string | null }>(
     `/api/v1/missions/${id}`, { status }
@@ -85,6 +86,8 @@ export const getPredictions = () => apiGet<Prediction[]>("/api/v1/predictions");
 export const getAcquisitions = () => apiGet<Acquisition[]>("/api/v1/satellite/acquisitions");
 export const getAcquisitionDetail = (id: string) =>
   apiGet<AcquisitionDetail>(`/api/v1/satellite/acquisitions/${id}`);
+export const deleteAcquisition = (id: string) =>
+  apiDelete<void>(`/api/v1/satellite/acquisitions/${id}`);
 export const createManualWaterSource = (body: { admin_unit_id: string; lat: number; lng: number; notes?: string }) =>
   apiPost<ManualWaterSource>("/api/v1/satellite/detections/manual", body);
 export const getSatelliteDetectionsGeoJSON = () =>

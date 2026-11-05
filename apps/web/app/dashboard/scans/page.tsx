@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getAcquisitions, type Acquisition } from "@/lib/client-api";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { getAcquisitions, deleteAcquisition, type Acquisition } from "@/lib/client-api";
 
 export default function ScansPage() {
   const router = useRouter();
@@ -15,6 +16,41 @@ export default function ScansPage() {
       finally { setLoading(false); }
     })();
   }, []);
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const t = localStorage.getItem("drishti_token");
+      if (t) setIsAdmin(JSON.parse(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).role === "admin");
+    } catch {}
+  }, []);
+
+  const [pending, setPending] = useState<Acquisition | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [blocked, setBlocked] = useState<string | null>(null);
+
+  async function confirmDelete() {
+    if (!pending) return;
+    setDeleting(true);
+    try {
+      await deleteAcquisition(pending.id);
+      setAcquisitions((xs) => xs.filter((x) => x.id !== pending.id));
+      setError(null);
+      setPending(null);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      if (msg.startsWith("409")) {
+        setBlocked("This scan can't be deleted because one or more of its detections have a mission attached. Delete or complete those missions first, then try again.");
+      } else {
+        setPending(null);
+        setError("Couldn't delete the scan. Please try again.");
+      }
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   const positiveCount = acquisitions.filter((a) => a.new_site_count > 0).length;
 
@@ -32,6 +68,7 @@ export default function ScansPage() {
         </p>
       </div>
 
+      {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
       {loading ? (
         <p className="text-center text-[#64748b] py-12">Loading…</p>
       ) : acquisitions.length === 0 ? (
@@ -50,6 +87,7 @@ export default function ScansPage() {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Water Sites</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide w-40">Result</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Scanned</th>
+                {isAdmin && <th className="w-12" />}
               </tr>
             </thead>
             <tbody>
@@ -77,11 +115,33 @@ export default function ScansPage() {
                   <td className="px-4 py-3 text-[#64748b] text-xs">
                     {a.acquired_at ? new Date(a.acquired_at).toLocaleString() : "—"}
                   </td>
+                  {isAdmin && (
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setPending(a); }}
+                        title="Delete scan"
+                        aria-label="Delete scan"
+                        className="text-[#94a3b8] hover:text-red-600 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" /></svg>
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+      {pending && (
+        <ConfirmDialog
+          title="Delete scan?"
+          message={`This permanently deletes the scan of ${pending.admin_unit_name ?? "this district"} and its ${pending.detection_count} detection(s).`}
+          busy={deleting}
+          onConfirm={confirmDelete}
+          blocked={blocked}
+          onCancel={() => { setPending(null); setBlocked(null); }}
+        />
       )}
     </div>
   );

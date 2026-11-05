@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func, select
 from ..db import get_db
-from ..dependencies import get_current_user, CurrentUser
+from ..dependencies import get_current_user, require_role, CurrentUser
 from ..models.drone import Mission
 from ..models.geo import AdminUnit
 from ..models.intervention import Alert
@@ -108,6 +108,35 @@ def _mission_status_by_detection(db: Session, detection_ids: list) -> dict:
     for detection_id, status, _planned_at in rows:
         result.setdefault(detection_id, status)  # first row per id = most recent (desc order)
     return result
+
+
+@router.delete("/acquisitions/{acquisition_id}", status_code=204)
+def delete_acquisition(
+    acquisition_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: CurrentUser = Depends(require_role("admin")),
+):
+    acq = db.execute(
+        select(SatelliteAcquisition).where(
+            SatelliteAcquisition.id == acquisition_id,
+            SatelliteAcquisition.tenant_id == uuid.UUID(user.tenant_id),
+        )
+    ).scalar_one_or_none()
+    if acq is None:
+        raise HTTPException(status_code=404, detail="Scan not found")
+    dets = db.query(SatelliteDetection).filter(SatelliteDetection.acquisition_id == acq.id).all()
+    ids = [d.id for d in dets]
+    if ids and db.query(Mission).filter(Mission.satellite_detection_id.in_(ids)).first():
+        raise HTTPException(status_code=409, detail="A detection in this scan has a mission attached; deal with that first")
+    if ids:
+        db.query(Alert).filter(Alert.satellite_detection_id.in_(ids)).update(
+            {Alert.satellite_detection_id: None}, synchronize_session=False
+        )
+    for d in dets:
+        db.delete(d)
+    db.flush()
+    db.delete(acq)
+    db.commit()
 
 
 @router.get("/acquisitions/{acquisition_id}")

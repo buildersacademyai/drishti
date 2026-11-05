@@ -4,8 +4,10 @@ import {
   getMissions,
   createMission,
   updateMissionStatus,
+  deleteMission,
   type Mission,
 } from "@/lib/client-api";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const MISSION_STATUSES = ["planned", "in_progress", "completed", "aborted"];
 
@@ -23,6 +25,38 @@ export default function MissionsPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", mission_type: "survey", admin_unit_id: "" });
   const [actionMsg, setActionMsg] = useState("");
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [pending, setPending] = useState<Mission | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [blocked, setBlocked] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const t = localStorage.getItem("drishti_token");
+      if (t) setIsAdmin(JSON.parse(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).role === "admin");
+    } catch {}
+  }, []);
+
+  async function confirmDelete() {
+    if (!pending) return;
+    setDeleting(true);
+    try {
+      await deleteMission(pending.id);
+      setMissions((xs) => xs.filter((x) => x.id !== pending.id));
+      setActionMsg("Mission deleted.");
+      setPending(null);
+    } catch (err) {
+      if (err instanceof Error && err.message.startsWith("409")) {
+        setBlocked("This mission can't be deleted because it already has flights, detections or interventions recorded against it. Remove those first, then try again.");
+      } else {
+        setPending(null);
+        setActionMsg("Couldn't delete the mission. Please try again.");
+      }
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -171,13 +205,14 @@ export default function MissionsPage() {
               <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Status</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Planned At</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-[#64748b] uppercase tracking-wide">Actions</th>
+              {isAdmin && <th className="w-12" />}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-[#64748b]">Loading…</td></tr>
+              <tr><td colSpan={isAdmin ? 7 : 6} className="px-4 py-8 text-center text-[#64748b]">Loading…</td></tr>
             ) : missions.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-[#64748b]">No missions found.</td></tr>
+              <tr><td colSpan={isAdmin ? 7 : 6} className="px-4 py-8 text-center text-[#64748b]">No missions found.</td></tr>
             ) : missions.map((m) => (
               <tr key={m.id} className="border-b border-[#f3f4f6] hover:bg-[#f8fafc]/50 transition-colors">
                 <td className="px-4 py-3 text-[#0f172a] font-medium">
@@ -206,11 +241,33 @@ export default function MissionsPage() {
                     ))}
                   </select>
                 </td>
+                {isAdmin && (
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => setPending(m)}
+                      title="Delete mission"
+                      aria-label="Delete mission"
+                      className="text-[#94a3b8] hover:text-red-600 transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" /></svg>
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {pending && (
+        <ConfirmDialog
+          title="Delete mission?"
+          message={`This permanently deletes ${pending.name || "this mission"}.`}
+          busy={deleting}
+          blocked={blocked}
+          onConfirm={confirmDelete}
+          onCancel={() => { setPending(null); setBlocked(null); }}
+        />
+      )}
     </div>
   );
 }

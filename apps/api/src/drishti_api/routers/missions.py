@@ -4,8 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from ..db import get_db
-from ..dependencies import get_current_user, CurrentUser
-from ..models.drone import Mission
+from ..dependencies import get_current_user, require_role, CurrentUser
+from ..models.drone import Mission, Flight, Drone
+from ..models.detection import Detection
+from ..models.intervention import Intervention
 from ..models.geo import AdminUnit
 from ..schemas.missions import MissionStatusUpdate
 from ..services.mission_service import create_detection_from_completed_mission
@@ -89,3 +91,22 @@ def update_mission_status(
         "executed_at": mission.executed_at.isoformat() if mission.executed_at else None,
         "detection_id": str(detection.id) if detection else None,
     }
+
+
+@router.delete("/{mission_id}", status_code=204)
+def delete_mission(
+    mission_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: CurrentUser = Depends(require_role("admin")),
+):
+    mission = db.get(Mission, mission_id)
+    if not mission or str(mission.tenant_id) != user.tenant_id:
+        raise HTTPException(status_code=404, detail="Mission not found")
+    for model, label in ((Flight, "flights"), (Detection, "detections"), (Intervention, "interventions")):
+        if db.query(model).filter(model.mission_id == mission.id).first():
+            raise HTTPException(status_code=409, detail=f"Mission has {label} recorded against it")
+    db.query(Drone).filter(Drone.current_mission_id == mission.id).update(
+        {Drone.current_mission_id: None}, synchronize_session=False
+    )
+    db.delete(mission)
+    db.commit()

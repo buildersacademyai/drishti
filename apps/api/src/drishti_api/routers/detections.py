@@ -6,7 +6,7 @@ from sqlalchemy import select
 from ..db import get_db
 from ..models.detection import Detection
 from ..models.drone import Mission
-from ..models.intervention import AuditLog
+from ..models.intervention import AuditLog, Intervention
 from ..dependencies import get_current_user, CurrentUser
 from ..schemas.detections import DetectionClassify
 from ..config import settings
@@ -137,6 +137,13 @@ def trigger_intervention(detection_id: uuid.UUID, db: Session = Depends(get_db))
         triggered_by=f"detection:{detection_id}",
     )
     db.add(intervention_mission)
+    db.flush()
+    # planned treatment record so it shows on the Interventions page
+    db.add(Intervention(
+        tenant_id=settings.seed_tenant_id, detection_id=det.id,
+        mission_id=intervention_mission.id, intervention_type="larvicide_spray",
+        target_geometry=det.geometry, executed_at=None,
+    ))
     db.commit()
     db.refresh(intervention_mission)
     return {"detection_id": str(det.id), "intervention_mission_id": str(intervention_mission.id)}

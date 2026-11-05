@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import StartInterventionModal from "@/components/StartInterventionModal";
 import { getDetections, triggerIntervention, verifyDetection, rejectDetection, classifyDetection, type Detection } from "@/lib/client-api";
 
 const TYPE_COLORS: Record<string, string> = {
@@ -24,6 +25,8 @@ export default function DetectionsPage() {
   const [confMin, setConfMin] = useState("");
   const [actionMsg, setActionMsg] = useState("");
   const [actionIsError, setActionIsError] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [triggering, setTriggering] = useState<Detection | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
 
@@ -43,6 +46,13 @@ export default function DetectionsPage() {
   }
 
   useEffect(() => { load(); }, [typeFilter, confMin]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    try {
+      const t = localStorage.getItem("drishti_token");
+      if (t) setIsAdmin(JSON.parse(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).role === "admin");
+    } catch {}
+  }, []);
 
   async function handleTrigger(id: string) {
     try {
@@ -246,7 +256,7 @@ export default function DetectionsPage() {
                   )}
                   {d.status === "verified" && (
                     <button
-                      onClick={() => handleTrigger(d.id)}
+                      onClick={() => (isAdmin ? setTriggering(d) : handleTrigger(d.id))}
                       className="text-xs font-semibold text-[#10b981] hover:text-[#059669] transition-colors"
                     >
                       Trigger →
@@ -258,6 +268,18 @@ export default function DetectionsPage() {
           </tbody>
         </table>
       </div>
+      {triggering && (
+        <StartInterventionModal
+          detection={triggering}
+          onClose={() => setTriggering(null)}
+          onStarted={() => {
+            setTriggering(null);
+            setActionMsg("Intervention started. Drone dispatched.");
+            setActionIsError(false);
+            load();
+          }}
+        />
+      )}
     </div>
   );
 }

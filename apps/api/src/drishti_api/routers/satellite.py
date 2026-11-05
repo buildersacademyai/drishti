@@ -117,10 +117,9 @@ def delete_acquisition(
     user: CurrentUser = Depends(require_role("admin")),
 ):
     acq = db.execute(
-        select(SatelliteAcquisition).where(
-            SatelliteAcquisition.id == acquisition_id,
-            SatelliteAcquisition.tenant_id == uuid.UUID(user.tenant_id),
-        )
+        select(SatelliteAcquisition)
+        .join(AdminUnit, SatelliteAcquisition.admin_unit_id == AdminUnit.id)
+        .where(SatelliteAcquisition.id == acquisition_id, AdminUnit.tenant_id == uuid.UUID(user.tenant_id))
     ).scalar_one_or_none()
     if acq is None:
         raise HTTPException(status_code=404, detail="Scan not found")

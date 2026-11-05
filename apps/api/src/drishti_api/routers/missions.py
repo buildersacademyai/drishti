@@ -100,12 +100,13 @@ def delete_mission(
     user: CurrentUser = Depends(require_role("admin")),
 ):
     mission = db.get(Mission, mission_id)
-    if not mission or str(mission.tenant_id) != user.tenant_id:
+    unit = db.get(AdminUnit, mission.admin_unit_id) if mission else None
+    if not unit or str(unit.tenant_id) != user.tenant_id:
         raise HTTPException(status_code=404, detail="Mission not found")
     for model, label in ((Flight, "flights"), (Detection, "detections"), (Intervention, "interventions")):
         if db.query(model).filter(model.mission_id == mission.id).first():
             raise HTTPException(status_code=409, detail=f"Mission has {label} recorded against it")
-    db.query(Drone).filter(Drone.current_mission_id == mission.id).update(
+    db.query(Drone).filter(Drone.current_mission_id == mission.id, Drone.tenant_id == mission.tenant_id).update(
         {Drone.current_mission_id: None}, synchronize_session=False
     )
     db.delete(mission)

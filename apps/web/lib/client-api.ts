@@ -74,6 +74,15 @@ export const createIntervention = (body: {
   operator_notes?: string;
 }) => apiPost<Intervention>("/api/v1/interventions", body);
 
+export const deleteIntervention = (id: string) => apiDelete<void>(`/api/v1/interventions/${id}`);
+export const startIntervention = (body: {
+  detection_id: string;
+  drone_id: string;
+  intervention_type?: string;
+  larvicide_ml?: number;
+  operator_notes?: string;
+}) => apiPost<{ id: string; mission_id: string; drone_id: string }>("/api/v1/interventions/start", body);
+
 // Alerts
 export const getAlerts = () => apiGet<Alert[]>("/api/v1/alerts");
 export const acknowledgeAlert = (id: string) =>
